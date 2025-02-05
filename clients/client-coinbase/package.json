@@ -24,7 +24,7 @@
     "test": "jest",
     "lint": "eslint --fix  --cache .",
     "clean": "rimraf dist",
-    "build:watch": "tsup src/index.ts --watch"
+    "dev": "tsup src/index.ts --watch"
   },
   "dependencies": {
     "@elizaos/core": "^0.1.9",

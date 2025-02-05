@@ -7,7 +7,7 @@
     "types": "./dist/index.d.ts",
     "scripts": {
         "build": "tsup --format esm --dts",
-        "build:watch": "tsup --format esm --dts --watch",
+        "dev": "tsup --format esm --dts --watch",
         "test": "jest",
         "clean": "rm -rf dist",
         "lint": "biome lint .",

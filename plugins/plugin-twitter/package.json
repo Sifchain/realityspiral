@@ -29,7 +29,7 @@
 	},
 	"scripts": {
 		"build": "tsup --format esm --dts",
-		"build:watch": "tsup --format esm --dts --watch",
+		"dev": "tsup --format esm --dts --watch",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"lint": "biome check src/",
