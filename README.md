@@ -6,16 +6,14 @@ This is the main repository for Reality Spiral, a platform that combines custom 
 
 This repository contains the following key components:
 
-### Apps and Packages
-
-- `apps/client`: A modern web application built with React, Vite, and TailwindCSS that serves as the main user interface for Reality Spiral AI chat experience
-- `apps/agent`: Core agent implementation and management
+- `agent`: Core agent implementation and management
 - `plugins/`: Integration plugins including:
   - Coinbase integration for cryptocurrency-related features
   - GitHub integration for repository management
 - `clients/`: Integration clients including:
   - Coinbase integration for cryptocurrency-related automations
   - GitHub integration for repository automation
+- `ui`: A modern web application built with React, Vite, and TailwindCSS that serves as the main user interface for Reality Spiral AI chat experience
 
 ## Technology Stack
 
@@ -50,14 +48,19 @@ pnpm build
 
 ```
 .
-├── apps/
-│   ├── agent/         # Core agent implementation
-│   └── client/        # Main web interface
-├── characters/        # Agent character definitions and configurations
-├── clients/           # Client libraries and SDKs
-├── docs/              # Documentation and guides
-└── plugins/           # Integration plugins
-```
+├── agent/            # Core agent implementation
+├── characters/       # Agent character definitions and configurations
+├── clients/          # Integration clients
+│   ├── coinbase/    # Coinbase API client
+│   ├── direct/      # Custom Eliza Direct API client
+│   └── github/      # GitHub API client
+├── docs/            # Documentation and guides
+├── plugins/         # Integration plugins
+│   ├── coinbase/    # Coinbase trading and payment plugins
+│   ├── email/       # Custom Eliza Email integration plugins
+│   ├── github/      # GitHub repository automation plugins
+│   └── twitter/     # Custom Eliza Twitter/X social media plugins
+└── ui/              # User interface components and utilities
 
 ## Contributing
 
