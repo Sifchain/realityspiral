@@ -568,8 +568,6 @@ const hasValidRemoteUrls = () =>
   process.env.REMOTE_CHARACTER_URLS.startsWith("http");
 
 const startAgents = async () => {
-  // print process.env.CHARACTER
-  elizaLogger.log("process.env.CHARACTER", process.env.CHARACTER);
   const directClient = new DirectClient();
   let serverPort = Number.parseInt(settings.SERVER_PORT || "3000");
   const args = parseArguments();

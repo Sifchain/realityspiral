@@ -20,7 +20,7 @@ import type { TeeLogQuery, TeeLogService } from "@elizaos/plugin-tee-log";
 import { REST, Routes } from "discord.js";
 import type { DirectClient } from ".";
 import { validateUuid } from "@elizaos/core";
-import { WebhookEvent } from "@elizaos/client-coinbase";
+import { WebhookEvent } from "@realityspiral/client-coinbase";
 
 interface UUIDParams {
     agentId: UUID;

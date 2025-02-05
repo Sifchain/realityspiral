@@ -22,6 +22,8 @@ import { base } from "viem/chains";
 
 export type WalletType = 'short_term_trading' | 'long_term_trading' | 'dry_powder' | 'operational_capital';
 
+export { WebhookEvent };
+
 export class CoinbaseClient implements Client {
     private runtime: IAgentRuntime;
     private server: express.Application;
