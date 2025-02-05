@@ -25,7 +25,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.5.3",
-		"vitest": "^1.0.0"
+		"vitest": "^2.1.9"
 	},
 	"scripts": {
 		"build": "tsup --format esm --dts",
