@@ -34,6 +34,17 @@ pnpm install
 
 # Start development servers
 pnpm dev
+
+# Start with a specific character
+
+# start with staff-engineer
+CHARACTER=characters/staff-engineer.character.json pnpm dev
+
+# start with prosper
+CHARACTER=characters/prosper.character.json pnpm dev
+
+# start with staff-engineer and prosper
+CHARACTERS=characters/staff-engineer.character.json,characters/prosper.character.json pnpm dev
 ```
 
 ### Building
