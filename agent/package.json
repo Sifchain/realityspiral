@@ -21,6 +21,7 @@
         "@elizaos/core": "^0.1.9",
         "@elizaos/plugin-di": "^0.1.9",
         "@elizaos/client-twitter": "^0.1.9",
+        "@elizaos/client-auto": "^0.1.9",
         "@realityspiral/client-coinbase": "workspace:*",
         "@realityspiral/client-direct": "workspace:*",
         "@realityspiral/client-github": "workspace:*",

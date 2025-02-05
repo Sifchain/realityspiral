@@ -1,5 +1,6 @@
 import "./config.ts"; // Add this line first
 
+import { z } from "zod";
 import Database from "better-sqlite3";
 import fs from "fs";
 import net from "net";
@@ -7,6 +8,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import yargs from "yargs";
 import { SqliteDatabaseAdapter } from "@elizaos/adapter-sqlite";
+import { AutoClientInterface } from "@elizaos/client-auto";
 import { DirectClient } from "@realityspiral/client-direct";
 import { TwitterClientInterface } from "@elizaos/client-twitter";
 import { normalizeCharacter } from "@elizaos/plugin-di";
@@ -15,7 +17,6 @@ import {
   CacheManager,
   type Character,
   type Client,
-  Clients,
   DbCacheAdapter,
   defaultCharacter,
   ModelProviderName,
@@ -27,7 +28,7 @@ import {
   parseBooleanFromText,
   settings,
   stringToUuid,
-  validateCharacterConfig,
+  CharacterSchema as BaseCharacterSchema,
 } from "@elizaos/core";
 import {
   advancedTradePlugin,
@@ -134,6 +135,51 @@ async function loadCharactersFromUrl(url: string): Promise<Character[]> {
   } catch (e) {
     elizaLogger.error(`Error loading character(s) from ${url}: ${e}`);
     process.exit(1);
+  }
+}
+
+export enum Clients {
+  AUTO = "auto",
+  DIRECT = "direct",
+  TWITTER = "twitter",
+  COINBASE = "coinbase",
+  GITHUB = "github",
+}
+
+export const CharacterSchema = BaseCharacterSchema.extend({
+  clients: z.array(z.nativeEnum(Clients)).min(1), // Example extension - requiring at least one client
+});
+
+export type CharacterConfig = z.infer<typeof CharacterSchema>;
+
+export function validateCharacterConfig(json: unknown): CharacterConfig {
+  try {
+    return CharacterSchema.parse(json);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const groupedErrors = error.errors.reduce(
+        (acc, err) => {
+          const path = err.path.join(".");
+          if (!acc[path]) {
+            acc[path] = [];
+          }
+          acc[path].push(err.message);
+          return acc;
+        },
+        {} as Record<string, string[]>
+      );
+
+      Object.entries(groupedErrors).forEach(([field, messages]) => {
+        elizaLogger.error(
+          `Validation errors in ${field}: ${messages.join(" - ")}`
+        );
+      });
+
+      throw new Error(
+        "Character configuration validation failed. Check logs for details."
+      );
+    }
+    throw error;
   }
 }
 
@@ -259,7 +305,9 @@ async function readCharactersFromStorage(
   return characterPaths;
 }
 
-export async function loadCharacters(charactersArg: string): Promise<Character[]> {
+export async function loadCharacters(
+  charactersArg: string
+): Promise<Character[]> {
   let characterPaths = commaSeparatedStringToArray(charactersArg);
 
   if (process.env.USE_CHARACTER_STORAGE === "true") {
@@ -357,13 +405,22 @@ function initializeDatabase(dataDir: string) {
 }
 
 // also adds plugins from character file into the runtime
-export async function initializeClients(character: Character, runtime: IAgentRuntime) {
+export async function initializeClients(
+  character: Character,
+  runtime: IAgentRuntime
+) {
   // each client can only register once
   // and if we want two we can explicitly support it
   const clients: Record<string, any> = {};
   const clientTypes: string[] =
     character.clients?.map((str) => str.toLowerCase()) || [];
   elizaLogger.log("initializeClients", clientTypes, "for", character.name);
+
+  // Start Auto Client if "auto" detected as a configured client
+  if (clientTypes.includes(Clients.AUTO)) {
+    const autoClient = await AutoClientInterface.start(runtime);
+    if (autoClient) clients.auto = autoClient;
+  }
 
   if (clientTypes.includes(Clients.TWITTER)) {
     const twitterClient = await TwitterClientInterface.start(runtime);
@@ -372,12 +429,12 @@ export async function initializeClients(character: Character, runtime: IAgentRun
     }
   }
 
-  if (clientTypes.includes("coinbase")) {
+  if (clientTypes.includes(Clients.COINBASE)) {
     const coinbaseClient = await CoinbaseClientInterface.start(runtime);
     if (coinbaseClient) clients.coinbase = coinbaseClient;
   }
 
-  if (clientTypes.includes("github")) {
+  if (clientTypes.includes(Clients.GITHUB)) {
     const githubClient = await GitHubClientInterface.start(runtime);
     if (githubClient) clients.github = githubClient;
   }
