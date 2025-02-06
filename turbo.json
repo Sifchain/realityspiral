@@ -18,6 +18,13 @@
 			"cache": false,
 			"persistent": true,
 			"env": ["CHARACTER"]
+		},
+		"start": {
+			"cache": false,
+			"persistent": true,
+			"env": [
+				"CHARACTER"
+			]
 		}
 	}
 }

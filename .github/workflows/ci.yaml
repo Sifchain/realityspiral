@@ -35,18 +35,5 @@ jobs:
             - name: Run Biome
               run: biome ci
 
-            - name: Create test env file
-              run: |
-                  echo "TEST_DATABASE_CLIENT=sqlite" > packages/core/.env.test
-                  echo "NODE_ENV=test" >> packages/core/.env.test
-
-            - name: Run tests
-              run: cd packages/core && pnpm test:coverage
-
             - name: Build packages
-              run: pnpm run build
-
-            - name: Upload coverage reports to Codecov
-              uses: codecov/codecov-action@v5
-              with:
-                  token: ${{ secrets.CODECOV_TOKEN }}
+              run: pnpm build

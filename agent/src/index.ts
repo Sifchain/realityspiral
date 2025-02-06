@@ -151,7 +151,7 @@ export enum Clients {
 }
 
 export const CharacterSchema = BaseCharacterSchema.extend({
-	clients: z.array(z.nativeEnum(Clients)).min(1), // Example extension - requiring at least one client
+	clients: z.array(z.nativeEnum(Clients)).optional(),
 });
 
 export type CharacterConfig = z.infer<typeof CharacterSchema>;

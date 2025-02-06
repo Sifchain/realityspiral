@@ -54,7 +54,7 @@ TIMER=0
 
 # Start the application and capture logs in the background
 # 27 includes success and that's what the level we're looking for is
-DEFAULT_LOG_LEVEL=success pnpm start --character=characters/trump.character.json > "$OUTFILE" 2>&1 &
+DEFAULT_LOG_LEVEL=success pnpm --dir agent start -- --character characters/chronis.character.json > "$OUTFILE" 2>&1 &
 
 APP_PID=$!  # Capture the PID of the background process
 

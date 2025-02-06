@@ -18,5 +18,11 @@ rm -f package-lock.json
 rm -rf .turbo
 rm -rf .cache
 
+# Clean database
+rm -f agent/data/db.sqlite
+
+# Clean agent data
+rm -rf agent/data
+
 echo "Cleanup completed."
 exit 0
