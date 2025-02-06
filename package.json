@@ -6,8 +6,9 @@
     "dev": "turbo --concurrency 100 dev",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "smokeTests": "bash ./scripts/smokeTests.sh",
-    "detectMinifiedCode": "bash ./scripts/detect-minified-code.sh"
+    "smokeTests": "bash ./scripts/smoke-tests.sh",
+    "detectMinifiedCode": "bash ./scripts/detect-minified-code.sh",
+    "clean": "bash ./scripts/clean.sh"
   },
   "dependencies": {
     "@biomejs/biome": "^1.9.4",
