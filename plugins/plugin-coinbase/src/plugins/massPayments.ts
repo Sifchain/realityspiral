@@ -22,22 +22,17 @@ import { transferTemplate } from "../templates";
 import { readFile } from "fs/promises";
 import { parse } from "csv-parse/sync";
 import path from "path";
-import { fileURLToPath } from "url";
 import fs from "fs";
 import { createArrayCsvWriter } from "csv-writer";
 import {
-    appendTransactionsToCsv,
-    executeTransfer,
-    getCharityAddress,
-    getWalletDetails,
-    initializeWallet,
+  appendTransactionsToCsv,
+  executeTransfer,
+  getCharityAddress,
+  getWalletDetails,
+  initializeWallet,
 } from "../utils";
 
-// Dynamically resolve the file path to the src/plugins directory
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const baseDir = path.resolve(__dirname, "../../plugin-coinbase/src/plugins");
-const csvFilePath = path.join(baseDir, "transactions.csv");
+const csvFilePath = path.join("/tmp", "transactions.csv");
 
 export const massPayoutProvider: Provider = {
     get: async (runtime: IAgentRuntime, _message: Memory) => {

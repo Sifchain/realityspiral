@@ -375,42 +375,63 @@ export const CoinbaseClientInterface: Client = {
     },
 };
 
-export const calculateOverallPNL = async (runtime: IAgentRuntime, publicKey: `0x${string}`, initialBalance: number): Promise<string> => {
+export const calculateOverallPNL = async (
+    runtime: IAgentRuntime,
+    publicKey: `0x${string}`,
+    initialBalance: number
+): Promise<string> => {
+    elizaLogger.info(`initialBalance ${initialBalance}`);
     const client = createWalletClient({
-        account: privateKeyToAccount(("0x" + runtime.getSetting("WALLET_PRIVATE_KEY")) as `0x${string}`),
+        account: privateKeyToAccount(
+            ("0x" + runtime.getSetting("WALLET_PRIVATE_KEY")) as `0x${string}`
+        ),
         chain: base,
         transport: http(runtime.getSetting("ALCHEMY_HTTP_TRANSPORT_URL")),
     }).extend(publicActions);
     const ethBalanceBaseUnits = await client.getBalance({
-        address: publicKey
-    })
-    const ethBalance = Number(ethBalanceBaseUnits / BigInt(1e18))
-    elizaLogger.info("ethBalance ", ethBalance);
-    const priceInquiry = await getPriceInquiry(runtime, 'ETH',ethBalance, "USDC", "base");
+        address: publicKey,
+    });
+    const ethBalance = Number(ethBalanceBaseUnits) / 1e18;
+    elizaLogger.info(`ethBalance ${ethBalance}`);
+    const priceInquiry = await getPriceInquiry(
+        runtime,
+        "ETH",
+        ethBalance,
+        "USDC",
+        "base"
+    );
     // get latest quote
     elizaLogger.info("Getting quote for swap", JSON.stringify(priceInquiry));
     const quote = await getQuoteObj(runtime, priceInquiry, publicKey);
     elizaLogger.info("quote ", JSON.stringify(quote));
-    const ethBalanceUSD = Number(quote.buyAmount) 
-    const usdcBalanceBaseUnits = await readContractWrapper(runtime, '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', "balanceOf", {
-        account: publicKey
-    }, "base-mainnet", erc20Abi);
-    const usdcBalance = Number(usdcBalanceBaseUnits / BigInt(1e6))
-    elizaLogger.info("usdcBalance ", usdcBalance);
-    const pnlUSD = ethBalanceUSD + usdcBalance - initialBalance
-    elizaLogger.info("pnlUSD ", pnlUSD);
-    const absoluteValuePNL = Math.abs(pnlUSD)
-    elizaLogger.info("absoluteValuePNL ", absoluteValuePNL);
-    const formattedPNL = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
+    const ethBalanceUSD = Number(quote.buyAmount) / 1e6;
+    elizaLogger.info(`ethBalanceUSD ${ethBalanceUSD}`);
+    const usdcBalanceBaseUnits = await readContractWrapper(
+        runtime,
+        "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "balanceOf",
+        {
+            account: publicKey,
+        },
+        "base-mainnet",
+        erc20Abi
+    );
+    const usdcBalance = Number(usdcBalanceBaseUnits) / 1e6;
+    elizaLogger.info(`usdcBalance ${usdcBalance}`);
+    const pnlUSD = ethBalanceUSD + usdcBalance - initialBalance;
+    elizaLogger.info(`pnlUSD ${pnlUSD}`);
+    const absoluteValuePNL = Math.abs(pnlUSD);
+    elizaLogger.info(`absoluteValuePNL ${absoluteValuePNL}`);
+    const formattedPNL = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     }).format(absoluteValuePNL);
     elizaLogger.info("formattedPNL ", formattedPNL);
-    const formattedPNLUSD = `${pnlUSD < 0 ? '-' : ''}${formattedPNL}`
+    const formattedPNLUSD = `${pnlUSD < 0 ? "-" : ""}${formattedPNL}`;
     elizaLogger.info("formattedPNLUSD ", formattedPNLUSD);
-    return formattedPNLUSD
-    }
+    return formattedPNLUSD;
+};
 
 export default CoinbaseClientInterface;
