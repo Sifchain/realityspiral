@@ -1,116 +1,123 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { coinbaseCommercePlugin, createCharge } from '../src/plugins/commerce';
-import { IAgentRuntime, type Memory, State } from '@elizaos/core';
+import type { Memory } from "@elizaos/core";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { coinbaseCommercePlugin, createCharge } from "../src/plugins/commerce";
 
 // Mock fetch
 global.fetch = vi.fn();
 
 // Mock runtime
 const mockRuntime = {
-    getSetting: vi.fn().mockReturnValue('test-api-key'),
-    getProvider: vi.fn().mockReturnValue({ apiKey: 'test-api-key' }),
-    character: {
-        name: 'test-character'
-    }
+	getSetting: vi.fn().mockReturnValue("test-api-key"),
+	getProvider: vi.fn().mockReturnValue({ apiKey: "test-api-key" }),
+	character: {
+		name: "test-character",
+	},
 };
 
-describe('Coinbase Commerce Plugin', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
+describe("Coinbase Commerce Plugin", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
 
-    describe('createCharge', () => {
-        it('should create a charge successfully', async () => {
-            const mockResponse = {
-                data: {
-                    id: 'test-charge-id',
-                    name: 'Test Charge',
-                    description: 'Test Description',
-                    pricing_type: 'fixed_price',
-                    local_price: {
-                        amount: '100',
-                        currency: 'USD'
-                    }
-                }
-            };
+	describe("createCharge", () => {
+		it("should create a charge successfully", async () => {
+			const mockResponse = {
+				data: {
+					id: "test-charge-id",
+					name: "Test Charge",
+					description: "Test Description",
+					pricing_type: "fixed_price",
+					local_price: {
+						amount: "100",
+						currency: "USD",
+					},
+				},
+			};
 
-            (global.fetch as any).mockResolvedValueOnce({
-                ok: true,
-                json: () => Promise.resolve(mockResponse)
-            });
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			(global.fetch as any).mockResolvedValueOnce({
+				ok: true,
+				json: () => Promise.resolve(mockResponse),
+			});
 
-            const params = {
-                name: 'Test Charge',
-                description: 'Test Description',
-                pricing_type: 'fixed_price',
-                local_price: {
-                    amount: '100',
-                    currency: 'USD'
-                }
-            };
+			const params = {
+				name: "Test Charge",
+				description: "Test Description",
+				pricing_type: "fixed_price",
+				local_price: {
+					amount: "100",
+					currency: "USD",
+				},
+			};
 
-            const result = await createCharge('test-api-key', params);
-            expect(result).toEqual(mockResponse.data);
-            expect(global.fetch).toHaveBeenCalledWith(
-                'https://api.commerce.coinbase.com/charges',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CC-Api-Key': 'test-api-key'
-                    },
-                    body: JSON.stringify(params)
-                }
-            );
-        });
+			const result = await createCharge("test-api-key", params);
+			expect(result).toEqual(mockResponse.data);
+			expect(global.fetch).toHaveBeenCalledWith(
+				"https://api.commerce.coinbase.com/charges",
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"X-CC-Api-Key": "test-api-key",
+					},
+					body: JSON.stringify(params),
+				},
+			);
+		});
 
-        it('should handle errors when creating charge', async () => {
-            (global.fetch as any).mockResolvedValueOnce({
-                ok: false,
-                statusText: 'Bad Request'
-            });
+		it("should handle errors when creating charge", async () => {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			(global.fetch as any).mockResolvedValueOnce({
+				ok: false,
+				statusText: "Bad Request",
+			});
 
-            const params = {
-                name: 'Test Charge',
-                description: 'Test Description',
-                pricing_type: 'fixed_price',
-                local_price: {
-                    amount: '100',
-                    currency: 'USD'
-                }
-            };
+			const params = {
+				name: "Test Charge",
+				description: "Test Description",
+				pricing_type: "fixed_price",
+				local_price: {
+					amount: "100",
+					currency: "USD",
+				},
+			};
 
-            await expect(createCharge('test-api-key', params))
-                .rejects
-                .toThrow('Failed to create charge: Bad Request');
-        });
-    });
+			await expect(createCharge("test-api-key", params)).rejects.toThrow(
+				"Failed to create charge: Bad Request",
+			);
+		});
+	});
 
-    describe('coinbaseCommercePlugin', () => {
-        it('should have correct plugin properties', () => {
-            expect(coinbaseCommercePlugin.name).toBe('coinbaseCommerce');
-            expect(coinbaseCommercePlugin.actions).toBeDefined();
-            expect(Array.isArray(coinbaseCommercePlugin.actions)).toBe(true);
-        });
+	describe("coinbaseCommercePlugin", () => {
+		it("should have correct plugin properties", () => {
+			expect(coinbaseCommercePlugin.name).toBe("coinbaseCommerce");
+			expect(coinbaseCommercePlugin.actions).toBeDefined();
+			expect(Array.isArray(coinbaseCommercePlugin.actions)).toBe(true);
+		});
 
-        it('should validate plugin actions', async () => {
-            const mockMessage: Memory = {
-                id: '1',
-                user: 'test-user',
-                content: { text: 'test message' },
-                timestamp: new Date(),
-                type: 'text'
-            };
+		it("should validate plugin actions", async () => {
+			const mockMessage: Memory = {
+				id: "00000000-0000-0000-0000-000000000000", // Using a valid UUID format
+				userId: "00000000-0000-0000-0000-000000000000", // Using a valid UUID format
+				agentId: "00000000-0000-0000-0000-000000000000", // Using a valid UUID format
+				roomId: "00000000-0000-0000-0000-000000000000", // Using a valid UUID format
+				content: { text: "test message" },
+				createdAt: new Date().getTime(),
+			};
 
-            const createChargeAction = coinbaseCommercePlugin.actions.find(
-                action => action.name === 'CREATE_CHARGE'
-            );
+			const createChargeAction = coinbaseCommercePlugin.actions?.find(
+				(action) => action.name === "CREATE_CHARGE",
+			);
 
-            expect(createChargeAction).toBeDefined();
-            if (createChargeAction) {
-                const result = await createChargeAction.validate(mockRuntime as any, mockMessage);
-                expect(result).toBe(true);
-            }
-        });
-    });
+			expect(createChargeAction).toBeDefined();
+			if (createChargeAction) {
+				const result = await createChargeAction.validate(
+					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+					mockRuntime as any,
+					mockMessage,
+				);
+				expect(result).toBe(true);
+			}
+		});
+	});
 });

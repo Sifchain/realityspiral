@@ -138,7 +138,6 @@ Provide the details in the following JSON format:
 \`\`\`
 `;
 
-
 export const tokenContractTemplate = `
 Extract the following details for deploying a token contract using the Coinbase SDK:
 - **contractType** (string): The type of token contract to deploy (ERC20, ERC721, or ERC1155)

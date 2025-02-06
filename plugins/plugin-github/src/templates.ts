@@ -1,3 +1,4 @@
+// @minified-ignore-file
 import { createTemplate } from "./utils";
 
 export const contextTemplate = `
@@ -497,7 +498,8 @@ If no similar issues exist:
 \`\`\`
 `;
 
-export const createIssueTemplate = createTemplate(`
+export const createIssueTemplate = createTemplate(
+	`
 Generate a new GitHub issue that addresses the user's request while aligning with the character's goals. Before creating, analyze existing issues to prevent duplicates by comparing titles, descriptions, and labels. Use specific examples from the codebase to provide clear context and details. The issue should be meaningful and necessary, with appropriate labels that reflect its purpose. Keep the repository details (owner and repo) unchanged. Format the issue with the following parameters:
 - **owner** (string): The owner of the GitHub repository (e.g., "octocat")
 - **repo** (string): The name of the GitHub repository (e.g., "hello-world")
@@ -574,7 +576,7 @@ If it is a feature request use:
 - [PR #{{this.number}}]({{this.url}})
 {{/each}}
 \`\`\``,
-    `
+	`
 \`\`\`json
 {
     "owner": "<owner>",
@@ -584,7 +586,7 @@ If it is a feature request use:
     "labels": ["<label1>", "<label2>"]
 }
 \`\`\``,
-    `Examples of bug reports:
+	`Examples of bug reports:
 
 1. Logging system not capturing error stack traces:
 
@@ -953,7 +955,7 @@ More thorough examples:
     "labels": ["enhancement", "continuous improvement"]
 }
 \`\`\`
-`
+`,
 );
 
 export const modifyIssueTemplate = `
@@ -1192,14 +1194,14 @@ Example 4:
 `;
 
 export const ideationTemplate = createTemplate(
-    `Based on the current context and the user's message, generate a thoughtful response that addresses the query and provides valuable insights. Consider the following categories for inspiration:
+	`Based on the current context and the user's message, generate a thoughtful response that addresses the query and provides valuable insights. Consider the following categories for inspiration:
 `,
-    `\`\`\`json
+	`\`\`\`json
 {
     "response": "<Your insightful response here>"
 }
 \`\`\``,
-    `examples:
+	`examples:
 [
     {
         user: "{{user}}",
@@ -1406,7 +1408,7 @@ export const ideationTemplate = createTemplate(
         },
     },
 ]
-`
+`,
 );
 
 export const reactToIssueTemplate = `

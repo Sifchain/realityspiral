@@ -15,9 +15,7 @@
 			}
 		}
 	},
-	"files": [
-		"dist"
-	],
+	"files": ["dist"],
 	"dependencies": {
 		"@elizaos/core": "^0.1.9",
 		"agent-twitter-client": "0.0.18",

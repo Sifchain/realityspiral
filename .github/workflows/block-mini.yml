@@ -1,0 +1,20 @@
+name: Block Minified JavaScript/TypeScript
+
+on:
+  pull_request:
+    branches: ["main", "develop", "*"]
+  push:
+    branches: ["main", "develop", "*"]
+
+jobs:
+  block-minified-code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Make script executable
+        run: chmod +x ./scripts/detect-minified-code.sh
+
+      - name: Detect potential minified code
+        run: ./scripts/detect-minified-code.sh

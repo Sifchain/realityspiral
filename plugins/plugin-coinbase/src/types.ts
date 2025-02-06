@@ -1,246 +1,252 @@
 import { Coinbase } from "@coinbase/coinbase-sdk";
-import { z } from "zod";
 import {
-    WebhookEventType,
-    type WebhookEventFilter,
-    type WebhookEventTypeFilter,
+	type WebhookEventFilter,
+	WebhookEventType,
+	type WebhookEventTypeFilter,
 } from "@coinbase/coinbase-sdk/dist/client";
+import { z } from "zod";
 
 export const ChargeSchema = z.object({
-    id: z.string().nullable(),
-    price: z.number(),
-    type: z.string(),
-    currency: z.string().min(3).max(3),
-    name: z.string().min(1),
-    description: z.string().min(1),
-    email: z.string().email().nullable(),
+	id: z.string().nullable(),
+	price: z.number(),
+	type: z.string(),
+	currency: z.string().min(3).max(3),
+	name: z.string().min(1),
+	description: z.string().min(1),
+	email: z.string().email().nullable(),
 });
 
 export interface ChargeContent {
-    id: string | null;
-    price: number;
-    type: string;
-    currency: string; // Currency code (e.g., USD)
-    name: string; // Name of the charge
-    description: string; // Description of the charge
-    email: string | null;
+	id: string | null;
+	price: number;
+	type: string;
+	currency: string; // Currency code (e.g., USD)
+	name: string; // Name of the charge
+	description: string; // Description of the charge
+	email: string | null;
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const isChargeContent = (object: any): object is ChargeContent => {
-    if (ChargeSchema.safeParse(object).success) {
-        return true;
-    }
-    console.error("Invalid content: ", object);
-    return false;
+	if (ChargeSchema.safeParse(object).success) {
+		return true;
+	}
+	console.error("Invalid content: ", object);
+	return false;
 };
 
 export const TransferSchema = z.object({
-    network: z.string().toLowerCase(),
-    receivingAddresses: z.array(z.string()),
-    transferAmount: z.number(),
-    assetId: z.string().toLowerCase(),
+	network: z.string().toLowerCase(),
+	receivingAddresses: z.array(z.string()),
+	transferAmount: z.number(),
+	assetId: z.string().toLowerCase(),
 });
 
 export interface TransferContent {
-    network: string;
-    receivingAddresses: string[];
-    transferAmount: number;
-    assetId: string;
+	network: string;
+	receivingAddresses: string[];
+	transferAmount: number;
+	assetId: string;
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const isTransferContent = (object: any): object is TransferContent => {
-    return TransferSchema.safeParse(object).success;
+	return TransferSchema.safeParse(object).success;
 };
 
 export type Transaction = {
-    address: string;
-    amount: number;
-    status: string;
-    errorCode: string | null;
-    transactionUrl: string | null;
+	address: string;
+	amount: number;
+	status: string;
+	errorCode: string | null;
+	transactionUrl: string | null;
 };
 const assetValues = Object.values(Coinbase.assets) as [string, ...string[]];
 export const TradeSchema = z.object({
-    network: z.string().toLowerCase(),
-    amount: z.number(),
-    sourceAsset: z.enum(assetValues),
-    targetAsset: z.enum(assetValues),
-    side: z.enum(["BUY", "SELL"]),
+	network: z.string().toLowerCase(),
+	amount: z.number(),
+	sourceAsset: z.enum(assetValues),
+	targetAsset: z.enum(assetValues),
+	side: z.enum(["BUY", "SELL"]),
 });
 
 export interface TradeContent {
-    network: string;
-    amount: number;
-    sourceAsset: string;
-    targetAsset: string;
-    side: "BUY" | "SELL";
+	network: string;
+	amount: number;
+	sourceAsset: string;
+	targetAsset: string;
+	side: "BUY" | "SELL";
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const isTradeContent = (object: any): object is TradeContent => {
-    return TradeSchema.safeParse(object).success;
+	return TradeSchema.safeParse(object).success;
 };
 
 export type TradeTransaction = {
-    network: string;
-    amount: number;
-    sourceAsset: string;
-    targetAsset: string;
-    status: string;
-    errorCode: string | null;
-    transactionUrl: string | null;
+	network: string;
+	amount: number;
+	sourceAsset: string;
+	targetAsset: string;
+	status: string;
+	errorCode: string | null;
+	transactionUrl: string | null;
 };
 
 export interface TokenContractContent {
-    contractType: "ERC20" | "ERC721" | "ERC1155";
-    name: string;
-    symbol: string;
-    network: string;
-    baseURI?: string;
-    totalSupply?: number;
+	contractType: "ERC20" | "ERC721" | "ERC1155";
+	name: string;
+	symbol: string;
+	network: string;
+	baseURI?: string;
+	totalSupply?: number;
 }
 
 export const TokenContractSchema = z
-    .object({
-        contractType: z
-            .enum(["ERC20", "ERC721", "ERC1155"])
-            .describe("The type of token contract to deploy"),
-        name: z.string().describe("The name of the token"),
-        symbol: z.string().describe("The symbol of the token"),
-        network: z.string().describe("The blockchain network to deploy on"),
-        baseURI: z
-            .string()
-            .optional()
-            .describe(
-                "The base URI for token metadata (required for ERC721 and ERC1155)"
-            ),
-        totalSupply: z
-            .number()
-            .optional()
-            .describe("The total supply of tokens (only for ERC20)"),
-    })
-    .refine(
-        (data) => {
-            if (data.contractType === "ERC20") {
-                return (
-                    typeof data.totalSupply === "number" ||
-                    data.totalSupply === undefined
-                );
-            }
-            if (["ERC721", "ERC1155"].includes(data.contractType)) {
-                return (
-                    typeof data.baseURI === "string" ||
-                    data.baseURI === undefined
-                );
-            }
-            return true;
-        },
-        {
-            message: "Invalid token contract content",
-            path: ["contractType"],
-        }
-    );
+	.object({
+		contractType: z
+			.enum(["ERC20", "ERC721", "ERC1155"])
+			.describe("The type of token contract to deploy"),
+		name: z.string().describe("The name of the token"),
+		symbol: z.string().describe("The symbol of the token"),
+		network: z.string().describe("The blockchain network to deploy on"),
+		baseURI: z
+			.string()
+			.optional()
+			.describe(
+				"The base URI for token metadata (required for ERC721 and ERC1155)",
+			),
+		totalSupply: z
+			.number()
+			.optional()
+			.describe("The total supply of tokens (only for ERC20)"),
+	})
+	.refine(
+		(data) => {
+			if (data.contractType === "ERC20") {
+				return (
+					typeof data.totalSupply === "number" || data.totalSupply === undefined
+				);
+			}
+			if (["ERC721", "ERC1155"].includes(data.contractType)) {
+				return typeof data.baseURI === "string" || data.baseURI === undefined;
+			}
+			return true;
+		},
+		{
+			message: "Invalid token contract content",
+			path: ["contractType"],
+		},
+	);
 
 export const isTokenContractContent = (
-    obj: any
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	obj: any,
 ): obj is TokenContractContent => {
-    return TokenContractSchema.safeParse(obj).success;
+	return TokenContractSchema.safeParse(obj).success;
 };
 
 // Add to types.ts
 export interface ContractInvocationContent {
-    contractAddress: string;
-    method: string;
-    abi: any[];
-    args?: Record<string, any>;
-    amount?: string;
-    assetId: string;
-    networkId: string;
+	contractAddress: string;
+	method: string;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	abi: any[];
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	args?: Record<string, any>;
+	amount?: string;
+	assetId: string;
+	networkId: string;
 }
 
 export const ContractInvocationSchema = z.object({
-    contractAddress: z
-        .string()
-        .describe("The address of the contract to invoke"),
-    method: z.string().describe("The method to invoke on the contract"),
-    abi: z.array(z.any()).describe("The ABI of the contract"),
-    args: z
-        .record(z.string(), z.any())
-        .optional()
-        .describe("The arguments to pass to the contract method"),
-    amount: z
-        .string()
-        .optional()
-        .describe(
-            "The amount of the asset to send (as string to handle large numbers)"
-        ),
-    assetId: z.string().describe("The ID of the asset to send (e.g., 'USDC')"),
-    networkId: z
-        .string()
-        .describe("The network ID to use (e.g., 'ethereum-mainnet')"),
+	contractAddress: z.string().describe("The address of the contract to invoke"),
+	method: z.string().describe("The method to invoke on the contract"),
+	abi: z.array(z.any()).describe("The ABI of the contract"),
+	args: z
+		.record(z.string(), z.any())
+		.optional()
+		.describe("The arguments to pass to the contract method"),
+	amount: z
+		.string()
+		.optional()
+		.describe(
+			"The amount of the asset to send (as string to handle large numbers)",
+		),
+	assetId: z.string().describe("The ID of the asset to send (e.g., 'USDC')"),
+	networkId: z
+		.string()
+		.describe("The network ID to use (e.g., 'ethereum-mainnet')"),
 });
 
 export const isContractInvocationContent = (
-    obj: any
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	obj: any,
 ): obj is ContractInvocationContent => {
-    return ContractInvocationSchema.safeParse(obj).success;
+	return ContractInvocationSchema.safeParse(obj).success;
 };
 
 export const WebhookSchema = z.object({
-    networkId: z.string(),
-    eventType: z.nativeEnum(WebhookEventType),
-    eventTypeFilter: z.custom<WebhookEventTypeFilter>().optional(),
-    eventFilters: z.array(z.custom<WebhookEventFilter>()).optional(),
-    webhookUrl: z.string().optional(),
+	networkId: z.string(),
+	eventType: z.nativeEnum(WebhookEventType),
+	eventTypeFilter: z.custom<WebhookEventTypeFilter>().optional(),
+	eventFilters: z.array(z.custom<WebhookEventFilter>()).optional(),
+	webhookUrl: z.string().optional(),
 });
 
 export type WebhookContent = z.infer<typeof WebhookSchema>;
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const isWebhookContent = (object: any): object is WebhookContent => {
-    return WebhookSchema.safeParse(object).success;
+	return WebhookSchema.safeParse(object).success;
 };
 
 export const AdvancedTradeSchema = z.object({
-    productId: z.string(),
-    side: z.enum(["BUY", "SELL"]),
-    amount: z.number(),
-    orderType: z.enum(["MARKET", "LIMIT"]),
-    limitPrice: z.number().optional(),
+	productId: z.string(),
+	side: z.enum(["BUY", "SELL"]),
+	amount: z.number(),
+	orderType: z.enum(["MARKET", "LIMIT"]),
+	limitPrice: z.number().optional(),
 });
 
 export interface AdvancedTradeContent {
-    productId: string;
-    side: "BUY" | "SELL";
-    amount: number;
-    orderType: "MARKET" | "LIMIT";
-    limitPrice?: number;
+	productId: string;
+	side: "BUY" | "SELL";
+	amount: number;
+	orderType: "MARKET" | "LIMIT";
+	limitPrice?: number;
 }
 
 export const isAdvancedTradeContent = (
-    object: any
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	object: any,
 ): object is AdvancedTradeContent => {
-    return AdvancedTradeSchema.safeParse(object).success;
+	return AdvancedTradeSchema.safeParse(object).success;
 };
 
 export interface ReadContractContent {
-    contractAddress: `0x${string}`;
-    method: string;
-    networkId: string;
-    args: Record<string, any>;
-    abi?: any[];
+	contractAddress: `0x${string}`;
+	method: string;
+	networkId: string;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	args: Record<string, any>;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	abi?: any[];
 }
 
 export const ReadContractSchema = z.object({
-    contractAddress: z
-        .string()
-        .describe("The address of the contract to read from"),
-    method: z.string().describe("The view/pure method to call on the contract"),
-    networkId: z.string().describe("The network ID to use"),
-    args: z
-        .record(z.string(), z.any())
-        .describe("The arguments to pass to the contract method"),
-    abi: z.array(z.any()).optional().describe("The contract ABI (optional)"),
+	contractAddress: z
+		.string()
+		.describe("The address of the contract to read from"),
+	method: z.string().describe("The view/pure method to call on the contract"),
+	networkId: z.string().describe("The network ID to use"),
+	args: z
+		.record(z.string(), z.any())
+		.describe("The arguments to pass to the contract method"),
+	abi: z.array(z.any()).optional().describe("The contract ABI (optional)"),
 });
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const isReadContractContent = (obj: any): obj is ReadContractContent => {
-    return ReadContractSchema.safeParse(obj).success;
+	return ReadContractSchema.safeParse(obj).success;
 };
