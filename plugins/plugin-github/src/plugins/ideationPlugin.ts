@@ -1,8 +1,5 @@
 // @minified-ignore-file
 import {
-	composeContext,
-	elizaLogger,
-	generateObject,
 	type Action,
 	type HandlerCallback,
 	type IAgentRuntime,
@@ -10,6 +7,9 @@ import {
 	ModelClass,
 	type Plugin,
 	type State,
+	composeContext,
+	elizaLogger,
+	generateObject,
 	stringToUuid,
 } from "@elizaos/core";
 import { ideationTemplate } from "../templates";
@@ -39,14 +39,17 @@ export const ideationAction: Action = {
 		runtime: IAgentRuntime,
 		message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options?: any,
 		callback?: HandlerCallback,
 	) => {
 		// elizaLogger.log("[ideation] Composing state for message:", message);
 
 		if (!state) {
+			// biome-ignore lint/style/noParameterAssign: <explanation>
 			state = (await runtime.composeState(message, {})) as State;
 		} else {
+			// biome-ignore lint/style/noParameterAssign: <explanation>
 			state = await runtime.updateRecentMessageState(state);
 		}
 
@@ -210,7 +213,7 @@ export const ideationAction: Action = {
 };
 
 export const githubIdeationPlugin: Plugin = {
-    name: "githubIdeation",
-    description: "Integration with GitHub for ideation and co-creation",
-    actions: [ideationAction],
+	name: "githubIdeation",
+	description: "Integration with GitHub for ideation and co-creation",
+	actions: [ideationAction],
 };

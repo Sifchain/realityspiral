@@ -1,60 +1,60 @@
+import type { Plugin } from "@elizaos/core";
 import {
-    githubInitializePlugin,
-    initializeRepositoryAction,
-} from "./plugins/initializeRepository";
-import {
-    githubCreateMemorizeFromFilesPlugin,
-    createMemoriesFromFilesAction,
-} from "./plugins/createMemoriesFromFiles";
-import {
-    githubCreatePullRequestPlugin,
-    createPullRequestAction,
-} from "./plugins/createPullRequest";
-import {
-    githubCreateCommitPlugin,
-    createCommitAction,
+	createCommitAction,
+	githubCreateCommitPlugin,
 } from "./plugins/createCommit";
 import {
-    githubCreateIssuePlugin,
-    createIssueAction,
+	createIssueAction,
+	githubCreateIssuePlugin,
 } from "./plugins/createIssue";
 import {
-    githubModifyIssuePlugin,
-    modifyIssueAction,
-} from "./plugins/modifyIssue";
+	createMemoriesFromFilesAction,
+	githubCreateMemorizeFromFilesPlugin,
+} from "./plugins/createMemoriesFromFiles";
 import {
-    githubInteractWithIssuePlugin,
-    addCommentToIssueAction,
-    reactToIssueAction,
-    closeIssueAction,
+	createPullRequestAction,
+	githubCreatePullRequestPlugin,
+} from "./plugins/createPullRequest";
+import { githubIdeationPlugin, ideationAction } from "./plugins/ideationPlugin";
+import {
+	githubInitializePlugin,
+	initializeRepositoryAction,
+} from "./plugins/initializeRepository";
+import {
+	addCommentToIssueAction,
+	closeIssueAction,
+	githubInteractWithIssuePlugin,
+	reactToIssueAction,
 } from "./plugins/interactWithIssue";
 import {
-    githubInteractWithPRPlugin,
-    addCommentToPRAction,
-    reactToPRAction,
-    closePRAction,
-    mergePRAction,
-    replyToPRCommentAction,
-    implementFeatureAction,
+	addCommentToPRAction,
+	closePRAction,
+	githubInteractWithPRPlugin,
+	implementFeatureAction,
+	mergePRAction,
+	reactToPRAction,
+	replyToPRCommentAction,
 } from "./plugins/interactWithPR";
-import { githubIdeationPlugin, ideationAction } from "./plugins/ideationPlugin";
-import type { Plugin } from "@elizaos/core";
+import {
+	githubModifyIssuePlugin,
+	modifyIssueAction,
+} from "./plugins/modifyIssue";
+import { documentationFilesProvider } from "./providers/documentationFiles";
+import { releasesProvider } from "./providers/releases";
 import { sourceCodeProvider } from "./providers/sourceCode";
 import { testFilesProvider } from "./providers/testFiles";
 import { workflowFilesProvider } from "./providers/workflowFiles";
-import { documentationFilesProvider } from "./providers/documentationFiles";
-import { releasesProvider } from "./providers/releases";
 
 export const plugins = {
-    githubInitializePlugin,
-    githubCreateMemorizeFromFilesPlugin,
-    githubCreatePullRequestPlugin,
-    githubCreateCommitPlugin,
-    githubCreateIssuePlugin,
-    githubModifyIssuePlugin,
-    githubInteractWithIssuePlugin,
-    githubInteractWithPRPlugin,
-    githubIdeationPlugin,
+	githubInitializePlugin,
+	githubCreateMemorizeFromFilesPlugin,
+	githubCreatePullRequestPlugin,
+	githubCreateCommitPlugin,
+	githubCreateIssuePlugin,
+	githubModifyIssuePlugin,
+	githubInteractWithIssuePlugin,
+	githubInteractWithPRPlugin,
+	githubIdeationPlugin,
 };
 
 export * from "./plugins/initializeRepository";
@@ -76,38 +76,38 @@ export * from "./utils";
 export * from "./services/github";
 export * from "./templates";
 export * from "./types";
-export * from "./constants"
+export * from "./constants";
 
 export const githubPlugin: Plugin = {
-    name: "github",
-    description: "Integration with GitHub",
-    actions: [
-        initializeRepositoryAction,
-        createMemoriesFromFilesAction,
-        createPullRequestAction,
-        createCommitAction,
-        createIssueAction,
-        modifyIssueAction,
-        addCommentToIssueAction,
-        ideationAction,
-        addCommentToPRAction,
-        mergePRAction,
-        closePRAction,
-        reactToPRAction,
-        closePRAction,
-        reactToIssueAction,
-        closeIssueAction,
-        replyToPRCommentAction,
-        implementFeatureAction,
-    ],
-    evaluators: [],
-    providers: [
-        sourceCodeProvider,
-        testFilesProvider,
-        workflowFilesProvider,
-        documentationFilesProvider,
-        releasesProvider,
-    ],
+	name: "github",
+	description: "Integration with GitHub",
+	actions: [
+		initializeRepositoryAction,
+		createMemoriesFromFilesAction,
+		createPullRequestAction,
+		createCommitAction,
+		createIssueAction,
+		modifyIssueAction,
+		addCommentToIssueAction,
+		ideationAction,
+		addCommentToPRAction,
+		mergePRAction,
+		closePRAction,
+		reactToPRAction,
+		closePRAction,
+		reactToIssueAction,
+		closeIssueAction,
+		replyToPRCommentAction,
+		implementFeatureAction,
+	],
+	evaluators: [],
+	providers: [
+		sourceCodeProvider,
+		testFilesProvider,
+		workflowFilesProvider,
+		documentationFilesProvider,
+		releasesProvider,
+	],
 };
 
 export default githubPlugin;

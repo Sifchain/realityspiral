@@ -1,17 +1,16 @@
-import { Provider } from "@elizaos/core";
+import type { Provider } from "@elizaos/core";
 import { fetchFiles } from "../utils/githubProviderUtil";
-import { GitHubService } from "../services/github";
 
 export const releasesProvider: Provider = {
-    get: async (runtime, message, state) => {
-        return fetchFiles(
-            runtime,
-            message,
-            state,
-            "releases",
-            (githubService) => null,
-            (release) => release,
-            async (githubService, path) => path
-        );
-    },
+	get: async (runtime, message, state) => {
+		return fetchFiles(
+			runtime,
+			message,
+			state,
+			"releases",
+			(_githubService) => null,
+			(release) => release,
+			async (_githubService, path) => path,
+		);
+	},
 };
