@@ -17,19 +17,14 @@ import { isAdvancedTradeContent, AdvancedTradeSchema } from "../types";
 import { readFile } from "fs/promises";
 import { parse } from "csv-parse/sync";
 import path from "path";
-import { fileURLToPath } from "url";
 import fs from "fs";
 import { createArrayCsvWriter } from "csv-writer";
 import {
-    OrderSide,
-    type OrderConfiguration,
+  OrderSide,
+  type OrderConfiguration,
 } from "../../advanced-sdk-ts/src/rest/types/common-types";
 
-// File path setup remains the same
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const baseDir = path.resolve(__dirname, "../../plugin-coinbase/src/plugins");
-const tradeCsvFilePath = path.join(baseDir, "advanced_trades.csv");
+const tradeCsvFilePath = path.join("/tmp", "advanced_trades.csv");
 
 const tradeProvider: Provider = {
     get: async (runtime: IAgentRuntime, _message: Memory) => {
