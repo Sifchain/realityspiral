@@ -1,3 +1,4 @@
+// @minified-ignore-file
 import { createTemplate } from "./utils";
 
 export const contextTemplate = `

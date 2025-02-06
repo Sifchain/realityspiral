@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@biomejs/biome':
+        specifier: ^1.9.4
+        version: 1.9.4
       csv-parse:
         specifier: 5.6.0
         version: 5.6.0
