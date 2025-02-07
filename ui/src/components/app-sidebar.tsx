@@ -89,7 +89,7 @@ export function AppSidebar() {
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<NavLink
-							to="https://github.com/Sifchain/sa-eliza/blob/sif-dev/docs/AI_Agents_UI_Interface_Documentation.md"
+							to="https://github.com/Sifchain/realityspiral/blob/main/docs/AI_Agents_UI_Interface_Documentation.md"
 							target="_blank"
 						>
 							<SidebarMenuButton>
