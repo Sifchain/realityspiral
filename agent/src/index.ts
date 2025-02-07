@@ -510,7 +510,10 @@ export async function createAgent(
 			...(getSecret(character, "COINBASE_API_KEY") &&
 			getSecret(character, "COINBASE_PRIVATE_KEY")
 				? [
-						coinbaseMassPaymentsPlugin,
+						...(getSecret(character, "COINBASE_MASS_PAYMENTS_ENABLED") ===
+						"true"
+							? [coinbaseMassPaymentsPlugin]
+							: []),
 						tradePlugin,
 						tokenContractPlugin,
 						advancedTradePlugin,
