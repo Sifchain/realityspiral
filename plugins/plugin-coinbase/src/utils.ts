@@ -94,6 +94,9 @@ export async function initializeWallet(
 			networkId,
 		},
 	);
+	const sanitizedCharacterName = runtime.character.name.match(/[A-Z][a-z]+/g)
+		? runtime.character.name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase()
+		: runtime.character.name.toLowerCase();
 	if (!seed || seed === "") {
 		// No stored seed or wallet ID, creating a new wallet
 		wallet = await Wallet.create({ networkId: "ethereum-mainnet" });
@@ -102,7 +105,7 @@ export async function initializeWallet(
 		const walletData: WalletData = wallet.export();
 		const walletAddress = await wallet.getDefaultAddress();
 		try {
-			const characterFilePath = `characters/${runtime.character.name.toLowerCase()}.character.json`;
+			const characterFilePath = `characters/${sanitizedCharacterName}.character.json`;
 			const walletIDSave = await updateCharacterSecrets(
 				characterFilePath,
 				`COINBASE_${walletType.toUpperCase()}_WALLET_ID`,
@@ -116,7 +119,7 @@ export async function initializeWallet(
 			if (walletIDSave && seedSave) {
 				elizaLogger.log("Successfully updated character secrets.");
 			} else {
-				const seedFilePath = `/tmp/${runtime.character.name.toLowerCase()}-seed.txt`;
+				const seedFilePath = `/tmp/${sanitizedCharacterName}-seed.txt`;
 				elizaLogger.error(
 					`Failed to update character secrets so adding gitignored ${seedFilePath} file please add it your env or character file and delete:`,
 				);
@@ -140,7 +143,7 @@ export async function initializeWallet(
 		);
 		if (!walletId) {
 			try {
-				const characterFilePath = `characters/${runtime.character.name.toLowerCase()}.character.json`;
+				const characterFilePath = `characters/${sanitizedCharacterName}.character.json`;
 				const walletIDSave = await updateCharacterSecrets(
 					characterFilePath,
 					`COINBASE_${walletType.toUpperCase()}_WALLET_ID`,

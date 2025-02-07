@@ -58,8 +58,9 @@ export function AppSidebar() {
 						<SidebarMenu>
 							{query?.isPending ? (
 								<div>
-									{Array.from({ length: 5 }).map((_, _index) => (
-										<SidebarMenuItem key={"skeleton-item"}>
+									{Array.from({ length: 5 }).map((_, index) => (
+										// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+										<SidebarMenuItem key={`skeleton-item-${index}`}>
 											<SidebarMenuSkeleton />
 										</SidebarMenuItem>
 									))}

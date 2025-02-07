@@ -1,7 +1,7 @@
 import type { Character, UUID } from "@elizaos/core";
 import { getRoomId, getSessionId, getUserId } from "./utils";
 
-const BASE_URL = `http://localhost:${import.meta.env.VITE_SERVER_PORT}`;
+const BASE_URL = `${import.meta.env.VITE_SERVER_URL}`;
 
 const fetcher = async ({
 	url,
