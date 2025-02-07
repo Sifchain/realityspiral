@@ -47,6 +47,7 @@ import {
 	githubInteractWithIssuePlugin,
 	githubInteractWithPRPlugin,
 	githubModifyIssuePlugin,
+	githubOrchestratePlugin,
 } from "@realityspiral/plugin-github";
 import Database from "better-sqlite3";
 import yargs from "yargs";
@@ -533,6 +534,7 @@ export async function createAgent(
 						githubIdeationPlugin,
 						githubInteractWithIssuePlugin,
 						githubInteractWithPRPlugin,
+						githubOrchestratePlugin,
 					]
 				: []),
 		]

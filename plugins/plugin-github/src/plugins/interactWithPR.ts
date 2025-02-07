@@ -64,6 +64,7 @@ import { createCommitAction } from "./createCommit";
 import { createIssueAction } from "./createIssue";
 import { createPullRequestAction } from "./createPullRequest";
 import { initializeRepositoryAction } from "./initializeRepository";
+import fs from "node:fs/promises";
 
 export const reactToPRAction: Action = {
 	name: "REACT_TO_PR",
@@ -989,6 +990,88 @@ export const replyToPRCommentAction: Action = {
 	],
 };
 
+export const generateCodeFileChangesAction: Action = {
+	name: "GENERATE_CODE_FILE_CHANGES",
+	similes: [
+		"GENERATE_CODE_FILE_CHANGES",
+		"GENERATE_CODE_CHANGES",
+		"GENERATE_FILE_CHANGES",
+	],
+	description:
+		"Generates code file changes based on feature requirements or issue details",
+	validate: async (_runtime: IAgentRuntime) => {
+		return true; // No specific validation needed
+	},
+	handler: async (
+		runtime: IAgentRuntime,
+		message: Memory,
+		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		_options?: any,
+		callback?: HandlerCallback,
+	) => {
+		if (!state) {
+			// biome-ignore lint/style/noParameterAssign: <explanation>
+			state = (await runtime.composeState(message)) as State;
+		} else {
+			// biome-ignore lint/style/noParameterAssign: <explanation>
+			state = await runtime.updateRecentMessageState(state);
+		}
+
+		const context = composeContext({
+			state,
+			template: generateCodeFileChangesTemplate,
+		});
+
+		const details = await generateObject({
+			runtime,
+			context,
+			modelClass: ModelClass.SMALL,
+			schema: GenerateCodeFileChangesSchema,
+		});
+
+		if (!isGenerateCodeFileChangesContent(details.object)) {
+			elizaLogger.error("Invalid code file changes content:", details.object);
+			throw new Error("Invalid code file changes content");
+		}
+
+		const content = details.object as GenerateCodeFileChangesContent;
+
+		// write file
+		await fs.writeFile(
+			"/tmp/generated-code-file-changes.json",
+			JSON.stringify(content, null, 2),
+		);
+
+		if (callback) {
+			await callback({
+				text: "Generated code file changes successfully!",
+				action: "GENERATE_CODE_FILE_CHANGES",
+				attachments: [],
+			});
+		}
+
+		return content;
+	},
+	examples: [
+		[
+			{
+				user: "{{user}}",
+				content: {
+					text: "Generate code changes for replacing console.log with elizaLogger.log",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Generated code file changes successfully!",
+					action: "GENERATE_CODE_FILE_CHANGES",
+				},
+			},
+		],
+	],
+};
+
 export const implementFeatureAction: Action = {
 	name: "IMPLEMENT_FEATURE",
 	similes: ["IMPLEMENT_FEATURE", "REPLACE_LOGS"],
@@ -1068,33 +1151,21 @@ export const implementFeatureAction: Action = {
 			}
 
 			state.specificIssue = JSON.stringify(issue, null, 2);
-			// Generate code file changes
-			const codeFileChangesContext = composeContext({
-				state,
-				template: generateCodeFileChangesTemplate,
-			});
+			// Use generateCodeFileChangesAction
+												message.content.text = `Generate code changes for ${content.feature}`;
 
-			const codeFileChangesDetails = await generateObject({
+			const codeFileChangesContent = (await generateCodeFileChangesAction.handler(
 				runtime,
-				context: codeFileChangesContext,
-				modelClass: ModelClass.SMALL,
-				schema: GenerateCodeFileChangesSchema,
-			});
+				message,
+				state,
+				options,
+			)) as GenerateCodeFileChangesContent;
 
-			if (!isGenerateCodeFileChangesContent(codeFileChangesDetails.object)) {
-				elizaLogger.error(
-					"Invalid code file changes content:",
-					codeFileChangesDetails.object,
-				);
-				throw new Error("Invalid code file changes content");
-			}
-
-			const codeFileChangesContent =
-				codeFileChangesDetails.object as GenerateCodeFileChangesContent;
 			state.codeFileChanges = codeFileChangesContent.files;
 
-			elizaLogger.info(
-				"Generated code file changes successfully!",
+			// write file
+			await fs.writeFile(
+				"/tmp/implement-feature-code-file-changes.json",
 				JSON.stringify(codeFileChangesContent, null, 2),
 			);
 
@@ -1204,6 +1275,7 @@ export const githubInteractWithPRPlugin: Plugin = {
 		closePRAction,
 		mergePRAction,
 		replyToPRCommentAction,
-		implementFeatureAction,
+		generateCodeFileChangesAction,
+		// implementFeatureAction,
 	],
 };
