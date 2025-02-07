@@ -19,8 +19,8 @@ export default defineConfig(({ mode }) => {
 		clearScreen: false,
 		envDir,
 		define: {
-			"import.meta.env.VITE_SERVER_PORT": JSON.stringify(
-				env.SERVER_PORT || "3000",
+			"import.meta.env.VITE_SERVER_URL": JSON.stringify(
+				env.UI_SERVER_URL || "http://localhost:3000",
 			),
 		},
 		build: {
@@ -35,5 +35,13 @@ export default defineConfig(({ mode }) => {
 				"@": "/src",
 			},
 		},
+		server: {
+			host: "0.0.0.0",
+			port: env.UI_PORT ? Number(env.UI_PORT) : 5173,
+			...(env.UI_ALLOWED_HOSTS && {
+				allowedHosts: env.UI_ALLOWED_HOSTS.split(","),
+			}),
+		},
 	};
 });
+
