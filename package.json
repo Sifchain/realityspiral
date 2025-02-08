@@ -8,11 +8,13 @@
 		"lint": "turbo lint",
 		"format": "prettier --write \"**/*.{ts,tsx,md}\"",
 		"smokeTests": "bash ./scripts/smoke-tests.sh",
+		"integrationTests": "bash ./scripts/integration-tests.sh",
 		"detectMinifiedCode": "bash ./scripts/detect-minified-code.sh",
 		"clean": "bash ./scripts/clean.sh"
 	},
 	"dependencies": {
 		"@biomejs/biome": "^1.9.4",
+		"@elizaos/core": "^0.1.9",
 		"csv-parse": "5.6.0",
 		"csv-writer": "1.6.0",
 		"sharp": "0.33.5",
