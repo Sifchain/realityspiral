@@ -85,7 +85,7 @@ export async function initializeWallet(
 			elizaLogger.error("Invalid wallet type provided.");
 			throw new Error("Invalid wallet type");
 	}
-	elizaLogger.log(
+	elizaLogger.info(
 		"Importing existing wallet using stored seed and wallet ID:",
 		{
 			seed,
@@ -99,7 +99,7 @@ export async function initializeWallet(
 		: runtime.character.name.toLowerCase();
 	if (!seed || seed === "") {
 		// No stored seed or wallet ID, creating a new wallet
-		wallet = await Wallet.create({ networkId: "ethereum-mainnet" });
+		wallet = await Wallet.create({ networkId: networkId });
 		elizaLogger.log("Created new wallet:", wallet.getId());
 		// Export wallet data directly
 		const walletData: WalletData = wallet.export();
@@ -137,6 +137,7 @@ export async function initializeWallet(
 	} else {
 		// Importing existing wallet using stored seed and wallet ID
 		// Always defaults to base-mainnet we can't select the network here
+
 		wallet = await Wallet.import(
 			seed as unknown as MnemonicSeedPhrase,
 			networkId,

@@ -216,5 +216,5 @@ export const webhookPlugin: Plugin = {
 	name: "webhookPlugin",
 	description: "Manages webhooks using the Coinbase SDK.",
 	actions: [createWebhookAction],
-	providers: [webhookProvider],
+	providers: [],
 };

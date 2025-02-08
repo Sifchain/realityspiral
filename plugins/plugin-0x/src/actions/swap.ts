@@ -210,7 +210,6 @@ export const tokenSwap = async (
 			toCurrency,
 			chain,
 		);
-		elizaLogger.info("priceInquiry ", JSON.stringify(priceInquiry));
 	} catch (error) {
 		elizaLogger.error("Error during price inquiry", error.message);
 		return null;
@@ -224,9 +223,7 @@ export const tokenSwap = async (
 	let quote = null;
 	try {
 		// get latest quote
-		elizaLogger.info("Getting quote for swap", JSON.stringify(priceInquiry));
 		quote = await getQuoteObj(runtime, priceInquiry, address);
-		elizaLogger.info("quotes ", JSON.stringify(quote));
 	} catch (error) {
 		elizaLogger.error("Error during quote retrieval", error.message);
 		return null;
@@ -267,12 +264,10 @@ export const tokenSwap = async (
 			nonce: nonce,
 			kzg: undefined,
 		});
-		elizaLogger.info("txHash", txHash);
 		// Wait for transaction confirmation
 		const receipt = await client.waitForTransactionReceipt({
 			hash: txHash,
 		});
-		elizaLogger.info("receipt ", receipt);
 		if (receipt.status === "success") {
 			elizaLogger.info(
 				`✅ Swap executed successfully!\nView on Explorer: ${CHAIN_EXPLORERS[chainId]}/tx/${txHash}`,
