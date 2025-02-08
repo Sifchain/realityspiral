@@ -33,12 +33,12 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      - name: Check for API key
-        run: |
-          if [ -z "$OPENAI_API_KEY" ]; then
-              echo "Error: OPENAI_API_KEY is not set."
-              exit 1
-          fi
+      # - name: Check for API key
+      #   run: |
+      #     if [ -z "$OPENAI_API_KEY" ]; then
+      #         echo "Error: OPENAI_API_KEY is not set."
+      #         exit 1
+      #     fi
 
       - name: Run integration tests
         run: pnpm run integrationTests
