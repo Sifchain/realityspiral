@@ -13,7 +13,7 @@ import {
     UUID,
     Provider,
 } from "@elizaos/core";
-import { postTweet } from "@elizaos/plugin-twitter";
+import { postTweet } from "@realityspiral/plugin-twitter";
 import express from "express";
 import {
     blockExplorerBaseAddressUrl,
@@ -26,10 +26,9 @@ import {
     initializeWallet,
     readContractWrapper,
     type CoinbaseWallet,
-} from "@elizaos/plugin-coinbase";
-import { tokenSwap, getPriceInquiry, getQuoteObj, TOKENS } from "@elizaos/plugin-0x";
+} from "@realityspiral/plugin-coinbase";
+import { tokenSwap, getPriceInquiry, getQuoteObj, TOKENS } from "@realityspiral/plugin-0x";
 import { createWalletClient, erc20Abi, http, publicActions, formatUnits } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
 
