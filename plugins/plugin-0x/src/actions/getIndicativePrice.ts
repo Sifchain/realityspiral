@@ -327,12 +327,13 @@ const getTokenMetadata = (tokenSymbol: string) => {
 export const getPriceInquiry = async (
     runtime: IAgentRuntime,
     sellTokenSymbol: string,
-    sellAmount: number,
+    sellAmountBaseUnits: number,
     buyTokenSymbol: string,
     chain: string
 ): Promise<PriceInquiry | null> => {
-    if (sellAmount < 0.000000000000000000000001) {
-        elizaLogger.error(`sellAmount ${sellAmount} is too small`);
+    elizaLogger.info(`sellAmountBaseUnits ${sellAmountBaseUnits}`);
+    if (sellAmountBaseUnits < 0.000000000000000000000001) {
+        elizaLogger.info(`sellAmountBaseUnits ${sellAmountBaseUnits} is too small`);
         return null;
     }
     try {
@@ -352,13 +353,6 @@ export const getPriceInquiry = async (
         const zxClient = createClientV2({
             apiKey: runtime.getSetting("ZERO_EX_API_KEY"),
         });
-
-        // Convert sell amount to base units
-        const sellAmountBaseUnits = parseUnits(
-            sellAmount.toString(),
-            sellTokenMetadata.decimals
-        ).toString();
-
         // Setup wallet client
         const client = createWalletClient({
             account: privateKeyToAccount(("0x" + runtime.getSetting("WALLET_PRIVATE_KEY")) as `0x${string}`),
@@ -387,7 +381,7 @@ export const getPriceInquiry = async (
         return {
             sellTokenObject: sellTokenMetadata,
             buyTokenObject: buyTokenMetadata,
-            sellAmountBaseUnits,
+            sellAmountBaseUnits: sellAmountBaseUnits.toString(),
             chainId,
             timestamp: new Date().toISOString(),
         };

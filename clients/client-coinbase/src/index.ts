@@ -299,7 +299,7 @@ Generate only the tweet text, no commentary or markdown.`;
 
         // Execute token swap
         const buy = event.event.toUpperCase() === "BUY";
-        const amountInCurrency = buy ? amount : amount / Number(event.price);
+        const amountInCurrency = buy ? amount * 1e6 : (amount / Number(event.price)) * 1e18;
         const pnl = await calculateOverallPNL(
             this.runtime,
             this.runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
@@ -483,14 +483,18 @@ export const calculateOverallPNL = async (
 ): Promise<string> => {
     const totalBalanceUSD = await getTotalBalanceUSD(runtime, publicKey);
     const pnlUSD = totalBalanceUSD - initialBalance;
+    elizaLogger.info(`pnlUSD ${pnlUSD}`);
     const absoluteValuePNL = Math.abs(pnlUSD);
+    elizaLogger.info(`absoluteValuePNL ${absoluteValuePNL}`);
     const formattedPNL = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     }).format(absoluteValuePNL);
+    elizaLogger.info(`formattedPNL ${formattedPNL}`);
     const formattedPNLUSD = `${pnlUSD < 0 ? "-" : ""}${formattedPNL}`;
+    elizaLogger.info(`formattedPNLUSD ${formattedPNLUSD}`);
     return formattedPNLUSD;
 };
 
@@ -507,6 +511,7 @@ export async function getTotalBalanceUSD(
     }).extend(publicActions);
     const ethBalanceBaseUnits = await client.getBalance({
         address: publicKey,
+        blockTag: "pending"
     });
     elizaLogger.info(`ethBalanceBaseUnits ${ethBalanceBaseUnits}`);
     const ethBalance = Number(ethBalanceBaseUnits) / 1e18;
@@ -514,16 +519,17 @@ export async function getTotalBalanceUSD(
     const priceInquiry = await getPriceInquiry(
         runtime,
         "ETH",
-        ethBalance,
+        Number(ethBalanceBaseUnits.toString()),
         "USDC",
         "base"
     );
     if (priceInquiry == null) {
         elizaLogger.error("priceInquiry is null");
-        return 0;
+        return 1000;
     }
     const quote = await getQuoteObj(runtime, priceInquiry, publicKey);
     const ethBalanceUSD = Number(quote.buyAmount) / 1e6;
+    elizaLogger.info(`ethBalanceUSD ${ethBalanceUSD}`);
     const usdcBalanceBaseUnits = await readContractWrapper(
         runtime,
         TOKENS.USDC.address as `0x${string}`,
@@ -535,6 +541,7 @@ export async function getTotalBalanceUSD(
         erc20Abi
     );
     const usdcBalance = Number(usdcBalanceBaseUnits) / 1e6;
+    elizaLogger.info(`usdcBalance ${usdcBalance}`);
     // get cbbtc balance 
     const cbbtcBalanceBaseUnits = await readContractWrapper(
         runtime,
@@ -547,23 +554,21 @@ export async function getTotalBalanceUSD(
         erc20Abi
     );
     elizaLogger.info(`cbbtcBalanceBaseUnits ${cbbtcBalanceBaseUnits}`);
-    const cbbtcBalance = Number(cbbtcBalanceBaseUnits) / 1e18;
-    elizaLogger.info(`cbbtcBalance ${cbbtcBalance}`);
     const cbbtcPriceInquiry = await getPriceInquiry(
         runtime,
         "CBBTC",
-        cbbtcBalance,
+        Number(cbbtcBalanceBaseUnits.toString()),
         "USDC",
         "base"
     );
     if (cbbtcPriceInquiry == null) {
         elizaLogger.error("cbbtcPriceInquiry is null");
-        return 0;
+        return ethBalanceUSD + usdcBalance ;
     }
     const cbbtcQuote = await getQuoteObj(runtime, cbbtcPriceInquiry, publicKey);
     const cbbtcBalanceUSD = Number(cbbtcQuote.buyAmount) / 1000000;
     elizaLogger.info(`ethBalanceUSD ${ethBalanceUSD}`);
-    elizaLogger.info(`usdcBalance ${usdcBalance}`);
+    elizaLogger.info(`usdcBalanceUSD ${usdcBalance}`);
     elizaLogger.info(`cbbtcBalanceUSD ${cbbtcBalanceUSD}`);
     return ethBalanceUSD + usdcBalance + cbbtcBalanceUSD;
 }
