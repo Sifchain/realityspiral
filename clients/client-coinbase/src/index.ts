@@ -27,13 +27,11 @@ import {
     readContractWrapper,
     type CoinbaseWallet,
 } from "@elizaos/plugin-coinbase";
-import { tokenSwap } from "@elizaos/plugin-0x";
+import { tokenSwap, getPriceInquiry, getQuoteObj, TOKENS } from "@elizaos/plugin-0x";
 import { createWalletClient, erc20Abi, http, publicActions, formatUnits } from "viem";
-import { getPriceInquiry } from "../../plugin-0x/src/actions/getIndicativePrice";
-import { getQuoteObj } from "../../plugin-0x/src/actions/getQuote";
+import { privateKeyToAccount } from "viem/accounts";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
-import { TOKENS } from "../../plugin-0x/src/utils";
 
 export type WalletType =
     | "short_term_trading"
