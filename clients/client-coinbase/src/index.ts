@@ -260,7 +260,7 @@ Generate only the tweet text, no commentary or markdown.`;
             });
 
             const trimmedContent = tweetContent.trim();
-            const finalContent = `${trimmedContent} PNL: ${pnl} ${blockExplorerBaseTxUrl(hash)}`;
+            const finalContent = `${trimmedContent} ${blockExplorerBaseTxUrl(hash)}`;
             return finalContent.length > 180
                 ? finalContent.substring(0, 177) + "..."
                 : finalContent;
