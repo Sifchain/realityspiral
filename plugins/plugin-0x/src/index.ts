@@ -14,4 +14,5 @@ export const zxPlugin: Plugin = {
 export { tokenSwap } from "./actions/swap";
 export { getPriceInquiry } from "./actions/getIndicativePrice";
 export { getQuoteObj } from "./actions/getQuote";
+export { TOKENS } from "./utils";
 export default zxPlugin;
