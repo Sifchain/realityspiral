@@ -14,6 +14,8 @@ export default defineConfig({
 		"@coinbase/coinbase-sdk",
 		"@elizaos/core",
 		"@elizaos/plugin-coinbase",
+		"@elizaos/plugin-twitter",
+		"@elizaos/plugin-0x",
 		"express",
 		"body-parser",
 		"node-fetch",

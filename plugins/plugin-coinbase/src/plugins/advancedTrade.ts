@@ -26,7 +26,7 @@ import { AdvancedTradeSchema, isAdvancedTradeContent } from "../types";
 
 const tradeCsvFilePath = path.join("/tmp", "advanced_trades.csv");
 
-const tradeProvider: Provider = {
+const _tradeProvider: Provider = {
 	get: async (runtime: IAgentRuntime, _message: Memory) => {
 		elizaLogger.debug("Starting tradeProvider function");
 		try {
@@ -466,5 +466,5 @@ export const advancedTradePlugin: Plugin = {
 	name: "advancedTradePlugin",
 	description: "Enables advanced trading using Coinbase Advanced Trading API",
 	actions: [executeAdvancedTradeAction],
-	providers: [tradeProvider],
+	providers: [],
 };
