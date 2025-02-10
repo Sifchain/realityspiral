@@ -49,7 +49,10 @@ import { releasesProvider } from "./providers/releases";
 import { sourceCodeProvider } from "./providers/sourceCode";
 import { testFilesProvider } from "./providers/testFiles";
 import { workflowFilesProvider } from "./providers/workflowFiles";
-import { githubForkRepositoryPlugin } from "./plugins/forkRepository";
+import {
+	forkRepositoryAction,
+	githubForkRepositoryPlugin,
+} from "./plugins/forkRepository";
 
 export const plugins = {
 	githubInitializePlugin,
@@ -109,6 +112,7 @@ export const githubPlugin: Plugin = {
 		replyToPRCommentAction,
 		generateCodeFileChangesAction,
 		implementFeatureAction,
+		forkRepositoryAction,
 		orchestrateAction,
 	],
 	evaluators: [],
