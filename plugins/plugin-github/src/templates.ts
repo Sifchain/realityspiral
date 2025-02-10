@@ -1923,3 +1923,20 @@ User: "Update the architecture documentation in octocat/hello-world."
 ]
 \`\`\`
 `;
+
+export const forkRepositoryTemplate = `
+Based on the user's message, extract the repository owner and name, and optionally the target organization for forking.
+If the organization is not specified, the repository will be forked to the authenticated user's account.
+
+Example user messages:
+- "Fork repository octocat/Hello-World"
+- "Create a fork of repository octocat/Hello-World to my-org organization"
+- "Fork octocat/Hello-World to my-organization"
+
+The response should include:
+- owner: The owner of the repository to fork
+- repo: The name of the repository to fork
+- organization: (Optional) The organization to fork the repository to
+
+User message: {{message.content.text}}
+`;

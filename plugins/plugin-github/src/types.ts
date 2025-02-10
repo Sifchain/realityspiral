@@ -616,3 +616,28 @@ export const isOrchestrationSchema = (
 ): object is OrchestrationSchema => {
 	return OrchestrationSchema.safeParse(object).success;
 };
+
+export interface ForkRepositoryContent {
+	owner: string;
+	repo: string;
+	organization?: string;
+}
+
+export const ForkRepositorySchema = z.object({
+	owner: z.string(),
+	repo: z.string(),
+	organization: z.string().optional(),
+});
+
+export function isForkRepositoryContent(
+	obj: unknown,
+): obj is ForkRepositoryContent {
+	if (!obj || typeof obj !== "object") return false;
+	const content = obj as ForkRepositoryContent;
+	return (
+		typeof content.owner === "string" &&
+		typeof content.repo === "string" &&
+		(content.organization === undefined ||
+			typeof content.organization === "string")
+	);
+}

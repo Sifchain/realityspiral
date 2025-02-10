@@ -49,6 +49,7 @@ import { releasesProvider } from "./providers/releases";
 import { sourceCodeProvider } from "./providers/sourceCode";
 import { testFilesProvider } from "./providers/testFiles";
 import { workflowFilesProvider } from "./providers/workflowFiles";
+import { githubForkRepositoryPlugin } from "./plugins/forkRepository";
 
 export const plugins = {
 	githubInitializePlugin,
@@ -61,6 +62,7 @@ export const plugins = {
 	githubInteractWithPRPlugin,
 	githubIdeationPlugin,
 	githubOrchestratePlugin,
+	githubForkRepositoryPlugin,
 };
 
 export * from "./plugins/initializeRepository";

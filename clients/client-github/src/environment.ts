@@ -3,7 +3,6 @@ import { z } from "zod";
 
 export const githubEnvSchema = z.object({
 	GITHUB_API_TOKEN: z.string().min(1, "GitHub API token is required"),
-	GITHUB_CLIENT_ENABLED: z.string().optional(),
 });
 
 export type GithubConfig = z.infer<typeof githubEnvSchema>;
@@ -14,7 +13,6 @@ export async function validateGithubConfig(
 	try {
 		const config = {
 			GITHUB_API_TOKEN: runtime.getSetting("GITHUB_API_TOKEN"),
-			GITHUB_CLIENT_ENABLED: runtime.getSetting("GITHUB_CLIENT_ENABLED"),
 		};
 
 		return githubEnvSchema.parse(config);
