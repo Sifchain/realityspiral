@@ -1,7 +1,5 @@
+import fs from "node:fs/promises";
 import {
-	composeContext,
-	elizaLogger,
-	generateObject,
 	type Action,
 	type HandlerCallback,
 	type IAgentRuntime,
@@ -9,15 +7,17 @@ import {
 	ModelClass,
 	type Plugin,
 	type State,
+	composeContext,
+	elizaLogger,
+	generateObject,
 } from "@elizaos/core";
 import {
-	isOrchestrationSchema,
 	type OrchestratedGithubAction,
 	OrchestrationSchema,
+	isOrchestrationSchema,
 	orchestrationTemplate,
 	plugins,
 } from "../index";
-import fs from "node:fs/promises";
 
 export const orchestrateAction: Action = {
 	name: "ORCHESTRATE",

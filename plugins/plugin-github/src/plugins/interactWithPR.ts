@@ -1,3 +1,4 @@
+import fs from "node:fs/promises";
 import {
 	type Action,
 	Content,
@@ -64,7 +65,6 @@ import { createCommitAction } from "./createCommit";
 import { createIssueAction } from "./createIssue";
 import { createPullRequestAction } from "./createPullRequest";
 import { initializeRepositoryAction } from "./initializeRepository";
-import fs from "node:fs/promises";
 
 export const reactToPRAction: Action = {
 	name: "REACT_TO_PR",
@@ -1152,14 +1152,15 @@ export const implementFeatureAction: Action = {
 
 			state.specificIssue = JSON.stringify(issue, null, 2);
 			// Use generateCodeFileChangesAction
-												message.content.text = `Generate code changes for ${content.feature}`;
+			message.content.text = `Generate code changes for ${content.feature}`;
 
-			const codeFileChangesContent = (await generateCodeFileChangesAction.handler(
-				runtime,
-				message,
-				state,
-				options,
-			)) as GenerateCodeFileChangesContent;
+			const codeFileChangesContent =
+				(await generateCodeFileChangesAction.handler(
+					runtime,
+					message,
+					state,
+					options,
+				)) as GenerateCodeFileChangesContent;
 
 			state.codeFileChanges = codeFileChangesContent.files;
 

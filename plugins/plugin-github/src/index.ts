@@ -29,26 +29,26 @@ import {
 import {
 	addCommentToPRAction,
 	closePRAction,
+	generateCodeFileChangesAction,
 	githubInteractWithPRPlugin,
 	implementFeatureAction,
 	mergePRAction,
 	reactToPRAction,
 	replyToPRCommentAction,
-	generateCodeFileChangesAction,
 } from "./plugins/interactWithPR";
 import {
 	githubModifyIssuePlugin,
 	modifyIssueAction,
 } from "./plugins/modifyIssue";
+import {
+	githubOrchestratePlugin,
+	orchestrateAction,
+} from "./plugins/orchestrate";
 import { documentationFilesProvider } from "./providers/documentationFiles";
 import { releasesProvider } from "./providers/releases";
 import { sourceCodeProvider } from "./providers/sourceCode";
 import { testFilesProvider } from "./providers/testFiles";
 import { workflowFilesProvider } from "./providers/workflowFiles";
-import {
-	githubOrchestratePlugin,
-	orchestrateAction,
-} from "./plugins/orchestrate";
 
 export const plugins = {
 	githubInitializePlugin,
