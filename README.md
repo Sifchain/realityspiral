@@ -28,6 +28,38 @@ The entire codebase is written in TypeScript and utilizes:
 
 To get started with development:
 
+Install `biome` globally on your system and configure it in your preferred code editor before proceeding.
+
+Here is an example of how to enable biome on VSCode:
+
+1. Install the Biome extension from the VSCode marketplace
+2. Open the Command Palette (Ctrl+Shift+P or Cmd+Shift+P)
+3. Type "Preferences: Open Settings (JSON)"
+4. Add the following to the JSON file and save:
+
+```json
+{
+  "editor.formatOnSaveMode": "modifications",
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "modifications",
+  "editor.formatOnSave": true,
+  "[typescript]": {
+      "editor.defaultFormatter": "biomejs.biome"
+  },
+  "editor.codeActionsOnSave": {
+      "quickfix.biome": "explicit"
+  },
+  "[jsonc]": {
+      "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+      "editor.defaultFormatter": "biomejs.biome"
+  }
+}
+```
+
+Then execute these commands to set up the development environment:
+
 ```sh
 # Install dependencies
 pnpm install
