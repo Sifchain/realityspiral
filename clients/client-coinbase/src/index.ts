@@ -43,6 +43,8 @@ import {
 	supportedTickers,
 } from "./types";
 
+export type { WebhookEvent };
+
 export type WalletType =
 	| "short_term_trading"
 	| "long_term_trading"
