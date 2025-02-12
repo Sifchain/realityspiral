@@ -151,4 +151,4 @@ export const githubForkRepositoryPlugin: Plugin = {
 	name: "githubForkRepository",
 	description: "Integration with GitHub for forking repositories",
 	actions: [forkRepositoryAction],
-}; 
+};

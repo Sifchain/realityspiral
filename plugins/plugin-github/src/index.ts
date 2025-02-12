@@ -15,6 +15,10 @@ import {
 	createPullRequestAction,
 	githubCreatePullRequestPlugin,
 } from "./plugins/createPullRequest";
+import {
+	forkRepositoryAction,
+	githubForkRepositoryPlugin,
+} from "./plugins/forkRepository";
 import { githubIdeationPlugin, ideationAction } from "./plugins/ideationPlugin";
 import {
 	githubInitializePlugin,
@@ -49,10 +53,6 @@ import { releasesProvider } from "./providers/releases";
 import { sourceCodeProvider } from "./providers/sourceCode";
 import { testFilesProvider } from "./providers/testFiles";
 import { workflowFilesProvider } from "./providers/workflowFiles";
-import {
-	forkRepositoryAction,
-	githubForkRepositoryPlugin,
-} from "./plugins/forkRepository";
 
 export const plugins = {
 	githubInitializePlugin,
