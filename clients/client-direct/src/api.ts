@@ -5,6 +5,7 @@ import cors from "cors";
 import express from "express";
 import type { Router } from "express";
 
+import { execSync } from "node:child_process";
 import {
 	type AgentRuntime,
 	type Character,
@@ -139,6 +140,15 @@ export function createApiRouter(
 
 	router.get("/hello", (_req, res) => {
 		res.json({ message: "Hello World!" });
+	});
+
+	router.get("/version", (_req, res) => {
+		try {
+			const version = execSync("git describe --tags").toString().trim();
+			res.json({ version });
+		} catch (_err) {
+			res.status(500).json({ error: "Failed to get version" });
+		}
 	});
 
 	router.get("/agents", (_req, res) => {

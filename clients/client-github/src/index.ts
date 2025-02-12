@@ -688,12 +688,7 @@ export class GitHubClient extends EventEmitter {
 
 export const GitHubClientInterface: Client = {
 	start: async (runtime: IAgentRuntime) => {
-		const config = await validateGithubConfig(runtime);
-
-		if (config.GITHUB_CLIENT_ENABLED !== "true") {
-			elizaLogger.info("GitHub client is not enabled, skipping...");
-			return;
-		}
+		const _config = await validateGithubConfig(runtime);
 
 		elizaLogger.info("Starting GitHub client with agent ID:", runtime.agentId);
 
