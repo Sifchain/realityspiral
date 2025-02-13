@@ -589,4 +589,75 @@ export const addressProvider: Provider = {
 	},
 };
 
+export const tradingSignalBackTestProvider: Provider = {
+    get: async (runtime: IAgentRuntime, _message: Memory) => {
+		const timeFrames = {
+            '1D': {
+                btc: {
+                    netProfit: 1100,
+                    totalTradesClosed: 55,
+                    percentageProfitable: 62,
+                    profitFactor: 1.6,
+                    maxDrawdown: 11,
+                    averageTrade: 22,
+                    numberOfBarsPerTrade: 6,
+                    winRate: 57,
+                    timePeriod: '1D'
+                }
+            },
+            '5D': {
+                btc: {
+                    netProfit: 2100,
+                    totalTradesClosed: 50,
+                    percentageProfitable: 67,
+                    profitFactor: 1.7,
+                    maxDrawdown: 13,
+                    averageTrade: 27,
+                    numberOfBarsPerTrade: 7,
+                    winRate: 62,
+                    timePeriod: '5D'
+                }
+            },
+            '1M': {
+                btc: {
+                    netProfit: 4100,
+                    totalTradesClosed: 40,
+                    percentageProfitable: 77,
+                    profitFactor: 1.9,
+                    maxDrawdown: 19,
+                    averageTrade: 37,
+                    numberOfBarsPerTrade: 9,
+                    winRate: 72,
+                    timePeriod: '1M'
+                }
+            },
+            '3M': {
+                btc: {
+                    netProfit: 5100,
+                    totalTradesClosed: 35,
+                    percentageProfitable: 82,
+                    profitFactor: 2.0,
+                    maxDrawdown: 21,
+                    averageTrade: 42,
+                    numberOfBarsPerTrade: 10,
+                    winRate: 77,
+                    timePeriod: '3M'
+                }
+            }
+        };
+
+        const backtestResults = Object.entries(timeFrames).map(([timeFrame, data]) => {
+            return `
+            BTC ${timeFrame}: Net Profit: ${data.btc.netProfit}, Total Trades Closed: ${data.btc.totalTradesClosed}, Percentage Profitable: ${data.btc.percentageProfitable}, Profit Factor: ${data.btc.profitFactor}, Max Drawdown: ${data.btc.maxDrawdown}, Average Trade: ${data.btc.averageTrade}, Number of Bars per Trade: ${data.btc.numberOfBarsPerTrade}, Win Rate: ${data.btc.winRate}, Time Period: ${data.btc.timePeriod}
+            `;
+        }).join('\n');
+
+        return `
+        BACKTEST RESULTS for tickers being traded actively: 
+        TICKER: BTC DIRECTION: LONG 
+        ${backtestResults}
+        `;
+    },
+};
+
 export default CoinbaseClientInterface;
