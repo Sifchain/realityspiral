@@ -665,6 +665,7 @@ export const tradingSignalBackTestProvider: Provider = {
         BACKTEST / TRADING SIGNAL/ STRATEGY RESULTS for tickers being traded actively: 
         TICKER: BTC DIRECTION: LONG 
         ${backtestResults}
+		AS OF ${new Date().toLocaleString()} subject to change will be updated periodically
         `;
     },
 };
