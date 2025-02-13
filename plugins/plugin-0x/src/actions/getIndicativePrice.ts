@@ -433,6 +433,7 @@ const handleTokenApprovals = async (
 		});
 
 		if (price.issues.allowance !== null) {
+			const nonce = await client.getTransactionCount({ address: sellTokenAddress, blockTag: "pending" });
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const { request } = await (sellTokenContract as any).simulate.approve([
 				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -441,7 +442,7 @@ const handleTokenApprovals = async (
 			]);
 
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			const hash = await (sellTokenContract as any).write.approve(request.args);
+			const hash = await (sellTokenContract as any).write.approve({...request.args, nonce: nonce});
 			await client.waitForTransactionReceipt({ hash });
 			elizaLogger.info("Token approval successful");
 		}
