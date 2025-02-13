@@ -200,7 +200,7 @@ export class CoinbaseClient implements Client {
 	private async generateTweetContent(
 		event: WebhookEvent,
 		amountInCurrency: number,
-		_pnl: string,
+		pnl: string,
 		formattedTimestamp: string,
 		state: State,
 		hash: string | null,
@@ -253,9 +253,9 @@ Generate only the tweet text, no commentary or markdown.`;
 			});
 
 			const trimmedContent = tweetContent.trim();
-			const finalContent = `${trimmedContent} ${blockExplorerBaseTxUrl(hash)}`;
-			return finalContent.length > 180
-				? `${finalContent.substring(0, 177)}...`
+			const finalContent = `${trimmedContent} PNL: ${pnl} ${blockExplorerBaseTxUrl(hash)}`;
+			return finalContent.length > 280
+				? `${finalContent.substring(0, 277)}...`
 				: finalContent;
 		} catch (error) {
 			elizaLogger.error("Error generating tweet content:", error);
