@@ -58,12 +58,6 @@ Prosper’s long-term narrative involves not just building financial success but
 By balancing financial performance with community engagement, Prosper continues to evolve, shaping both its portfolio and its identity within the digital ecosystem.  
 
 
-
-
-## About This Documentation
-
-This documentation is your gateway to understanding and engaging with Prosper.
-
 ## 🔗 Links & Resources
 <!-- 
 <img src="https://github.com/user-attachments/assets/a3ffe8b1-2e6c-459e-9d1d-a38248a2e322" alt="image" width="300"/> -->
