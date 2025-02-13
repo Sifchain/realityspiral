@@ -335,69 +335,80 @@ export const getPriceInquiry = async (
 		elizaLogger.info(`sellAmountBaseUnits ${sellAmountBaseUnits} is too small`);
 		return null;
 	}
-	try {
-		// Hardcoded chainId for Base network
-		const chainId = 8453;
 
-		// Get token metadata
-		const buyTokenMetadata = getTokenMetadata(buyTokenSymbol);
-		const sellTokenMetadata = getTokenMetadata(sellTokenSymbol);
+	const maxRetries = 3;
+	let attempt = 0;
 
-		if (!sellTokenMetadata || !buyTokenMetadata) {
-			elizaLogger.error("Invalid token metadata");
-			return null;
+	while (attempt < maxRetries) {
+		try {
+			// Hardcoded chainId for Base network
+			const chainId = 8453;
+
+			// Get token metadata
+			const buyTokenMetadata = getTokenMetadata(buyTokenSymbol);
+			const sellTokenMetadata = getTokenMetadata(sellTokenSymbol);
+
+			if (!sellTokenMetadata || !buyTokenMetadata) {
+				elizaLogger.error("Invalid token metadata");
+				return null;
+			}
+
+			// Initialize 0x client
+			const zxClient = createClientV2({
+				apiKey: runtime.getSetting("ZERO_EX_API_KEY"),
+			});
+			// Setup wallet client
+			const client = createWalletClient({
+				account: privateKeyToAccount(
+					`0x${runtime.getSetting("WALLET_PRIVATE_KEY")}` as `0x${string}`,
+				),
+				chain: base,
+				transport: http(runtime.getSetting("ALCHEMY_HTTP_TRANSPORT_URL")),
+			}).extend(publicActions);
+
+			// Get price quote
+			const price = await getPrice(zxClient, {
+				sellAmount: sellAmountBaseUnits,
+				sellToken: sellTokenMetadata.address,
+				buyToken: buyTokenMetadata.address,
+				chainId,
+			});
+
+			if (!price) return null;
+
+			// Handle token approvals
+			// const approved = await handleTokenApprovals(
+			// 	client,
+			// 	price,
+			// 	sellTokenMetadata.address as `0x${string}`,
+			// );
+			// if (!approved) return null;
+
+			// Format response
+			const formattedAmounts = formatAmounts(
+				price,
+				buyTokenMetadata,
+				sellTokenMetadata,
+			);
+			logFormattedResponse(formattedAmounts, chainId);
+
+			return {
+				sellTokenObject: sellTokenMetadata,
+				buyTokenObject: buyTokenMetadata,
+				sellAmountBaseUnits: sellAmountBaseUnits.toString(),
+				chainId,
+				timestamp: new Date().toISOString(),
+			};
+		} catch (error) {
+			attempt++;
+			elizaLogger.error(`Error in getPriceInquiry (attempt ${attempt}):`, error.message);
+			if (attempt >= maxRetries) {
+				return null;
+			}
+			await new Promise(resolve => setTimeout(resolve, 1000)); // Sleep for 1 second before retrying
 		}
-
-		// Initialize 0x client
-		const zxClient = createClientV2({
-			apiKey: runtime.getSetting("ZERO_EX_API_KEY"),
-		});
-		// Setup wallet client
-		const client = createWalletClient({
-			account: privateKeyToAccount(
-				`0x${runtime.getSetting("WALLET_PRIVATE_KEY")}` as `0x${string}`,
-			),
-			chain: base,
-			transport: http(runtime.getSetting("ALCHEMY_HTTP_TRANSPORT_URL")),
-		}).extend(publicActions);
-
-		// Get price quote
-		const price = await getPrice(zxClient, {
-			sellAmount: sellAmountBaseUnits,
-			sellToken: sellTokenMetadata.address,
-			buyToken: buyTokenMetadata.address,
-			chainId,
-		});
-
-		if (!price) return null;
-
-		// Handle token approvals
-		const approved = await handleTokenApprovals(
-			client,
-			price,
-			sellTokenMetadata.address as `0x${string}`,
-		);
-		if (!approved) return null;
-
-		// Format response
-		const formattedAmounts = formatAmounts(
-			price,
-			buyTokenMetadata,
-			sellTokenMetadata,
-		);
-		logFormattedResponse(formattedAmounts, chainId);
-
-		return {
-			sellTokenObject: sellTokenMetadata,
-			buyTokenObject: buyTokenMetadata,
-			sellAmountBaseUnits: sellAmountBaseUnits.toString(),
-			chainId,
-			timestamp: new Date().toISOString(),
-		};
-	} catch (error) {
-		elizaLogger.error("Error in getPriceInquiry:", error.message);
-		return null;
 	}
+	return null;
 };
 
 // Helper functions
@@ -433,7 +444,6 @@ const handleTokenApprovals = async (
 		});
 
 		if (price.issues.allowance !== null) {
-			const nonce = await client.getTransactionCount({ address: sellTokenAddress, blockTag: "pending" });
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const { request } = await (sellTokenContract as any).simulate.approve([
 				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -442,9 +452,25 @@ const handleTokenApprovals = async (
 			]);
 
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			const hash = await (sellTokenContract as any).write.approve({...request.args, nonce: nonce});
-			await client.waitForTransactionReceipt({ hash });
-			elizaLogger.info("Token approval successful");
+			const hash = await (sellTokenContract as any).write.approve(request.args);
+			const receipt = await client.waitForTransactionReceipt({
+				hash, // The transaction hash
+				confirmations: 1, // Wait for at least 1 confirmation
+				pollingInterval: 1000, // Poll every 1 second
+				retryCount: 5, // Retry up to 5 times
+				retryDelay: 2000, // Wait 2 seconds between retries
+				timeout: 60000, // Timeout after 60 seconds
+				onReplaced: (replacement) => {
+					elizaLogger.info("Transaction was replaced:", replacement);
+				},
+			});
+			if (receipt.status === "success") {
+				elizaLogger.info("Token approval successful");
+				return true;
+			} else {
+				elizaLogger.error("Token approval failed");
+				return false;
+			}
 		}
 
 		return true;
