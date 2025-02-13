@@ -64,6 +64,7 @@ export class CoinbaseClient implements Client {
 		this.runtime.providers.push(pnlProvider);
 		this.runtime.providers.push(balanceProvider);
 		this.runtime.providers.push(addressProvider);
+		this.runtime.providers.push(tradingSignalBackTestProvider);
 		this.server = express();
 		this.port = Number(runtime.getSetting("COINBASE_WEBHOOK_PORT")) || 3001;
 		this.wallets = [];
@@ -558,6 +559,10 @@ export async function getTotalBalanceUSD(
 export const pnlProvider: Provider = {
 	get: async (runtime: IAgentRuntime, _message: Memory) => {
 		elizaLogger.debug("Starting pnlProvider.get function");
+		if (runtime.getSetting("WALLET_PUBLIC_KEY") == null) {
+			elizaLogger.error("WALLET_PUBLIC_KEY is null");
+			return '';
+		}
 		try {
 			const pnl = await calculateOverallPNL(
 				runtime,
@@ -575,6 +580,10 @@ export const pnlProvider: Provider = {
 
 export const balanceProvider: Provider = {
 	get: async (runtime: IAgentRuntime, _message: Memory) => {
+		if (runtime.getSetting("WALLET_PUBLIC_KEY") == null) {
+			elizaLogger.error("WALLET_PUBLIC_KEY is null");
+			return '';
+		}
 		const totalBalanceUSD = await getTotalBalanceUSD(
 			runtime,
 			runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
@@ -585,6 +594,10 @@ export const balanceProvider: Provider = {
 
 export const addressProvider: Provider = {
 	get: async (runtime: IAgentRuntime, _message: Memory) => {
+		if (runtime.getSetting("WALLET_PUBLIC_KEY") == null) {
+			elizaLogger.error("WALLET_PUBLIC_KEY is null");
+			return '';
+		}
 		return `Address: ${runtime.getSetting("WALLET_PUBLIC_KEY")}`;
 	},
 };
