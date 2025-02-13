@@ -442,7 +442,6 @@ export const getQuoteObj = async (
 		]
 			.filter(Boolean)
 			.join("\n");
-		elizaLogger.info("formattedResponse ", formattedResponse);
 		return quote;
 	} catch (error) {
 		elizaLogger.error("Error getting quote:", error.message);

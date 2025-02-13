@@ -593,7 +593,7 @@ export const balanceProvider: Provider = {
 };
 
 export const addressProvider: Provider = {
-	get: async (runtime: IAgentRuntime, _message: Memory) => {
+	get: async (runtime: IAgentRuntime, message: Memory) => {
 		if (runtime.getSetting("WALLET_PUBLIC_KEY") == null) {
 			elizaLogger.error("WALLET_PUBLIC_KEY is null");
 			return '';

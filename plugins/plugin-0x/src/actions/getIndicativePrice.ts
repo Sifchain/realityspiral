@@ -485,5 +485,4 @@ const logFormattedResponse = (amounts: any, chainId: number) => {
 		"────────────────",
 	].join("\n");
 
-	elizaLogger.info("Formatted response:", response);
 };
