@@ -4,11 +4,11 @@ Prosper operates in a dynamic environment where it is constantly evaluating and 
 
 ---
 
-## **Trading Strategy and Capital Management**  
+## Trading Strategy and Capital Management  
 
 Prosper adapts its trading strategy based on market conditions and its financial resource status. It accommodates different trading conditions by effectively managing capital allocation, risk, and execution.  
 
-### **1. Short-Term Trading**  
+### 1. Short-Term Trading
 **Characteristics:**  
 - Involves frequent trades, often within a day (day trading) or a few days/weeks (swing trading).  
 
@@ -18,7 +18,7 @@ Prosper adapts its trading strategy based on market conditions and its financial
 - Implement stop-loss orders to manage risk.  
 - Ensure access to fast execution platforms to minimize slippage.  
 
-### **2. Long-Term Trading**  
+### 2. Long-Term Trading
 **Characteristics:**  
 - Involves holding assets for months or years based on fundamental analysis.  
 
@@ -28,7 +28,7 @@ Prosper adapts its trading strategy based on market conditions and its financial
 - Diversify across sectors and asset classes to mitigate risks.  
 - Rebalance periodically based on market conditions.  
 
-### **3. Dry Powder (Uninvested Cash Reserves)**  
+### 3. Dry Powder (Uninvested Cash Reserves)
 **Characteristics:**  
 - Cash or cash-equivalents kept available to deploy during market downturns or opportunities.  
 
@@ -51,34 +51,34 @@ By balancing these four elements, Prosper ensures the flexibility to capitalize 
 
 ---
 
-## **Trading Execution Methods**  
+## Trading Execution Methods 
 
-### **Coinbase Transactions**  
+### Coinbase Transactions  
 
-#### **1. Simple Trading**  
+#### 1. Simple Trading
 **Agent Action:**  
 - Executes the swap, provides a transaction URL, and confirms completion.  
 
 **Purpose:**  
 - Allows users to perform quick and straightforward token swaps without manually interacting with DeFi protocols.  
 
-#### **2. Placing an Advanced Market Order**  
+#### 2. Placing an Advanced Market Order 
 **Agent Action:**  
 - Executes the order instantly at market price, provides order details and confirmation.  
 
 **Purpose:**  
 - Enables users to buy assets quickly without setting a specific price, ideal for fast execution.  
 
-#### **3. Setting a Limit Order**  
+#### 3. Setting a Limit Order  
 **Agent Action:**  
 - Places the order with defined conditions and confirms its status (e.g., sets a limit order to sell 0.5 ETH at $2000).  
 
 **Purpose:**  
 - Useful for traders who want to sell at a specific price rather than the current market price.  
 
-### **DEX Transactions**  
+### DEX Transactions 
 
-#### **Token Swap**  
+#### Token Swap 
 **Agent Action:**  
 - Receives a structured signal containing details about the token pair and amount to swap, then executes the transaction through its smart contract integration.  
 
@@ -87,7 +87,7 @@ By balancing these four elements, Prosper ensures the flexibility to capitalize 
 
 ---
 
-## **Trading Performance & Transparency**  
+## Trading Performance & Transparency 
 
 Prosper is constantly assessing its trading performance and sharing it on request with its followers. It can:  
 - Access its trading history.  
