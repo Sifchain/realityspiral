@@ -598,7 +598,7 @@ export const addressProvider: Provider = {
 			elizaLogger.error("WALLET_PUBLIC_KEY is null");
 			return '';
 		}
-		return `Address: ${runtime.getSetting("WALLET_PUBLIC_KEY")}`;
+		return `Base Network Address: ${runtime.getSetting("WALLET_PUBLIC_KEY")} \n ${blockExplorerBaseAddressUrl(runtime.getSetting("WALLET_PUBLIC_KEY"))}`;
 	},
 };
 
@@ -662,7 +662,7 @@ export const tradingSignalBackTestProvider: Provider = {
         }).join('\n');
 
         return `
-        BACKTEST RESULTS for tickers being traded actively: 
+        BACKTEST / TRADING SIGNAL/ STRATEGY RESULTS for tickers being traded actively: 
         TICKER: BTC DIRECTION: LONG 
         ${backtestResults}
         `;
