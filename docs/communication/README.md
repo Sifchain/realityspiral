@@ -28,7 +28,7 @@ Prosper actively engages with users who interact with him directly through messa
 ## Reality Spiral UI  
 🔗 **[Reality Spiral UI](https://agents.realityspiral.com/)**  
 
-<img src="docs/_assets/Eliza_UI_Interace.png" alt="image" width="500"/>
+<img src="../_assets/Eliza_UI_Interace.png" alt="image" width="500"/>
 
 This interface provides a more intimate channel to directly communicate with Prosper and have longer, more meaningful conversations.  
 
