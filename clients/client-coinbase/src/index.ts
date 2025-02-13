@@ -607,53 +607,49 @@ export const tradingSignalBackTestProvider: Provider = {
 		const timeFrames = {
             '1D': {
                 btc: {
-                    netProfit: 1100,
-                    totalTradesClosed: 55,
-                    percentageProfitable: 62,
-                    profitFactor: 1.6,
-                    maxDrawdown: 11,
-                    averageTrade: 22,
-                    numberOfBarsPerTrade: 6,
-                    winRate: 57,
+                    netProfit: -68.14,
+                    totalTradesClosed: 7,
+                    percentageProfitable: 28.57,
+                    profitFactor: 0.899,
+                    maxDrawdown: 511.22,
+                    averageTrade: -9.73,
+                    numberOfBarsPerTrade: 2045,
                     timePeriod: '1D'
                 }
             },
             '5D': {
                 btc: {
-                    netProfit: 2100,
-                    totalTradesClosed: 50,
-                    percentageProfitable: 67,
-                    profitFactor: 1.7,
-                    maxDrawdown: 13,
-                    averageTrade: 27,
-                    numberOfBarsPerTrade: 7,
-                    winRate: 62,
+                    netProfit: -304.24,
+                    totalTradesClosed: 68,
+                    percentageProfitable: 42.65,
+                    profitFactor: 0.947,
+                    maxDrawdown: 1662.64,
+                    averageTrade: -4.47,
+                    numberOfBarsPerTrade: 155,
                     timePeriod: '5D'
                 }
             },
             '1M': {
                 btc: {
-                    netProfit: 4100,
-                    totalTradesClosed: 40,
-                    percentageProfitable: 77,
-                    profitFactor: 1.9,
-                    maxDrawdown: 19,
-                    averageTrade: 37,
-                    numberOfBarsPerTrade: 9,
-                    winRate: 72,
+                    netProfit: 5604.51,
+                    totalTradesClosed: 769,
+                    percentageProfitable: 39.27,
+                    profitFactor: 1.078,
+                    maxDrawdown: 8441.55,
+                    averageTrade: 7.29,
+                    numberOfBarsPerTrade: 21,
                     timePeriod: '1M'
                 }
             },
             '3M': {
                 btc: {
-                    netProfit: 5100,
-                    totalTradesClosed: 35,
-                    percentageProfitable: 82,
-                    profitFactor: 2.0,
-                    maxDrawdown: 21,
-                    averageTrade: 42,
-                    numberOfBarsPerTrade: 10,
-                    winRate: 77,
+                    netProfit: 3354.51,
+                    totalTradesClosed: 1002,
+                    percentageProfitable: 36.93,
+                    profitFactor: 1.036,
+                    maxDrawdown: 7159.72,
+                    averageTrade: 3.35,
+                    numberOfBarsPerTrade: 14,
                     timePeriod: '3M'
                 }
             }
@@ -661,7 +657,7 @@ export const tradingSignalBackTestProvider: Provider = {
 
         const backtestResults = Object.entries(timeFrames).map(([timeFrame, data]) => {
             return `
-            BTC ${timeFrame}: Net Profit: ${data.btc.netProfit}, Total Trades Closed: ${data.btc.totalTradesClosed}, Percentage Profitable: ${data.btc.percentageProfitable}, Profit Factor: ${data.btc.profitFactor}, Max Drawdown: ${data.btc.maxDrawdown}, Average Trade: ${data.btc.averageTrade}, Number of Bars per Trade: ${data.btc.numberOfBarsPerTrade}, Win Rate: ${data.btc.winRate}, Time Period: ${data.btc.timePeriod}
+            BTC ${timeFrame}: Net Profit: ${data.btc.netProfit}, Total Trades Closed: ${data.btc.totalTradesClosed}, Percentage Profitable: ${data.btc.percentageProfitable}, Profit Factor: ${data.btc.profitFactor}, Max Drawdown: ${data.btc.maxDrawdown}, Average Trade: ${data.btc.averageTrade}, Number of Bars per Trade: ${data.btc.numberOfBarsPerTrade}
             `;
         }).join('\n');
 
