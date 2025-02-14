@@ -301,6 +301,17 @@ Generate only the tweet text, no commentary or markdown.`;
 			1000,
 		);
 		elizaLogger.info("pnl ", pnl);
+		const enoughBalance = await hasEnoughBalance(
+			this.runtime,
+			this.runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
+			event.ticker,
+			amountInCurrency,
+		);
+		elizaLogger.info("enoughBalance ", enoughBalance);
+		if (!enoughBalance) {
+			elizaLogger.error("Not enough balance to trade");
+			return;
+		}
 		const txHash = await this.executeTokenSwap(event, amountInCurrency, buy);
 		if (txHash == null) {
 			elizaLogger.error("txHash is null");
@@ -554,6 +565,91 @@ export async function getTotalBalanceUSD(
 	elizaLogger.info(`usdcBalanceUSD ${usdcBalance}`);
 	elizaLogger.info(`cbbtcBalanceUSD ${cbbtcBalanceUSD}`);
 	return ethBalanceUSD + usdcBalance + cbbtcBalanceUSD;
+}
+
+export async function getBalance(
+	runtime: IAgentRuntime,
+	publicKey: `0x${string}`,
+	ticker: string,
+): Promise<number> {
+	const client = createWalletClient({
+		account: privateKeyToAccount(
+			`0x${runtime.getSetting("WALLET_PRIVATE_KEY")}` as `0x${string}`,
+		),
+		chain: base,
+		transport: http(runtime.getSetting("ALCHEMY_HTTP_TRANSPORT_URL")),
+	}).extend(publicActions);
+
+	let balanceBaseUnits;
+	let balanceUSD = 0;
+
+	switch (ticker.toUpperCase()) {
+		case "ETH":
+			balanceBaseUnits = await client.getBalance({
+				address: publicKey,
+				blockTag: "pending",
+			});
+			elizaLogger.info(`ethBalanceBaseUnits ${balanceBaseUnits}`);
+			break;
+		case "USDC":
+			balanceBaseUnits = await readContractWrapper(
+				runtime,
+				TOKENS.USDC.address as `0x${string}`,
+				"balanceOf",
+				{
+					account: publicKey,
+				},
+				"base-mainnet",
+				erc20Abi,
+			);
+			elizaLogger.info(`usdcBalanceBaseUnits ${balanceBaseUnits}`);
+			break;
+		case "CBBTC":
+			balanceBaseUnits = await readContractWrapper(
+				runtime,
+				TOKENS.cbBTC.address as `0x${string}`,
+				"balanceOf",
+				{
+					account: publicKey,
+				},
+				"base-mainnet",
+				erc20Abi,
+			);
+			elizaLogger.info(`cbbtcBalanceBaseUnits ${balanceBaseUnits}`);
+			break;
+		default:
+			elizaLogger.error(`Unsupported ticker: ${ticker}`);
+			return 0;
+	}
+
+	const priceInquiry = await getPriceInquiry(
+		runtime,
+		ticker,
+		Number(balanceBaseUnits.toString()),
+		"USDC",
+		"base",
+	);
+
+	if (priceInquiry == null) {
+		elizaLogger.error(`${ticker} priceInquiry is null`);
+		return 0;
+	}
+
+	const quote = await getQuoteObj(runtime, priceInquiry, publicKey);
+	balanceUSD = Number(quote.buyAmount) / 1e6;
+	elizaLogger.info(`${ticker} balanceUSD ${balanceUSD}`);
+
+	return balanceUSD;
+}
+
+export async function hasEnoughBalance(
+	runtime: IAgentRuntime,
+	publicKey: `0x${string}`,
+	ticker: string,
+	amount: number,
+): Promise<boolean> {
+	const balance = await getBalance(runtime, publicKey, ticker);
+	return balance >= amount;
 }
 
 export const pnlProvider: Provider = {

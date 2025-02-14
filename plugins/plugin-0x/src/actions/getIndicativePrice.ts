@@ -377,12 +377,12 @@ export const getPriceInquiry = async (
 			if (!price) return null;
 
 			// Handle token approvals
-			// const approved = await handleTokenApprovals(
-			// 	client,
-			// 	price,
-			// 	sellTokenMetadata.address as `0x${string}`,
-			// );
-			// if (!approved) return null;
+			const approved = await handleTokenApprovals(
+				client,
+				price,
+				sellTokenMetadata.address as `0x${string}`,
+			);
+			if (!approved) return null;
 
 			// Format response
 			const formattedAmounts = formatAmounts(
