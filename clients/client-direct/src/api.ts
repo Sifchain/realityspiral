@@ -143,12 +143,8 @@ export function createApiRouter(
 	});
 
 	router.get("/version", (_req, res) => {
-		try {
-			const version = execSync("git describe --tags").toString().trim();
-			res.json({ version });
-		} catch (_err) {
-			res.status(500).json({ error: "Failed to get version" });
-		}
+		const version = process.env.VERSION || "unknown";
+		res.json({ version });
 	});
 
 	router.get("/agents", (_req, res) => {
