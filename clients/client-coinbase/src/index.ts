@@ -294,7 +294,7 @@ Generate only the tweet text, no commentary or markdown.`;
 		const buy = event.event.toUpperCase() === "BUY";
 		const amountInCurrency = buy
 			? amount * 1e6
-			: (amount / Number(event.price)) * 1e18;
+			: (amount / Number(event.price)) * (event.ticker === "BTC" ? 1e8 : 1e18);
 		elizaLogger.info("amountInCurrency non base units ", (amount / Number(event.price)));
 		const pnl = await calculateOverallPNL(
 			this.runtime,
