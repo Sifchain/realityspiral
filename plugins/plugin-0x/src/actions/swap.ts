@@ -201,7 +201,7 @@ export const tokenSwap = async (
 	chain: string,
 ) => {
 	let priceInquiry = null;
-	const maxRetries = 3;
+	const maxRetries = 6;
 	let attempt = 0;
 
 	while (attempt < maxRetries) {
@@ -318,6 +318,7 @@ export const tokenSwap = async (
 			if (attempt >= maxRetries) {
 				return null;
 			}
+			await new Promise(resolve => setTimeout(resolve, 5000)); // Sleep for 5 second before retrying
 		}
 	}
 	return null;

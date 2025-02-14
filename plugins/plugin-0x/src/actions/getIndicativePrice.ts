@@ -336,7 +336,7 @@ export const getPriceInquiry = async (
 		return null;
 	}
 
-	const maxRetries = 3;
+	const maxRetries = 6;
 	let attempt = 0;
 	// Hardcoded chainId for Base network
 	const chainId = 8453;
@@ -408,7 +408,7 @@ export const getPriceInquiry = async (
 			if (attempt >= maxRetries) {
 				return null;
 			}
-			await new Promise(resolve => setTimeout(resolve, 1000)); // Sleep for 1 second before retrying
+			await new Promise(resolve => setTimeout(resolve, 5000)); // Sleep for 1 second before retrying
 		}
 	}
 	return null;

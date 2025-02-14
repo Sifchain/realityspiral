@@ -347,7 +347,7 @@ export const getQuoteObj = async (
 		apiKey: runtime.getSetting("ZERO_EX_API_KEY"),
 	});
 
-	const maxRetries = 3;
+	const maxRetries = 6;
 	let attempt = 0;
 
 	while (attempt < maxRetries) {
@@ -456,6 +456,7 @@ export const getQuoteObj = async (
 			if (attempt >= maxRetries) {
 				return null;
 			}
+			await new Promise(resolve => setTimeout(resolve, 5000)); // Sleep for 5 second before retrying
 		}
 	}
 	return null;

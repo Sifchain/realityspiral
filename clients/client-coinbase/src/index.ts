@@ -565,9 +565,6 @@ export async function getTotalBalanceUSD(
 	}
 	const cbbtcQuote = await getQuoteObj(runtime, cbbtcPriceInquiry, publicKey);
 	const cbbtcBalanceUSD = Number(cbbtcQuote.buyAmount) / 1000000;
-	elizaLogger.info(`ethBalanceUSD ${ethBalanceUSD}`);
-	elizaLogger.info(`usdcBalanceUSD ${usdcBalance}`);
-	elizaLogger.info(`cbbtcBalanceUSD ${cbbtcBalanceUSD}`);
 	return ethBalanceUSD + usdcBalance + cbbtcBalanceUSD;
 }
 
