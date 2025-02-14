@@ -2,10 +2,10 @@
 
 # Container configurations: name -> "port1,port2,type"
 declare -A containers=(
-    # ["agents-prod"]="prod,5010,3010"
-    # ["prosper-prod"]="prod,5020,3020"
-    # ["agents-staging"]="staging,5030,3030"
-    # ["prosper-staging"]="staging,5040,3040"
+    ["agents-prod"]="prod,5010,3010"
+    ["prosper-prod"]="prod,5020,3020"
+    ["agents-staging"]="staging,5030,3030"
+    ["prosper-staging"]="staging,5040,3040"
     ["agents-dev"]="dev,5050,3050"
     ["prosper-dev"]="dev,5060,3060"
 )
@@ -38,11 +38,11 @@ get_version_tag() {
     fi
     
     if [ "$tag" == "latest" ]; then
-        # For prod/latest, get the version from label
-        version_tag=$(docker inspect "${image_name}:${tag}" --format='{{index .Config.Labels "org.opencontainers.image.version"}}' 2>/dev/null)
+        # For prod/latest, get the version from label prefixing with v
+        version_tag="v$(docker inspect "${image_name}:${tag}" --format='{{index .Config.Labels "org.opencontainers.image.version"}}' 2>/dev/null)"
     else
-        # For staging/dev, get the SHA
-        version_tag=$(docker inspect "${image_name}:${tag}" --format='{{index .Config.Labels "org.opencontainers.image.revision"}}' 2>/dev/null)
+        # For staging/dev, get the short SHA
+        version_tag=$(docker inspect "${image_name}:${tag}" --format='{{index .Config.Labels "org.opencontainers.image.revision"}}' 2>/dev/null | cut -c1-7)
     fi
     
     if [ -z "$version_tag" ]; then
