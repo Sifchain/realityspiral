@@ -4,7 +4,12 @@
 	"tasks": {
 		"build": {
 			"dependsOn": ["^build"],
-			"inputs": ["$TURBO_DEFAULT$", ".env*", "$CHARACTER"],
+			"inputs": [
+				"$TURBO_DEFAULT$",
+				".env*",
+				"$CHARACTER",
+				"$VERSION"
+			],
 			"outputs": ["dist/**"]
 		},
 		"lint": {
@@ -17,12 +22,18 @@
 			"dependsOn": ["^build"],
 			"cache": false,
 			"persistent": true,
-			"env": ["CHARACTER"]
+			"env": [
+				"CHARACTER",
+				"VERSION"
+			]
 		},
 		"start": {
 			"cache": false,
 			"persistent": true,
-			"env": ["CHARACTER"]
+			"env": [
+				"CHARACTER",
+				"VERSION"
+			]
 		}
 	}
 }
