@@ -2,10 +2,10 @@
 
 # Container configurations: name -> "port1,port2,type"
 declare -A containers=(
-    # ["agents-prod"]="prod,5010,3010"
-    # ["prosper-prod"]="prod,5020,3020"
-    # ["agents-staging"]="staging,5030,3030"
-    # ["prosper-staging"]="staging,5040,3040"
+    ["agents-prod"]="prod,5010,3010"
+    ["prosper-prod"]="prod,5020,3020"
+    ["agents-staging"]="staging,5030,3030"
+    ["prosper-staging"]="staging,5040,3040"
     ["agents-dev"]="dev,5050,3050"
     ["prosper-dev"]="dev,5060,3060"
 )
