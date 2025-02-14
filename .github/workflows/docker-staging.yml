@@ -1,4 +1,4 @@
-name: Docker Push Build
+name: Docker Staging Build
 
 on:
   push:
