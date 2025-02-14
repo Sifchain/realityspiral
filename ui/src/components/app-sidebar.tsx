@@ -14,7 +14,7 @@ import {
 import { apiClient } from "@/lib/api";
 import type { UUID } from "@elizaos/core";
 import { useQuery } from "@tanstack/react-query";
-import { Book, Cog, User, Info } from "lucide-react";
+import { Book, Cog, Info, User } from "lucide-react";
 import { NavLink, useLocation } from "react-router";
 import ConnectionStatus from "./connection-status";
 
