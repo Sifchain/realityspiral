@@ -295,16 +295,18 @@ Generate only the tweet text, no commentary or markdown.`;
 		const amountInCurrency = buy
 			? amount * 1e6
 			: (amount / Number(event.price)) * 1e18;
+		elizaLogger.info("amountInCurrency non base units ", (amount / Number(event.price)));
 		const pnl = await calculateOverallPNL(
 			this.runtime,
 			this.runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
 			1000,
 		);
 		elizaLogger.info("pnl ", pnl);
+		elizaLogger.info("amountInCurrency ", amountInCurrency);
 		const enoughBalance = await hasEnoughBalance(
 			this.runtime,
 			this.runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
-			event.ticker,
+			buy ? 'USDC' : event.ticker,
 			amountInCurrency,
 		);
 		elizaLogger.info("enoughBalance ", enoughBalance);
@@ -536,6 +538,8 @@ export async function getTotalBalanceUSD(
 	);
 	const usdcBalance = Number(usdcBalanceBaseUnits) / 1e6;
 	elizaLogger.info(`usdcBalance ${usdcBalance}`);
+	// sleep for 5 seconds
+	await new Promise(resolve => setTimeout(resolve, 5000));
 	// get cbbtc balance
 	const cbbtcBalanceBaseUnits = await readContractWrapper(
 		runtime,
@@ -581,7 +585,6 @@ export async function getBalance(
 	}).extend(publicActions);
 
 	let balanceBaseUnits;
-	let balanceUSD = 0;
 
 	switch (ticker.toUpperCase()) {
 		case "ETH":
@@ -605,6 +608,7 @@ export async function getBalance(
 			elizaLogger.info(`usdcBalanceBaseUnits ${balanceBaseUnits}`);
 			break;
 		case "CBBTC":
+		case "BTC":
 			balanceBaseUnits = await readContractWrapper(
 				runtime,
 				TOKENS.cbBTC.address as `0x${string}`,
@@ -622,24 +626,7 @@ export async function getBalance(
 			return 0;
 	}
 
-	const priceInquiry = await getPriceInquiry(
-		runtime,
-		ticker,
-		Number(balanceBaseUnits.toString()),
-		"USDC",
-		"base",
-	);
-
-	if (priceInquiry == null) {
-		elizaLogger.error(`${ticker} priceInquiry is null`);
-		return 0;
-	}
-
-	const quote = await getQuoteObj(runtime, priceInquiry, publicKey);
-	balanceUSD = Number(quote.buyAmount) / 1e6;
-	elizaLogger.info(`${ticker} balanceUSD ${balanceUSD}`);
-
-	return balanceUSD;
+	return Number(balanceBaseUnits);
 }
 
 export async function hasEnoughBalance(
@@ -648,8 +635,12 @@ export async function hasEnoughBalance(
 	ticker: string,
 	amount: number,
 ): Promise<boolean> {
+	elizaLogger.info(`hasEnoughBalance ${ticker} ${amount}`);
 	const balance = await getBalance(runtime, publicKey, ticker);
-	return balance >= amount;
+	elizaLogger.info(`balance ${balance}`);
+	const balanceAfterTrade = balance - amount;
+	elizaLogger.info(`balanceAfterTrade ${balanceAfterTrade}`);
+	return balanceAfterTrade >= 0;
 }
 
 export const pnlProvider: Provider = {

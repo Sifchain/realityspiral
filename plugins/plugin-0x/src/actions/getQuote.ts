@@ -370,11 +370,13 @@ export const getQuoteObj = async (
 				BigInt(quote.buyAmount),
 				buyTokenObject.decimals,
 			);
+			elizaLogger.info(`buyAmountBaseUnitsQuoted: ${buyAmountBaseUnitsQuoted}`);
 
 			const sellAmountBaseUnitsQuoted = formatUnits(
 				BigInt(quote.sellAmount),
 				sellTokenObject.decimals,
 			);
+			elizaLogger.info(`sellAmountBaseUnitsQuoted: ${sellAmountBaseUnitsQuoted}`);
 
 			const warnings = [];
 			if (quote.issues?.balance) {
@@ -387,7 +389,7 @@ export const getQuoteObj = async (
 					)})`,
 				);
 			}
-
+			elizaLogger.info(`warnings: ${warnings}`);
 			const formattedResponse = [
 				"🎯 Firm Quote Details:",
 				"────────────────",
@@ -446,6 +448,7 @@ export const getQuoteObj = async (
 			]
 				.filter(Boolean)
 				.join("\n");
+			elizaLogger.info(formattedResponse);
 			return quote;
 		} catch (error) {
 			attempt++;
@@ -453,7 +456,6 @@ export const getQuoteObj = async (
 			if (attempt >= maxRetries) {
 				return null;
 			}
-			await new Promise(resolve => setTimeout(resolve, 1000)); // Sleep for 1 second before retrying
 		}
 	}
 	return null;

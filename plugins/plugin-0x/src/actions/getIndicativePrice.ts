@@ -338,21 +338,19 @@ export const getPriceInquiry = async (
 
 	const maxRetries = 3;
 	let attempt = 0;
+	// Hardcoded chainId for Base network
+	const chainId = 8453;
+	// Get token metadata
+	const buyTokenMetadata = getTokenMetadata(buyTokenSymbol);
+	const sellTokenMetadata = getTokenMetadata(sellTokenSymbol);
 
+	if (!sellTokenMetadata || !buyTokenMetadata) {
+		elizaLogger.error("Invalid token metadata");
+		return null;
+	}
+	
 	while (attempt < maxRetries) {
 		try {
-			// Hardcoded chainId for Base network
-			const chainId = 8453;
-
-			// Get token metadata
-			const buyTokenMetadata = getTokenMetadata(buyTokenSymbol);
-			const sellTokenMetadata = getTokenMetadata(sellTokenSymbol);
-
-			if (!sellTokenMetadata || !buyTokenMetadata) {
-				elizaLogger.error("Invalid token metadata");
-				return null;
-			}
-
 			// Initialize 0x client
 			const zxClient = createClientV2({
 				apiKey: runtime.getSetting("ZERO_EX_API_KEY"),
@@ -365,10 +363,15 @@ export const getPriceInquiry = async (
 				chain: base,
 				transport: http(runtime.getSetting("ALCHEMY_HTTP_TRANSPORT_URL")),
 			}).extend(publicActions);
-
+			elizaLogger.info(`priceParams: ${JSON.stringify({
+				sellAmount: Number(Math.round(sellAmountBaseUnits)).toString(),
+				sellToken: sellTokenMetadata.address,
+				buyToken: buyTokenMetadata.address,
+				chainId,
+			})}`);
 			// Get price quote
 			const price = await getPrice(zxClient, {
-				sellAmount: sellAmountBaseUnits,
+				sellAmount: Number(Math.round(sellAmountBaseUnits)).toString(),
 				sellToken: sellTokenMetadata.address,
 				buyToken: buyTokenMetadata.address,
 				chainId,
