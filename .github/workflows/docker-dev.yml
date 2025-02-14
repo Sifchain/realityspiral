@@ -2,9 +2,8 @@ name: Docker Dev Build
 
 on:
   push:
-    branches:
-      - '*'
-      - '!main'
+    branches-ignore:
+      - main
 
 env:
   REGISTRY: ghcr.io
