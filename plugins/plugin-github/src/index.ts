@@ -15,6 +15,10 @@ import {
 	createPullRequestAction,
 	githubCreatePullRequestPlugin,
 } from "./plugins/createPullRequest";
+import {
+	forkRepositoryAction,
+	githubForkRepositoryPlugin,
+} from "./plugins/forkRepository";
 import { githubIdeationPlugin, ideationAction } from "./plugins/ideationPlugin";
 import {
 	githubInitializePlugin,
@@ -29,6 +33,7 @@ import {
 import {
 	addCommentToPRAction,
 	closePRAction,
+	generateCodeFileChangesAction,
 	githubInteractWithPRPlugin,
 	implementFeatureAction,
 	mergePRAction,
@@ -39,6 +44,10 @@ import {
 	githubModifyIssuePlugin,
 	modifyIssueAction,
 } from "./plugins/modifyIssue";
+import {
+	githubOrchestratePlugin,
+	orchestrateAction,
+} from "./plugins/orchestrate";
 import { documentationFilesProvider } from "./providers/documentationFiles";
 import { releasesProvider } from "./providers/releases";
 import { sourceCodeProvider } from "./providers/sourceCode";
@@ -55,6 +64,8 @@ export const plugins = {
 	githubInteractWithIssuePlugin,
 	githubInteractWithPRPlugin,
 	githubIdeationPlugin,
+	githubOrchestratePlugin,
+	githubForkRepositoryPlugin,
 };
 
 export * from "./plugins/initializeRepository";
@@ -66,6 +77,7 @@ export * from "./plugins/modifyIssue";
 export * from "./plugins/interactWithIssue";
 export * from "./plugins/ideationPlugin";
 export * from "./plugins/interactWithPR";
+export * from "./plugins/orchestrate";
 
 export * from "./providers/sourceCode";
 export * from "./providers/testFiles";
@@ -98,7 +110,10 @@ export const githubPlugin: Plugin = {
 		reactToIssueAction,
 		closeIssueAction,
 		replyToPRCommentAction,
+		generateCodeFileChangesAction,
 		implementFeatureAction,
+		forkRepositoryAction,
+		orchestrateAction,
 	],
 	evaluators: [],
 	providers: [

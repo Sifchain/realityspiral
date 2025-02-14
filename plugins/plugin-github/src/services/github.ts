@@ -1017,13 +1017,13 @@ export class GitHubService {
 				repo,
 				branch,
 			);
-			console.log(
+			elizaLogger.log(
 				`Latest commit SHA on branch '${branch}': ${latestCommitSha}`,
 			);
 
 			// Step 2: Get the tree SHA from the latest commit
 			const baseTreeSha = await this.getTreeSha(owner, repo, latestCommitSha);
-			console.log(`Base tree SHA: ${baseTreeSha}`);
+			elizaLogger.log(`Base tree SHA: ${baseTreeSha}`);
 
 			// Step 3: Create a new tree with the file changes
 			const newTreeSha = await this.createNewTree(
@@ -1032,7 +1032,7 @@ export class GitHubService {
 				baseTreeSha,
 				files,
 			);
-			console.log(`New tree SHA: ${newTreeSha}`);
+			elizaLogger.log(`New tree SHA: ${newTreeSha}`);
 
 			// Step 4: Create a new commit
 			const { data: newCommit } = await this.octokit.git.createCommit({
@@ -1046,7 +1046,7 @@ export class GitHubService {
 
 			return newCommit;
 		} catch (error) {
-			console.error("Error creating commit:", error);
+			elizaLogger.error("Error creating commit:", error);
 			throw error;
 		}
 	}
@@ -1072,9 +1072,26 @@ export class GitHubService {
 				sha: newCommitSha,
 				force: false, // Set to true if you need to force update
 			});
-			console.log(`Branch '${branch}' updated to commit SHA: ${newCommitSha}`);
+			elizaLogger.log(
+				`Branch '${branch}' updated to commit SHA: ${newCommitSha}`,
+			);
 		} catch (error) {
 			console.error("Error updating branch reference:", error);
+			throw error;
+		}
+	}
+
+	async forkRepository(owner: string, repo: string, organization?: string) {
+		try {
+			const response = await this.octokit.repos.createFork({
+				owner: owner,
+				repo: repo,
+				organization: organization,
+			});
+			elizaLogger.log(`Fork created successfully @ ${response.data.html_url}`);
+			return response.data;
+		} catch (error) {
+			elizaLogger.error("Error creating fork:", error);
 			throw error;
 		}
 	}
