@@ -32,6 +32,7 @@ import {
 	type PriceInquiry,
 } from "../types";
 import { TOKENS } from "../utils";
+
 export const IndicativePriceSchema = z.object({
 	sellTokenSymbol: z.string().nullable(),
 	sellAmount: z.number().nullable(),
@@ -380,12 +381,12 @@ export const getPriceInquiry = async (
 			if (!price) return null;
 
 			// Handle token approvals
-			const approved = await handleTokenApprovals(
-				client,
-				price,
-				sellTokenMetadata.address as `0x${string}`,
-			);
-			if (!approved) return null;
+			// const approved = await handleTokenApprovals(
+			// 	client,
+			// 	price,
+			// 	sellTokenMetadata.address as `0x${string}`,
+			// );
+			// if (!approved) return null;
 
 			// Format response
 			const formattedAmounts = formatAmounts(
@@ -432,56 +433,6 @@ const getPrice = async (
 	}
 };
 
-const handleTokenApprovals = async (
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	client: any,
-	price: GetIndicativePriceResponse,
-	sellTokenAddress: `0x${string}` = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-): Promise<boolean> => {
-	try {
-		const sellTokenContract = getContract({
-			address: sellTokenAddress,
-			abi: erc20Abi,
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			client: client as any,
-		});
-
-		if (price.issues.allowance !== null) {
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			const { request } = await (sellTokenContract as any).simulate.approve([
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-				(price as any).issues.allowance.spender,
-				maxUint256,
-			]);
-
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			const hash = await (sellTokenContract as any).write.approve(request.args);
-			const receipt = await client.waitForTransactionReceipt({
-				hash, // The transaction hash
-				confirmations: 1, // Wait for at least 1 confirmation
-				pollingInterval: 1000, // Poll every 1 second
-				retryCount: 5, // Retry up to 5 times
-				retryDelay: 2000, // Wait 2 seconds between retries
-				timeout: 60000, // Timeout after 60 seconds
-				onReplaced: (replacement) => {
-					elizaLogger.info("Transaction was replaced:", replacement);
-				},
-			});
-			if (receipt.status === "success") {
-				elizaLogger.info("Token approval successful");
-				return true;
-			} else {
-				elizaLogger.error("Token approval failed");
-				return false;
-			}
-		}
-
-		return true;
-	} catch (error) {
-		elizaLogger.error("Error handling token approvals:", error);
-		return false;
-	}
-};
 
 const formatAmounts = (
 	price: GetIndicativePriceResponse,
