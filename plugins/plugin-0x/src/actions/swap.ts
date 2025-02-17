@@ -7,10 +7,17 @@ import {
 	type State,
 	elizaLogger,
 } from "@elizaos/core";
-import { type Hex, concat, numberToHex } from "viem";
+import {
+	type Hex,
+	concat,
+	erc20Abi,
+	getContract,
+	maxUint256,
+	numberToHex,
+} from "viem";
 import { CHAIN_EXPLORERS, ZX_MEMORY } from "../constants";
 import { getWalletClient } from "../hooks.ts/useGetWalletClient";
-import { Chains, type Quote } from "../types";
+import { Chains, type GetIndicativePriceResponse, type Quote } from "../types";
 import { getPriceInquiry } from "./getIndicativePrice";
 import { getQuoteObj } from "./getQuote";
 
@@ -201,87 +208,192 @@ export const tokenSwap = async (
 	chain: string,
 ) => {
 	let priceInquiry = null;
-	try {
-		// get indicative price
-		priceInquiry = await getPriceInquiry(
-			runtime,
-			fromCurrency,
-			quantity,
-			toCurrency,
-			chain,
-		);
-	} catch (error) {
-		elizaLogger.error("Error during price inquiry", error.message);
-		return null;
+	const maxRetries = 6;
+	let attempt = 0;
+
+	while (attempt < maxRetries) {
+		try {
+			// get indicative price
+			priceInquiry = await getPriceInquiry(
+				runtime,
+				fromCurrency,
+				quantity,
+				toCurrency,
+				chain,
+			);
+			break; // Exit loop if successful
+		} catch (error) {
+			attempt++;
+			elizaLogger.error(
+				`Error during price inquiry (attempt ${attempt}):`,
+				error.message,
+			);
+			if (attempt >= maxRetries) {
+				return null;
+			}
+		}
 	}
+
 	if (!priceInquiry) {
 		elizaLogger.error("Price inquiry is null");
 		return null;
 	}
+
 	const chainId = Chains.base;
 	elizaLogger.info("chainId ", chainId);
 	let quote = null;
-	try {
-		// get latest quote
-		quote = await getQuoteObj(runtime, priceInquiry, address);
-	} catch (error) {
-		elizaLogger.error("Error during quote retrieval", error.message);
-		return null;
+	attempt = 0;
+
+	while (attempt < maxRetries) {
+		try {
+			// get latest quote
+			quote = await getQuoteObj(runtime, priceInquiry, address);
+			break; // Exit loop if successful
+		} catch (error) {
+			attempt++;
+			elizaLogger.error(
+				`Error during quote retrieval (attempt ${attempt}):`,
+				error.message,
+			);
+			if (attempt >= maxRetries) {
+				return null;
+			}
+		}
 	}
+
 	if (!quote) {
 		elizaLogger.error("Quote is null");
 		return null;
 	}
-	try {
-		const client = getWalletClient(chainId, privateKey);
-		// add a balance check for gas and sell token
-		const enoughGasBalance = true;
-		const enoughSellTokenBalance = true;
-		if (!enoughGasBalance || !enoughSellTokenBalance) {
-			elizaLogger.error("Not enough balance for gas or sell token");
+
+	attempt = 0;
+	while (attempt < maxRetries) {
+		try {
+			const client = getWalletClient(chainId, privateKey);
+			// add a balance check for gas and sell token
+			const enoughGasBalance = true;
+			const enoughSellTokenBalance = true;
+			if (!enoughGasBalance || !enoughSellTokenBalance) {
+				elizaLogger.error("Not enough balance for gas or sell token");
+				return null;
+			}
+			// Handle token approvals
+			const approved = await handleTokenApprovals(
+				client,
+				priceInquiry,
+				priceInquiry.sellTokenMetadata.address as `0x${string}`,
+			);
+			elizaLogger.info("approved ", approved);
+			if (!approved) return null;
+
+			const nonce = await client.getTransactionCount({
+				address: (client.account as { address: `0x${string}` }).address,
+				blockTag: "pending",
+			});
+			elizaLogger.info("nonce ", nonce);
+			const txHash = await client.sendTransaction({
+				account: client.account,
+				chain: client.chain,
+				// biome-ignore lint/complexity/noExtraBooleanCast: <explanation>
+				gas: !!quote?.transaction.gas
+					? BigInt(quote?.transaction.gas)
+					: undefined,
+				to: quote?.transaction.to as `0x${string}`,
+				data: quote.transaction.data as `0x${string}`,
+				value: BigInt(quote.transaction.value),
+				// biome-ignore lint/complexity/noExtraBooleanCast: <explanation>
+				gasPrice: !!quote?.transaction.gasPrice
+					? BigInt(quote?.transaction.gasPrice)
+					: undefined,
+				nonce: nonce,
+				kzg: undefined,
+			});
+			// Wait for transaction confirmation
+			const receipt = await client.waitForTransactionReceipt({
+				hash: txHash, // The transaction hash
+				confirmations: 1, // Wait for at least 1 confirmation
+				pollingInterval: 1000, // Poll every 1 second
+				retryCount: 5, // Retry up to 5 times
+				retryDelay: 2000, // Wait 2 seconds between retries
+				timeout: 60000, // Timeout after 60 seconds
+				onReplaced: (replacement) => {
+					elizaLogger.info("Transaction was replaced:", replacement);
+				},
+			});
+
+			if (receipt.status === "success") {
+				elizaLogger.info(
+					`✅ Swap executed successfully!\nView on Explorer: ${CHAIN_EXPLORERS[chainId]}/tx/${txHash}`,
+					{ hash: txHash, status: "success" },
+				);
+				return txHash;
+			}
+			elizaLogger.error(
+				`❌ Swap failed! Check transaction: ${CHAIN_EXPLORERS[chainId]}/tx/${txHash}`,
+				{ hash: txHash, status: "failed" },
+			);
 			return null;
+		} catch (error) {
+			attempt++;
+			elizaLogger.error(
+				`Error during transaction process (attempt ${attempt}):`,
+				error.message,
+			);
+			if (attempt >= maxRetries) {
+				return null;
+			}
+			await new Promise((resolve) => setTimeout(resolve, 5000)); // Sleep for 5 second before retrying
+		}
+	}
+	return null;
+};
+
+const handleTokenApprovals = async (
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	client: any,
+	price: GetIndicativePriceResponse,
+	sellTokenAddress: `0x${string}` = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+): Promise<boolean> => {
+	try {
+		const sellTokenContract = getContract({
+			address: sellTokenAddress,
+			abi: erc20Abi,
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			client: client as any,
+		});
+
+		if (price.issues.allowance !== null) {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			const { request } = await (sellTokenContract as any).simulate.approve([
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				(price as any).issues.allowance.spender,
+				maxUint256,
+			]);
+
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			const hash = await (sellTokenContract as any).write.approve(request.args);
+			const receipt = await client.waitForTransactionReceipt({
+				hash, // The transaction hash
+				confirmations: 1, // Wait for at least 1 confirmation
+				pollingInterval: 1000, // Poll every 1 second
+				retryCount: 5, // Retry up to 5 times
+				retryDelay: 2000, // Wait 2 seconds between retries
+				timeout: 60000, // Timeout after 60 seconds
+				onReplaced: (replacement) => {
+					elizaLogger.info("Transaction was replaced:", replacement);
+				},
+			});
+			if (receipt.status === "success") {
+				elizaLogger.info("Token approval successful");
+				return true;
+			}
+			elizaLogger.error("Token approval failed");
+			return false;
 		}
 
-		const nonce = await client.getTransactionCount({
-			address: (client.account as { address: `0x${string}` }).address,
-			blockTag: "pending",
-		});
-		elizaLogger.info("nonce ", nonce);
-		const txHash = await client.sendTransaction({
-			account: client.account,
-			chain: client.chain,
-			// biome-ignore lint/complexity/noExtraBooleanCast: <explanation>
-			gas: !!quote?.transaction.gas
-				? BigInt(quote?.transaction.gas)
-				: undefined,
-			to: quote?.transaction.to as `0x${string}`,
-			data: quote.transaction.data as `0x${string}`,
-			value: BigInt(quote.transaction.value),
-			// biome-ignore lint/complexity/noExtraBooleanCast: <explanation>
-			gasPrice: !!quote?.transaction.gasPrice
-				? BigInt(quote?.transaction.gasPrice)
-				: undefined,
-			nonce: nonce,
-			kzg: undefined,
-		});
-		// Wait for transaction confirmation
-		const receipt = await client.waitForTransactionReceipt({
-			hash: txHash,
-		});
-		if (receipt.status === "success") {
-			elizaLogger.info(
-				`✅ Swap executed successfully!\nView on Explorer: ${CHAIN_EXPLORERS[chainId]}/tx/${txHash}`,
-				{ hash: txHash, status: "success" },
-			);
-			return txHash;
-		}
-		elizaLogger.error(
-			`❌ Swap failed! Check transaction: ${CHAIN_EXPLORERS[chainId]}/tx/${txHash}`,
-			{ hash: txHash, status: "failed" },
-		);
-		return null;
+		return true;
 	} catch (error) {
-		elizaLogger.error("Error during transaction process:", error.message);
-		return null;
+		elizaLogger.error("Error handling token approvals:", error);
+		return false;
 	}
 };

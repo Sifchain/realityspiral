@@ -51,6 +51,13 @@ export type WalletType =
 	| "dry_powder"
 	| "operational_capital";
 
+const TOKEN_DECIMALS: { [key: string]: number } = {
+	USDC: 6,
+	ETH: 18,
+	BTC: 8,
+	CBBTC: 18,
+};
+
 export class CoinbaseClient implements Client {
 	private runtime: IAgentRuntime;
 	private server: express.Application;
@@ -64,6 +71,7 @@ export class CoinbaseClient implements Client {
 		this.runtime.providers.push(pnlProvider);
 		this.runtime.providers.push(balanceProvider);
 		this.runtime.providers.push(addressProvider);
+		this.runtime.providers.push(tradingSignalBackTestProvider);
 		this.server = express();
 		this.port = Number(runtime.getSetting("COINBASE_WEBHOOK_PORT")) || 3001;
 		this.wallets = [];
@@ -199,7 +207,7 @@ export class CoinbaseClient implements Client {
 	private async generateTweetContent(
 		event: WebhookEvent,
 		amountInCurrency: number,
-		_pnl: string,
+		pnl: string,
 		formattedTimestamp: string,
 		state: State,
 		hash: string | null,
@@ -252,9 +260,9 @@ Generate only the tweet text, no commentary or markdown.`;
 			});
 
 			const trimmedContent = tweetContent.trim();
-			const finalContent = `${trimmedContent} ${blockExplorerBaseTxUrl(hash)}`;
-			return finalContent.length > 180
-				? `${finalContent.substring(0, 177)}...`
+			const finalContent = `${trimmedContent} PNL: ${pnl} ${blockExplorerBaseTxUrl(hash)}`;
+			return finalContent.length > 280
+				? `${finalContent.substring(0, 277)}...`
 				: finalContent;
 		} catch (error) {
 			elizaLogger.error("Error generating tweet content:", error);
@@ -291,15 +299,34 @@ Generate only the tweet text, no commentary or markdown.`;
 
 		// Execute token swap
 		const buy = event.event.toUpperCase() === "BUY";
+		const tokenDecimals = TOKEN_DECIMALS[event.ticker] || 18; // Default to 18 if not found
+		const usdcDecimals = TOKEN_DECIMALS.USDC; // 6 decimals for USDC
+
 		const amountInCurrency = buy
-			? amount * 1e6
-			: (amount / Number(event.price)) * 1e18;
+			? amount * 10 ** usdcDecimals // Convert USD amount to USDC base units
+			: (amount / Number(event.price)) * 10 ** tokenDecimals; // Convert to token base units
+		elizaLogger.info(
+			"amountInCurrency non base units ",
+			amount / Number(event.price),
+		);
 		const pnl = await calculateOverallPNL(
 			this.runtime,
 			this.runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
 			1000,
 		);
 		elizaLogger.info("pnl ", pnl);
+		elizaLogger.info("amountInCurrency ", amountInCurrency);
+		const enoughBalance = await hasEnoughBalance(
+			this.runtime,
+			this.runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
+			buy ? "USDC" : event.ticker,
+			amountInCurrency,
+		);
+		elizaLogger.info("enoughBalance ", enoughBalance);
+		if (!enoughBalance) {
+			elizaLogger.error("Not enough balance to trade");
+			return;
+		}
 		const txHash = await this.executeTokenSwap(event, amountInCurrency, buy);
 		if (txHash == null) {
 			elizaLogger.error("txHash is null");
@@ -524,6 +551,8 @@ export async function getTotalBalanceUSD(
 	);
 	const usdcBalance = Number(usdcBalanceBaseUnits) / 1e6;
 	elizaLogger.info(`usdcBalance ${usdcBalance}`);
+	// sleep for 5 seconds
+	await new Promise((resolve) => setTimeout(resolve, 5000));
 	// get cbbtc balance
 	const cbbtcBalanceBaseUnits = await readContractWrapper(
 		runtime,
@@ -549,15 +578,89 @@ export async function getTotalBalanceUSD(
 	}
 	const cbbtcQuote = await getQuoteObj(runtime, cbbtcPriceInquiry, publicKey);
 	const cbbtcBalanceUSD = Number(cbbtcQuote.buyAmount) / 1000000;
-	elizaLogger.info(`ethBalanceUSD ${ethBalanceUSD}`);
-	elizaLogger.info(`usdcBalanceUSD ${usdcBalance}`);
-	elizaLogger.info(`cbbtcBalanceUSD ${cbbtcBalanceUSD}`);
 	return ethBalanceUSD + usdcBalance + cbbtcBalanceUSD;
+}
+
+export async function getBalance(
+	runtime: IAgentRuntime,
+	publicKey: `0x${string}`,
+	ticker: string,
+): Promise<number> {
+	const client = createWalletClient({
+		account: privateKeyToAccount(
+			`0x${runtime.getSetting("WALLET_PRIVATE_KEY")}` as `0x${string}`,
+		),
+		chain: base,
+		transport: http(runtime.getSetting("ALCHEMY_HTTP_TRANSPORT_URL")),
+	}).extend(publicActions);
+
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	let balanceBaseUnits: any;
+
+	switch (ticker.toUpperCase()) {
+		case "ETH":
+			balanceBaseUnits = await client.getBalance({
+				address: publicKey,
+				blockTag: "pending",
+			});
+			elizaLogger.info(`ethBalanceBaseUnits ${balanceBaseUnits}`);
+			break;
+		case "USDC":
+			balanceBaseUnits = await readContractWrapper(
+				runtime,
+				TOKENS.USDC.address as `0x${string}`,
+				"balanceOf",
+				{
+					account: publicKey,
+				},
+				"base-mainnet",
+				erc20Abi,
+			);
+			elizaLogger.info(`usdcBalanceBaseUnits ${balanceBaseUnits}`);
+			break;
+		case "CBBTC":
+		case "BTC":
+			balanceBaseUnits = await readContractWrapper(
+				runtime,
+				TOKENS.cbBTC.address as `0x${string}`,
+				"balanceOf",
+				{
+					account: publicKey,
+				},
+				"base-mainnet",
+				erc20Abi,
+			);
+			elizaLogger.info(`cbbtcBalanceBaseUnits ${balanceBaseUnits}`);
+			break;
+		default:
+			elizaLogger.error(`Unsupported ticker: ${ticker}`);
+			return 0;
+	}
+
+	return Number(balanceBaseUnits);
+}
+
+export async function hasEnoughBalance(
+	runtime: IAgentRuntime,
+	publicKey: `0x${string}`,
+	ticker: string,
+	amount: number,
+): Promise<boolean> {
+	elizaLogger.info(`hasEnoughBalance ${ticker} ${amount}`);
+	const balance = await getBalance(runtime, publicKey, ticker);
+	elizaLogger.info(`balance ${balance}`);
+	const balanceAfterTrade = balance - amount;
+	elizaLogger.info(`balanceAfterTrade ${balanceAfterTrade}`);
+	return balanceAfterTrade >= 0;
 }
 
 export const pnlProvider: Provider = {
 	get: async (runtime: IAgentRuntime, _message: Memory) => {
 		elizaLogger.debug("Starting pnlProvider.get function");
+		if (runtime.getSetting("WALLET_PUBLIC_KEY") == null) {
+			elizaLogger.error("WALLET_PUBLIC_KEY is null");
+			return "";
+		}
 		try {
 			const pnl = await calculateOverallPNL(
 				runtime,
@@ -575,6 +678,10 @@ export const pnlProvider: Provider = {
 
 export const balanceProvider: Provider = {
 	get: async (runtime: IAgentRuntime, _message: Memory) => {
+		if (runtime.getSetting("WALLET_PUBLIC_KEY") == null) {
+			elizaLogger.error("WALLET_PUBLIC_KEY is null");
+			return "";
+		}
 		const totalBalanceUSD = await getTotalBalanceUSD(
 			runtime,
 			runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
@@ -585,7 +692,81 @@ export const balanceProvider: Provider = {
 
 export const addressProvider: Provider = {
 	get: async (runtime: IAgentRuntime, _message: Memory) => {
-		return `Address: ${runtime.getSetting("WALLET_PUBLIC_KEY")}`;
+		if (runtime.getSetting("WALLET_PUBLIC_KEY") == null) {
+			elizaLogger.error("WALLET_PUBLIC_KEY is null");
+			return "";
+		}
+		return `Base Network Address: ${runtime.getSetting("WALLET_PUBLIC_KEY")} \n ${blockExplorerBaseAddressUrl(runtime.getSetting("WALLET_PUBLIC_KEY"))}`;
+	},
+};
+
+export const tradingSignalBackTestProvider: Provider = {
+	get: async (_runtime: IAgentRuntime, _message: Memory) => {
+		const timeFrames = {
+			"1D": {
+				btc: {
+					netProfit: -68.14,
+					totalTradesClosed: 7,
+					percentageProfitable: 28.57,
+					profitFactor: 0.899,
+					maxDrawdown: 511.22,
+					averageTrade: -9.73,
+					numberOfBarsPerTrade: 2045,
+					timePeriod: "1D",
+				},
+			},
+			"5D": {
+				btc: {
+					netProfit: -304.24,
+					totalTradesClosed: 68,
+					percentageProfitable: 42.65,
+					profitFactor: 0.947,
+					maxDrawdown: 1662.64,
+					averageTrade: -4.47,
+					numberOfBarsPerTrade: 155,
+					timePeriod: "5D",
+				},
+			},
+			"1M": {
+				btc: {
+					netProfit: 5604.51,
+					totalTradesClosed: 769,
+					percentageProfitable: 39.27,
+					profitFactor: 1.078,
+					maxDrawdown: 8441.55,
+					averageTrade: 7.29,
+					numberOfBarsPerTrade: 21,
+					timePeriod: "1M",
+				},
+			},
+			"3M": {
+				btc: {
+					netProfit: 3354.51,
+					totalTradesClosed: 1002,
+					percentageProfitable: 36.93,
+					profitFactor: 1.036,
+					maxDrawdown: 7159.72,
+					averageTrade: 3.35,
+					numberOfBarsPerTrade: 14,
+					timePeriod: "3M",
+				},
+			},
+		};
+
+		const backtestResults = Object.entries(timeFrames)
+			.map(([timeFrame, data]) => {
+				return `
+            BTC ${timeFrame}: Net Profit: ${data.btc.netProfit}, Total Trades Closed: ${data.btc.totalTradesClosed}, Percentage Profitable: ${data.btc.percentageProfitable}, Profit Factor: ${data.btc.profitFactor}, Max Drawdown: ${data.btc.maxDrawdown}, Average Trade: ${data.btc.averageTrade}, Number of Bars per Trade: ${data.btc.numberOfBarsPerTrade}
+            `;
+			})
+			.join("\n");
+
+		return `
+        BACKTEST / TRADING SIGNAL/ STRATEGY RESULTS for tickers being traded actively: 
+        TICKER: BTC DIRECTION: LONG 
+        ${backtestResults}
+		AS OF ${new Date().toLocaleString()} subject to change will be updated periodically
+        `;
 	},
 };
 
