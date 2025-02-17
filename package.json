@@ -4,7 +4,9 @@
 	"scripts": {
 		"build": "turbo build",
 		"dev": "turbo --concurrency 100 dev",
+		"clean:dev": "rm -f agent/data/db.sqlite && turbo dev",
 		"start": "turbo start",
+		"clean:start": "rm -f agent/data/db.sqlite && turbo start",
 		"lint": "turbo lint",
 		"format": "prettier --write \"**/*.{ts,tsx,md}\"",
 		"smokeTests": "bash ./scripts/smoke-tests.sh",

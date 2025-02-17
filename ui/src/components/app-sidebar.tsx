@@ -14,7 +14,7 @@ import {
 import { apiClient } from "@/lib/api";
 import type { UUID } from "@elizaos/core";
 import { useQuery } from "@tanstack/react-query";
-import { Book, Cog, User } from "lucide-react";
+import { Book, Info, User } from "lucide-react";
 import { NavLink, useLocation } from "react-router";
 import ConnectionStatus from "./connection-status";
 
@@ -26,7 +26,14 @@ export function AppSidebar() {
 		refetchInterval: 5_000,
 	});
 
+	const versionQuery = useQuery({
+		queryKey: ["version"],
+		queryFn: () => apiClient.getVersion(),
+	});
+
 	const agents = query?.data?.agents;
+	const version = versionQuery.data?.version;
+	const url = versionQuery.data?.url;
 
 	return (
 		<Sidebar>
@@ -97,10 +104,17 @@ export function AppSidebar() {
 							</SidebarMenuButton>
 						</NavLink>
 					</SidebarMenuItem>
-					<SidebarMenuItem>
+					{/* <SidebarMenuItem>
 						<SidebarMenuButton disabled>
 							<Cog /> Settings
 						</SidebarMenuButton>
+					</SidebarMenuItem> */}
+					<SidebarMenuItem>
+						<NavLink to={url ?? ""} target="_blank">
+							<SidebarMenuButton disabled>
+								<Info /> {version ? `${version}` : "---"}
+							</SidebarMenuButton>
+						</NavLink>
 					</SidebarMenuItem>
 					<ConnectionStatus />
 				</SidebarMenu>
