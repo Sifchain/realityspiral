@@ -11,15 +11,7 @@ import {
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
-import {
-	http,
-	createWalletClient,
-	erc20Abi,
-	getContract,
-	maxUint256,
-	parseUnits,
-	publicActions,
-} from "viem";
+import { http, createWalletClient, parseUnits, publicActions } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
 import { z } from "zod";
@@ -31,7 +23,7 @@ import {
 	type GetIndicativePriceResponse,
 	type PriceInquiry,
 } from "../types";
-import { TOKENS } from "../utils";
+import { getTokenMetadata } from "../utils";
 
 export const IndicativePriceSchema = z.object({
 	sellTokenSymbol: z.string().nullable(),
@@ -304,26 +296,6 @@ export const storePriceInquiryToMemory = async (
 	await memoryManager.createMemory(memory);
 };
 
-const getTokenMetadata = (tokenSymbol: string) => {
-	switch (tokenSymbol) {
-		case "ETH":
-			return TOKENS.ETH;
-		case "WETH":
-			return TOKENS.WETH;
-		case "USDC":
-			return TOKENS.USDC;
-		case "CBBTC":
-		case "BTC":
-		case "WBTC":
-			return TOKENS.cbBTC;
-		case "DAI":
-			return TOKENS.DAI;
-		default:
-			elizaLogger.error(`${tokenSymbol} is not supported`);
-			return null;
-	}
-};
-
 export const getPriceInquiry = async (
 	runtime: IAgentRuntime,
 	sellTokenSymbol: string,
@@ -381,14 +353,6 @@ export const getPriceInquiry = async (
 			});
 
 			if (!price) return null;
-
-			// Handle token approvals
-			// const approved = await handleTokenApprovals(
-			// 	client,
-			// 	price,
-			// 	sellTokenMetadata.address as `0x${string}`,
-			// );
-			// if (!approved) return null;
 
 			// Format response
 			const formattedAmounts = formatAmounts(

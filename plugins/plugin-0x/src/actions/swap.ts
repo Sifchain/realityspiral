@@ -281,7 +281,7 @@ export const tokenSwap = async (
 			const approved = await handleTokenApprovals(
 				client,
 				priceInquiry,
-				priceInquiry.sellTokenMetadata.address as `0x${string}`,
+				priceInquiry.sellTokenObject.address as `0x${string}`,
 			);
 			elizaLogger.info("approved ", approved);
 			if (!approved) return null;

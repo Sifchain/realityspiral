@@ -1,4 +1,4 @@
-import { IAgentRuntime } from "@elizaos/core";
+import { IAgentRuntime, elizaLogger } from "@elizaos/core";
 import { Hash, formatUnits } from "viem";
 import { EVMTokenRegistry } from "./EVMtokenRegistry";
 
@@ -90,4 +90,24 @@ export const TOKENS = {
 			"https://assets-cdn.trustwallet.com/blockchains/base/assets/0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb/logo.png",
 		pairs: [],
 	},
+};
+
+export const getTokenMetadata = (tokenSymbol: string) => {
+	switch (tokenSymbol) {
+		case "ETH":
+			return TOKENS.ETH;
+		case "WETH":
+			return TOKENS.WETH;
+		case "USDC":
+			return TOKENS.USDC;
+		case "CBBTC":
+		case "BTC":
+		case "WBTC":
+			return TOKENS.cbBTC;
+		case "DAI":
+			return TOKENS.DAI;
+		default:
+			elizaLogger.error(`${tokenSymbol} is not supported`);
+			return null;
+	}
 };
