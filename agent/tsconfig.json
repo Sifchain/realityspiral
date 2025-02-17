@@ -1,16 +1,14 @@
 {
-	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"outDir": "dist",
-		"rootDir": ".",
-		"module": "ESNext",
-		"moduleResolution": "Bundler",
-		"types": ["node", "jest"]
-	},
-	"ts-node": {
-		"experimentalSpecifierResolution": "node",
-		"transpileOnly": true,
-		"esm": true
+	  "target": "ES6",
+	  "module": "CommonJS",
+	  "outDir": "dist",
+	  "rootDir": "src",
+	  "strict": true,
+	  "esModuleInterop": true,
+	  "forceConsistentCasingInFileNames": true,
+	  "skipLibCheck": true
 	},
 	"include": ["src"]
-}
+  }
+  

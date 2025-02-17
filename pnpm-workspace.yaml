@@ -1,5 +1,6 @@
 packages:
   - "plugins/*"
   - "clients/*"
+  - "agent/src/api"
   - "agent"
   - "ui"
