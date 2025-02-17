@@ -5,7 +5,6 @@ import cors from "cors";
 import express from "express";
 import type { Router } from "express";
 
-import { execSync } from "node:child_process";
 import {
 	type AgentRuntime,
 	type Character,
@@ -22,6 +21,8 @@ import type { TeeLogQuery, TeeLogService } from "@elizaos/plugin-tee-log";
 import type { WebhookEvent } from "@realityspiral/client-coinbase";
 import { REST, Routes } from "discord.js";
 import type { DirectClient } from ".";
+
+const GITHUB_REPO_URL = "https://github.com/Sifchain/realityspiral";
 
 interface UUIDParams {
 	agentId: UUID;
@@ -143,12 +144,18 @@ export function createApiRouter(
 	});
 
 	router.get("/version", (_req, res) => {
-		try {
-			const version = execSync("git describe --tags").toString().trim();
-			res.json({ version });
-		} catch (_err) {
-			res.status(500).json({ error: "Failed to get version" });
+		if (!process.env.VERSION) {
+			res.json({
+				version: "unknown",
+				url: GITHUB_REPO_URL,
+			});
+			return;
 		}
+		const version = process.env.VERSION;
+		const url = version?.startsWith("v")
+			? `${GITHUB_REPO_URL}/releases/${version}`
+			: `${GITHUB_REPO_URL}/commit/${version}`;
+		res.json({ version, url });
 	});
 
 	router.get("/agents", (_req, res) => {
