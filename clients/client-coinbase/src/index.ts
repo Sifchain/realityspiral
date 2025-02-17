@@ -295,7 +295,10 @@ Generate only the tweet text, no commentary or markdown.`;
 		const amountInCurrency = buy
 			? amount * 1e6
 			: (amount / Number(event.price)) * (event.ticker === "BTC" ? 1e8 : 1e18);
-		elizaLogger.info("amountInCurrency non base units ", (amount / Number(event.price)));
+		elizaLogger.info(
+			"amountInCurrency non base units ",
+			amount / Number(event.price),
+		);
 		const pnl = await calculateOverallPNL(
 			this.runtime,
 			this.runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
@@ -306,7 +309,7 @@ Generate only the tweet text, no commentary or markdown.`;
 		const enoughBalance = await hasEnoughBalance(
 			this.runtime,
 			this.runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
-			buy ? 'USDC' : event.ticker,
+			buy ? "USDC" : event.ticker,
 			amountInCurrency,
 		);
 		elizaLogger.info("enoughBalance ", enoughBalance);
@@ -539,7 +542,7 @@ export async function getTotalBalanceUSD(
 	const usdcBalance = Number(usdcBalanceBaseUnits) / 1e6;
 	elizaLogger.info(`usdcBalance ${usdcBalance}`);
 	// sleep for 5 seconds
-	await new Promise(resolve => setTimeout(resolve, 5000));
+	await new Promise((resolve) => setTimeout(resolve, 5000));
 	// get cbbtc balance
 	const cbbtcBalanceBaseUnits = await readContractWrapper(
 		runtime,
@@ -581,7 +584,8 @@ export async function getBalance(
 		transport: http(runtime.getSetting("ALCHEMY_HTTP_TRANSPORT_URL")),
 	}).extend(publicActions);
 
-	let balanceBaseUnits;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	let balanceBaseUnits: any;
 
 	switch (ticker.toUpperCase()) {
 		case "ETH":
@@ -645,7 +649,7 @@ export const pnlProvider: Provider = {
 		elizaLogger.debug("Starting pnlProvider.get function");
 		if (runtime.getSetting("WALLET_PUBLIC_KEY") == null) {
 			elizaLogger.error("WALLET_PUBLIC_KEY is null");
-			return '';
+			return "";
 		}
 		try {
 			const pnl = await calculateOverallPNL(
@@ -666,7 +670,7 @@ export const balanceProvider: Provider = {
 	get: async (runtime: IAgentRuntime, _message: Memory) => {
 		if (runtime.getSetting("WALLET_PUBLIC_KEY") == null) {
 			elizaLogger.error("WALLET_PUBLIC_KEY is null");
-			return '';
+			return "";
 		}
 		const totalBalanceUSD = await getTotalBalanceUSD(
 			runtime,
@@ -677,81 +681,83 @@ export const balanceProvider: Provider = {
 };
 
 export const addressProvider: Provider = {
-	get: async (runtime: IAgentRuntime, message: Memory) => {
+	get: async (runtime: IAgentRuntime, _message: Memory) => {
 		if (runtime.getSetting("WALLET_PUBLIC_KEY") == null) {
 			elizaLogger.error("WALLET_PUBLIC_KEY is null");
-			return '';
+			return "";
 		}
 		return `Base Network Address: ${runtime.getSetting("WALLET_PUBLIC_KEY")} \n ${blockExplorerBaseAddressUrl(runtime.getSetting("WALLET_PUBLIC_KEY"))}`;
 	},
 };
 
 export const tradingSignalBackTestProvider: Provider = {
-    get: async (runtime: IAgentRuntime, _message: Memory) => {
+	get: async (_runtime: IAgentRuntime, _message: Memory) => {
 		const timeFrames = {
-            '1D': {
-                btc: {
-                    netProfit: -68.14,
-                    totalTradesClosed: 7,
-                    percentageProfitable: 28.57,
-                    profitFactor: 0.899,
-                    maxDrawdown: 511.22,
-                    averageTrade: -9.73,
-                    numberOfBarsPerTrade: 2045,
-                    timePeriod: '1D'
-                }
-            },
-            '5D': {
-                btc: {
-                    netProfit: -304.24,
-                    totalTradesClosed: 68,
-                    percentageProfitable: 42.65,
-                    profitFactor: 0.947,
-                    maxDrawdown: 1662.64,
-                    averageTrade: -4.47,
-                    numberOfBarsPerTrade: 155,
-                    timePeriod: '5D'
-                }
-            },
-            '1M': {
-                btc: {
-                    netProfit: 5604.51,
-                    totalTradesClosed: 769,
-                    percentageProfitable: 39.27,
-                    profitFactor: 1.078,
-                    maxDrawdown: 8441.55,
-                    averageTrade: 7.29,
-                    numberOfBarsPerTrade: 21,
-                    timePeriod: '1M'
-                }
-            },
-            '3M': {
-                btc: {
-                    netProfit: 3354.51,
-                    totalTradesClosed: 1002,
-                    percentageProfitable: 36.93,
-                    profitFactor: 1.036,
-                    maxDrawdown: 7159.72,
-                    averageTrade: 3.35,
-                    numberOfBarsPerTrade: 14,
-                    timePeriod: '3M'
-                }
-            }
-        };
+			"1D": {
+				btc: {
+					netProfit: -68.14,
+					totalTradesClosed: 7,
+					percentageProfitable: 28.57,
+					profitFactor: 0.899,
+					maxDrawdown: 511.22,
+					averageTrade: -9.73,
+					numberOfBarsPerTrade: 2045,
+					timePeriod: "1D",
+				},
+			},
+			"5D": {
+				btc: {
+					netProfit: -304.24,
+					totalTradesClosed: 68,
+					percentageProfitable: 42.65,
+					profitFactor: 0.947,
+					maxDrawdown: 1662.64,
+					averageTrade: -4.47,
+					numberOfBarsPerTrade: 155,
+					timePeriod: "5D",
+				},
+			},
+			"1M": {
+				btc: {
+					netProfit: 5604.51,
+					totalTradesClosed: 769,
+					percentageProfitable: 39.27,
+					profitFactor: 1.078,
+					maxDrawdown: 8441.55,
+					averageTrade: 7.29,
+					numberOfBarsPerTrade: 21,
+					timePeriod: "1M",
+				},
+			},
+			"3M": {
+				btc: {
+					netProfit: 3354.51,
+					totalTradesClosed: 1002,
+					percentageProfitable: 36.93,
+					profitFactor: 1.036,
+					maxDrawdown: 7159.72,
+					averageTrade: 3.35,
+					numberOfBarsPerTrade: 14,
+					timePeriod: "3M",
+				},
+			},
+		};
 
-        const backtestResults = Object.entries(timeFrames).map(([timeFrame, data]) => {
-            return `
+		const backtestResults = Object.entries(timeFrames)
+			.map(([timeFrame, data]) => {
+				return `
             BTC ${timeFrame}: Net Profit: ${data.btc.netProfit}, Total Trades Closed: ${data.btc.totalTradesClosed}, Percentage Profitable: ${data.btc.percentageProfitable}, Profit Factor: ${data.btc.profitFactor}, Max Drawdown: ${data.btc.maxDrawdown}, Average Trade: ${data.btc.averageTrade}, Number of Bars per Trade: ${data.btc.numberOfBarsPerTrade}
             `;
-        }).join('\n');
+			})
+			.join("\n");
 
-        return `
+		return `
         BACKTEST / TRADING SIGNAL/ STRATEGY RESULTS for tickers being traded actively: 
         TICKER: BTC DIRECTION: LONG 
         ${backtestResults}
 		AS OF ${new Date().toLocaleString()} subject to change will be updated periodically
         `;
-    },
+	},
 };
 
 export default CoinbaseClientInterface;

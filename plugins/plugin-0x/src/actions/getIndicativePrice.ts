@@ -349,7 +349,7 @@ export const getPriceInquiry = async (
 		elizaLogger.error("Invalid token metadata");
 		return null;
 	}
-	
+
 	while (attempt < maxRetries) {
 		try {
 			// Initialize 0x client
@@ -357,19 +357,21 @@ export const getPriceInquiry = async (
 				apiKey: runtime.getSetting("ZERO_EX_API_KEY"),
 			});
 			// Setup wallet client
-			const client = createWalletClient({
+			const _client = createWalletClient({
 				account: privateKeyToAccount(
 					`0x${runtime.getSetting("WALLET_PRIVATE_KEY")}` as `0x${string}`,
 				),
 				chain: base,
 				transport: http(runtime.getSetting("ALCHEMY_HTTP_TRANSPORT_URL")),
 			}).extend(publicActions);
-			elizaLogger.info(`priceParams: ${JSON.stringify({
-				sellAmount: Number(Math.round(sellAmountBaseUnits)).toString(),
-				sellToken: sellTokenMetadata.address,
-				buyToken: buyTokenMetadata.address,
-				chainId,
-			})}`);
+			elizaLogger.info(
+				`priceParams: ${JSON.stringify({
+					sellAmount: Number(Math.round(sellAmountBaseUnits)).toString(),
+					sellToken: sellTokenMetadata.address,
+					buyToken: buyTokenMetadata.address,
+					chainId,
+				})}`,
+			);
 			// Get price quote
 			const price = await getPrice(zxClient, {
 				sellAmount: Number(Math.round(sellAmountBaseUnits)).toString(),
@@ -405,11 +407,14 @@ export const getPriceInquiry = async (
 			};
 		} catch (error) {
 			attempt++;
-			elizaLogger.error(`Error in getPriceInquiry (attempt ${attempt}):`, error.message);
+			elizaLogger.error(
+				`Error in getPriceInquiry (attempt ${attempt}):`,
+				error.message,
+			);
 			if (attempt >= maxRetries) {
 				return null;
 			}
-			await new Promise(resolve => setTimeout(resolve, 5000)); // Sleep for 1 second before retrying
+			await new Promise((resolve) => setTimeout(resolve, 5000)); // Sleep for 1 second before retrying
 		}
 	}
 	return null;
@@ -433,7 +438,6 @@ const getPrice = async (
 	}
 };
 
-
 const formatAmounts = (
 	price: GetIndicativePriceResponse,
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -456,7 +460,7 @@ const formatAmounts = (
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const logFormattedResponse = (amounts: any, chainId: number) => {
-	const response = [
+	const _response = [
 		"💱 Swap Details:",
 		"────────────────",
 		`📤 Sell: ${amounts.sellAmount.toFixed(4)} ${amounts.sellSymbol}`,
@@ -465,5 +469,4 @@ const logFormattedResponse = (amounts: any, chainId: number) => {
 		`🔗 Chain: ${CHAIN_NAMES[chainId]}`,
 		"────────────────",
 	].join("\n");
-
 };

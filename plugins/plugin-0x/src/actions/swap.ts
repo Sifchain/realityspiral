@@ -7,10 +7,17 @@ import {
 	type State,
 	elizaLogger,
 } from "@elizaos/core";
-import { type Hex, concat, erc20Abi, getContract, maxUint256, numberToHex } from "viem";
+import {
+	type Hex,
+	concat,
+	erc20Abi,
+	getContract,
+	maxUint256,
+	numberToHex,
+} from "viem";
 import { CHAIN_EXPLORERS, ZX_MEMORY } from "../constants";
 import { getWalletClient } from "../hooks.ts/useGetWalletClient";
-import { Chains, GetIndicativePriceResponse, type Quote } from "../types";
+import { Chains, type GetIndicativePriceResponse, type Quote } from "../types";
 import { getPriceInquiry } from "./getIndicativePrice";
 import { getQuoteObj } from "./getQuote";
 
@@ -217,7 +224,10 @@ export const tokenSwap = async (
 			break; // Exit loop if successful
 		} catch (error) {
 			attempt++;
-			elizaLogger.error(`Error during price inquiry (attempt ${attempt}):`, error.message);
+			elizaLogger.error(
+				`Error during price inquiry (attempt ${attempt}):`,
+				error.message,
+			);
 			if (attempt >= maxRetries) {
 				return null;
 			}
@@ -241,7 +251,10 @@ export const tokenSwap = async (
 			break; // Exit loop if successful
 		} catch (error) {
 			attempt++;
-			elizaLogger.error(`Error during quote retrieval (attempt ${attempt}):`, error.message);
+			elizaLogger.error(
+				`Error during quote retrieval (attempt ${attempt}):`,
+				error.message,
+			);
 			if (attempt >= maxRetries) {
 				return null;
 			}
@@ -272,7 +285,7 @@ export const tokenSwap = async (
 			);
 			elizaLogger.info("approved ", approved);
 			if (!approved) return null;
-			
+
 			const nonce = await client.getTransactionCount({
 				address: (client.account as { address: `0x${string}` }).address,
 				blockTag: "pending",
@@ -307,7 +320,7 @@ export const tokenSwap = async (
 					elizaLogger.info("Transaction was replaced:", replacement);
 				},
 			});
-			
+
 			if (receipt.status === "success") {
 				elizaLogger.info(
 					`✅ Swap executed successfully!\nView on Explorer: ${CHAIN_EXPLORERS[chainId]}/tx/${txHash}`,
@@ -322,11 +335,14 @@ export const tokenSwap = async (
 			return null;
 		} catch (error) {
 			attempt++;
-			elizaLogger.error(`Error during transaction process (attempt ${attempt}):`, error.message);
+			elizaLogger.error(
+				`Error during transaction process (attempt ${attempt}):`,
+				error.message,
+			);
 			if (attempt >= maxRetries) {
 				return null;
 			}
-			await new Promise(resolve => setTimeout(resolve, 5000)); // Sleep for 5 second before retrying
+			await new Promise((resolve) => setTimeout(resolve, 5000)); // Sleep for 5 second before retrying
 		}
 	}
 	return null;
@@ -370,10 +386,9 @@ const handleTokenApprovals = async (
 			if (receipt.status === "success") {
 				elizaLogger.info("Token approval successful");
 				return true;
-			} else {
-				elizaLogger.error("Token approval failed");
-				return false;
 			}
+			elizaLogger.error("Token approval failed");
+			return false;
 		}
 
 		return true;

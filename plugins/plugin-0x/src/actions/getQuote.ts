@@ -376,7 +376,9 @@ export const getQuoteObj = async (
 				BigInt(quote.sellAmount),
 				sellTokenObject.decimals,
 			);
-			elizaLogger.info(`sellAmountBaseUnitsQuoted: ${sellAmountBaseUnitsQuoted}`);
+			elizaLogger.info(
+				`sellAmountBaseUnitsQuoted: ${sellAmountBaseUnitsQuoted}`,
+			);
 
 			const warnings = [];
 			if (quote.issues?.balance) {
@@ -452,11 +454,14 @@ export const getQuoteObj = async (
 			return quote;
 		} catch (error) {
 			attempt++;
-			elizaLogger.error(`Error getting quote (attempt ${attempt}):`, error.message);
+			elizaLogger.error(
+				`Error getting quote (attempt ${attempt}):`,
+				error.message,
+			);
 			if (attempt >= maxRetries) {
 				return null;
 			}
-			await new Promise(resolve => setTimeout(resolve, 5000)); // Sleep for 5 second before retrying
+			await new Promise((resolve) => setTimeout(resolve, 5000)); // Sleep for 5 second before retrying
 		}
 	}
 	return null;
