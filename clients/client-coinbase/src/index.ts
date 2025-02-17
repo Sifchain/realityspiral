@@ -51,6 +51,13 @@ export type WalletType =
 	| "dry_powder"
 	| "operational_capital";
 
+const TOKEN_DECIMALS: { [key: string]: number } = {
+	USDC: 6,
+	ETH: 18,
+	BTC: 8,
+	CBBTC: 18,
+};
+
 export class CoinbaseClient implements Client {
 	private runtime: IAgentRuntime;
 	private server: express.Application;
@@ -292,9 +299,12 @@ Generate only the tweet text, no commentary or markdown.`;
 
 		// Execute token swap
 		const buy = event.event.toUpperCase() === "BUY";
+		const tokenDecimals = TOKEN_DECIMALS[event.ticker] || 18; // Default to 18 if not found
+		const usdcDecimals = TOKEN_DECIMALS.USDC; // 6 decimals for USDC
+
 		const amountInCurrency = buy
-			? amount * 1e6
-			: (amount / Number(event.price)) * (event.ticker === "BTC" ? 1e8 : 1e18);
+			? amount * 10 ** usdcDecimals // Convert USD amount to USDC base units
+			: (amount / Number(event.price)) * 10 ** tokenDecimals; // Convert to token base units
 		elizaLogger.info(
 			"amountInCurrency non base units ",
 			amount / Number(event.price),
