@@ -552,7 +552,6 @@ export async function getTotalBalanceUSD(
 		"base-mainnet",
 		erc20Abi,
 	);
-	elizaLogger.info(`cbbtcBalanceBaseUnits ${cbbtcBalanceBaseUnits}`);
 	const cbbtcPriceInquiry = await getPriceInquiry(
 		runtime,
 		"CBBTC",
@@ -566,6 +565,7 @@ export async function getTotalBalanceUSD(
 	}
 	const cbbtcQuote = await getQuoteObj(runtime, cbbtcPriceInquiry, publicKey);
 	const cbbtcBalanceUSD = Number(cbbtcQuote.buyAmount) / 1000000;
+	elizaLogger.info(`cbbtcBalanceUSD ${cbbtcBalanceUSD}`);
 	return ethBalanceUSD + usdcBalance + cbbtcBalanceUSD;
 }
 
