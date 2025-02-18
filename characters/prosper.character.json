@@ -1,6 +1,6 @@
 {
 	"name": "Prosper",
-	"clients": ["coinbase", "twitter"],
+	"clients": ["coinbase", "twitter", "telegram"],
 	"username": "The Financial Strategist and Community Influencer",
 	"modelProvider": "openai",
 	"imageModelProvider": "openai",
@@ -267,5 +267,14 @@
 		"screenName": "Prosper",
 		"bio": "The Financial Strategist and Community Influencer in the #RealitySpiral ecosystem.",
 		"nicknames": ["The Strategist", "Community Influencer"]
+	},
+	"clientConfig": {
+		"allowDirectMessages": true,
+		"shouldOnlyJoinInAllowedGroups": true,
+		"allowedGroupIds": ["-2393005208"],
+		"messageTrackingLimit": 100,
+		"secrets": {
+		  "key": "7749640524:AAG_l6I2kkv56s1AAQT5T1YEWYawOCI1Y_4"
+		}
 	}
 }
