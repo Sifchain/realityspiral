@@ -1,8 +1,6 @@
-import { Coinbase, Wallet } from "@coinbase/coinbase-sdk";
+import { Coinbase } from "@coinbase/coinbase-sdk";
 import {
 	type Client,
-	Content,
-	HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
 	ModelClass,
@@ -27,15 +25,10 @@ import {
 } from "@realityspiral/plugin-coinbase";
 import { postTweet } from "@realityspiral/plugin-twitter";
 import express from "express";
-import {
-	http,
-	createWalletClient,
-	erc20Abi,
-	formatUnits,
-	publicActions,
-} from "viem";
+import { http, createWalletClient, erc20Abi, publicActions } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
+import { getTokenMetadata } from "../../../plugins/plugin-0x/src/utils";
 import {
 	type WebhookEvent,
 	blockExplorerBaseAddressUrl,
@@ -51,19 +44,11 @@ export type WalletType =
 	| "dry_powder"
 	| "operational_capital";
 
-const TOKEN_DECIMALS: { [key: string]: number } = {
-	USDC: 6,
-	ETH: 18,
-	BTC: 8,
-	CBBTC: 18,
-};
-
 export class CoinbaseClient implements Client {
 	private runtime: IAgentRuntime;
 	private server: express.Application;
 	private port: number;
 	private wallets: CoinbaseWallet[];
-	private initialBalanceETH: number;
 
 	constructor(runtime: IAgentRuntime) {
 		this.runtime = runtime;
@@ -75,7 +60,6 @@ export class CoinbaseClient implements Client {
 		this.server = express();
 		this.port = Number(runtime.getSetting("COINBASE_WEBHOOK_PORT")) || 3001;
 		this.wallets = [];
-		this.initialBalanceETH = 1;
 	}
 
 	async initialize(): Promise<void> {
@@ -299,12 +283,16 @@ Generate only the tweet text, no commentary or markdown.`;
 
 		// Execute token swap
 		const buy = event.event.toUpperCase() === "BUY";
-		const tokenDecimals = TOKEN_DECIMALS[event.ticker] || 18; // Default to 18 if not found
-		const usdcDecimals = TOKEN_DECIMALS.USDC; // 6 decimals for USDC
+		const tokenMetadata = getTokenMetadata(event.ticker);
+		const usdcMetadata = getTokenMetadata("USDC");
+		const tokenDecimals = tokenMetadata?.decimals || 18; // Default to 18 if not found
+		const usdcDecimals = usdcMetadata?.decimals || 6; // Default to 6 if not found
 
-		const amountInCurrency = buy
-			? amount * 10 ** usdcDecimals // Convert USD amount to USDC base units
-			: (amount / Number(event.price)) * 10 ** tokenDecimals; // Convert to token base units
+		const amountInCurrency = Math.floor(
+			buy
+				? amount * 10 ** usdcDecimals // Convert USD amount to USDC base units
+				: (amount / Number(event.price)) * 10 ** tokenDecimals, // Convert to token base units
+		);
 		elizaLogger.info(
 			"amountInCurrency non base units ",
 			amount / Number(event.price),
@@ -564,7 +552,6 @@ export async function getTotalBalanceUSD(
 		"base-mainnet",
 		erc20Abi,
 	);
-	elizaLogger.info(`cbbtcBalanceBaseUnits ${cbbtcBalanceBaseUnits}`);
 	const cbbtcPriceInquiry = await getPriceInquiry(
 		runtime,
 		"CBBTC",
@@ -578,6 +565,7 @@ export async function getTotalBalanceUSD(
 	}
 	const cbbtcQuote = await getQuoteObj(runtime, cbbtcPriceInquiry, publicKey);
 	const cbbtcBalanceUSD = Number(cbbtcQuote.buyAmount) / 1000000;
+	elizaLogger.info(`cbbtcBalanceUSD ${cbbtcBalanceUSD}`);
 	return ethBalanceUSD + usdcBalance + cbbtcBalanceUSD;
 }
 
