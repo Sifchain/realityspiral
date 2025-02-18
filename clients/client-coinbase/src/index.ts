@@ -288,9 +288,11 @@ Generate only the tweet text, no commentary or markdown.`;
 		const tokenDecimals = tokenMetadata?.decimals || 18; // Default to 18 if not found
 		const usdcDecimals = usdcMetadata?.decimals || 6; // Default to 6 if not found
 
-		const amountInCurrency = buy
-			? amount * 10 ** usdcDecimals // Convert USD amount to USDC base units
-			: (amount / Number(event.price)) * 10 ** tokenDecimals; // Convert to token base units
+		const amountInCurrency = Math.floor(
+			buy
+				? amount * 10 ** usdcDecimals // Convert USD amount to USDC base units
+				: (amount / Number(event.price)) * 10 ** tokenDecimals, // Convert to token base units
+		);
 		elizaLogger.info(
 			"amountInCurrency non base units ",
 			amount / Number(event.price),
