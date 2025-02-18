@@ -104,6 +104,7 @@ pnpm build
 │   ├── github/      # GitHub repository automation plugins
 │   └── twitter/     # Custom Eliza Twitter/X social media plugins
 └── ui/              # User interface components and utilities
+```
 
 ## Releasing New Versions
 
