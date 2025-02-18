@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { SqliteDatabaseAdapter } from "@elizaos/adapter-sqlite";
 import { AutoClientInterface } from "@elizaos/client-auto";
+import { TelegramClientInterface } from "@elizaos/client-telegram";
 import { TwitterClientInterface } from "@elizaos/client-twitter";
 import {
 	AgentRuntime,
@@ -29,7 +30,6 @@ import { normalizeCharacter } from "@elizaos/plugin-di";
 import { CoinbaseClientInterface } from "@realityspiral/client-coinbase";
 import { DirectClient } from "@realityspiral/client-direct";
 import { GitHubClientInterface } from "@realityspiral/client-github";
-import { TelegramClientInterface } from "@elizaos/client-telegram";
 import {
 	advancedTradePlugin,
 	coinbaseCommercePlugin,
