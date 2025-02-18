@@ -188,7 +188,7 @@ export class CoinbaseClient implements Client {
 		}
 	}
 
-	private async generateTweetContent(
+	private async generateMediaContent(
 		event: WebhookEvent,
 		amountInCurrency: number,
 		pnl: string,
@@ -323,7 +323,7 @@ Generate only the tweet text, no commentary or markdown.`;
 		elizaLogger.info("txHash ", txHash);
 
 		// Generate and post tweet
-		await this.handleTweetPosting(
+		await this.handleMediaPosting(
 			event,
 			amount,
 			pnl,
@@ -392,7 +392,7 @@ Generate only the tweet text, no commentary or markdown.`;
 		);
 	}
 
-	private async handleTweetPosting(
+	private async handleMediaPosting(
 		event: WebhookEvent,
 		amount: number,
 		pnl: string,
@@ -400,8 +400,9 @@ Generate only the tweet text, no commentary or markdown.`;
 		state: State,
 		txHash: string,
 	) {
+		let mediaContent = "";
 		try {
-			const tweetContent = await this.generateTweetContent(
+			mediaContent = await this.generateMediaContent(
 				event,
 				amount,
 				pnl,
@@ -409,17 +410,39 @@ Generate only the tweet text, no commentary or markdown.`;
 				state,
 				txHash,
 			);
-			elizaLogger.info("Generated tweet content:", tweetContent);
+			elizaLogger.info("Generated media content:", mediaContent);
 
 			if (this.runtime.getSetting("TWITTER_DRY_RUN").toLowerCase() === "true") {
 				elizaLogger.info("Dry run mode enabled. Skipping tweet posting.");
-				return;
+			} else {
+				// post tweet to twitter
+				const response = await postTweet(this.runtime, mediaContent);
+				elizaLogger.info("Tweet response:", response);
 			}
-
-			const response = await postTweet(this.runtime, tweetContent);
-			elizaLogger.info("Tweet response:", response);
 		} catch (error) {
 			elizaLogger.error("Failed to post tweet:", error);
+		}
+		try {
+			if (
+				this.runtime.getSetting("TELEGRAM_CLIENT_DISABLED").toLowerCase() ===
+					"true" &&
+				this.runtime.getSetting("TELEGRAM_BOT_TOKEN") !== null
+			) {
+				elizaLogger.info(
+					"Telegram client disabled. Skipping telegram posting.",
+				);
+			} else {
+				// post message to telegram
+				if (mediaContent.length > 0) {
+					// TODO: remove hardcoded channel id
+					await this.runtime.clients.telegram.messageManager.bot.telegram.sendMessage(
+						this.runtime.getSetting("TELEGRAM_CHANNEL_ID"),
+						mediaContent,
+					);
+				}
+			}
+		} catch (error) {
+			elizaLogger.error("Failed to post telegram:", error);
 		}
 	}
 
