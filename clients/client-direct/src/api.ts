@@ -21,6 +21,11 @@ import type { TeeLogQuery, TeeLogService } from "@elizaos/plugin-tee-log";
 import type { WebhookEvent } from "@realityspiral/client-coinbase";
 import { REST, Routes } from "discord.js";
 import type { DirectClient } from ".";
+import { getAllTraces, getTracesByAgentId, getTracesByRoom, getUniqueRuns, getUniqueAgentId, getUniqueRoomIdByAgent } from "./controllers/tracesController.ts";
+// import { db } from "./config/db";
+import pkg from "pg";
+import { addTemplate, updateTemplate, deleteTemplate, batchUpdateCharacterData, getTemplates } from "./controllers/templateController";
+
 
 interface UUIDParams {
 	agentId: UUID;
@@ -541,6 +546,53 @@ export function createApiRouter(
 			res.status(404).json({ error: "Agent not found" });
 		}
 	});
+
+	router.get("/traces", async (req, res) =>{
+		getAllTraces(req, res)
+	});
+
+	router.get("/traces/unique-agent-ids", async (req, res) => {
+		getUniqueAgentId(req, res)
+	});
+
+	router.get("/traces/unique-room_id/by-agent/:agent_id", async (req, res) => {
+		getUniqueRoomIdByAgent(req, res)
+	});
+
+	router.get("/traces/by-room/:roomId", async (req, res) => {
+		getTracesByRoom(req, res)
+	});
+	
+	router.get("/traces/by-agent/:agentId", async (req, res) => {
+		getTracesByAgentId(req, res)
+	});
+
+
+
+
+
+
+	router.get("/templates/:characterName", async (req, res) => {
+		console.log("get template called with request", req);
+		getTemplates(req, res)
+	});
+
+	router.post("/templates/:characterName", async (req, res) => {
+		addTemplate(req, res)
+	});
+
+	router.put("/templates/:characterName", async (req, res) => {
+		updateTemplate(req, res)
+	});
+
+	router.delete("/templates/:characterName/:templateName", async (req, res) => {
+		deleteTemplate(req, res)
+	});
+
+	router.post("/templates/:characterName/batch-update", async (req, res) => {
+		batchUpdateCharacterData(req, res)
+	});
+	
 
 	return router;
 }
