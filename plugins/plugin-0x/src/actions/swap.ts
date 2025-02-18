@@ -240,7 +240,7 @@ export const tokenSwap = async (
 	}
 
 	const chainId = Chains.base;
-	elizaLogger.info("chainId ", chainId);
+	elizaLogger.info(`chainId ${chainId}`);
 	let quote = null;
 	attempt = 0;
 
@@ -280,7 +280,7 @@ export const tokenSwap = async (
 			// Handle token approvals
 			const approved = await handleTokenApprovals(
 				client,
-				priceInquiry,
+				quote,
 				priceInquiry.sellTokenObject.address as `0x${string}`,
 			);
 			elizaLogger.info("approved ", approved);
@@ -351,7 +351,7 @@ export const tokenSwap = async (
 const handleTokenApprovals = async (
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	client: any,
-	price: GetIndicativePriceResponse,
+	quote: GetIndicativePriceResponse,
 	sellTokenAddress: `0x${string}` = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
 ): Promise<boolean> => {
 	try {
@@ -362,11 +362,11 @@ const handleTokenApprovals = async (
 			client: client as any,
 		});
 
-		if (price.issues.allowance !== null) {
+		if (quote.issues.allowance !== null) {
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const { request } = await (sellTokenContract as any).simulate.approve([
 				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-				(price as any).issues.allowance.spender,
+				(quote as any).issues.allowance.spender,
 				maxUint256,
 			]);
 
