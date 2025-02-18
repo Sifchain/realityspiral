@@ -414,23 +414,32 @@ Generate only the tweet text, no commentary or markdown.`;
 
 			if (this.runtime.getSetting("TWITTER_DRY_RUN").toLowerCase() === "true") {
 				elizaLogger.info("Dry run mode enabled. Skipping tweet posting.");
-				return;
+			} else {
+				// post tweet to twitter
+				const response = await postTweet(this.runtime, mediaContent);
+				elizaLogger.info("Tweet response:", response);
 			}
-			// post tweet to twitter
-			const response = await postTweet(this.runtime, mediaContent);
-			elizaLogger.info("Tweet response:", response);
 		} catch (error) {
 			elizaLogger.error("Failed to post tweet:", error);
 		}
 		try {
-			if (this.runtime.getSetting("TELEGRAM_CLIENT_DISABLED").toLowerCase() === "true" && this.runtime.getSetting("TELEGRAM_BOT_TOKEN") !== null) {
-				elizaLogger.info("Telegram client disabled. Skipping telegram posting.");
-				return;
-			}
-			// post message to telegram
-			if (mediaContent.length > 0) {
-				// TODO: remove hardcoded channel id
-				await this.runtime.clients.telegram.messageManager.bot.telegram.sendMessage('-2393005208', mediaContent);
+			if (
+				this.runtime.getSetting("TELEGRAM_CLIENT_DISABLED").toLowerCase() ===
+					"true" &&
+				this.runtime.getSetting("TELEGRAM_BOT_TOKEN") !== null
+			) {
+				elizaLogger.info(
+					"Telegram client disabled. Skipping telegram posting.",
+				);
+			} else {
+				// post message to telegram
+				if (mediaContent.length > 0) {
+					// TODO: remove hardcoded channel id
+					await this.runtime.clients.telegram.messageManager.bot.telegram.sendMessage(
+						this.runtime.getSetting("TELEGRAM_CHANNEL_ID"),
+						mediaContent,
+					);
+				}
 			}
 		} catch (error) {
 			elizaLogger.error("Failed to post telegram:", error);
