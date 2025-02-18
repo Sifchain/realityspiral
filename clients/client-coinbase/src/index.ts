@@ -428,7 +428,10 @@ Generate only the tweet text, no commentary or markdown.`;
 				return;
 			}
 			// post message to telegram
-			await this.runtime.clients.telegram.messageManager.bot.telegram.sendMessage('-2393005208', mediaContent);
+			if (mediaContent.length > 0) {
+				// TODO: remove hardcoded channel id
+				await this.runtime.clients.telegram.messageManager.bot.telegram.sendMessage('-2393005208', mediaContent);
+			}
 		} catch (error) {
 			elizaLogger.error("Failed to post telegram:", error);
 		}
