@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { SqliteDatabaseAdapter } from "@elizaos/adapter-sqlite";
 import { AutoClientInterface } from "@elizaos/client-auto";
+import { TelegramClientInterface } from "@elizaos/client-telegram";
 import { TwitterClientInterface } from "@elizaos/client-twitter";
 import {
 	AgentRuntime,
@@ -149,6 +150,7 @@ export enum Clients {
 	TWITTER = "twitter",
 	COINBASE = "coinbase",
 	GITHUB = "github",
+	TELEGRAM = "telegram",
 }
 
 export const CharacterSchema = BaseCharacterSchema.extend({
@@ -459,6 +461,13 @@ export async function initializeClients(
 		if (githubClient) clients.github = githubClient;
 	}
 
+	if (
+		clientTypes.includes(Clients.TELEGRAM) &&
+		getSecret(character, "TELEGRAM_CLIENT_DISABLED") !== "true"
+	) {
+		const telegramClient = await TelegramClientInterface.start(runtime);
+		if (telegramClient) clients.telegram = telegramClient;
+	}
 	elizaLogger.log("client keys", Object.keys(clients));
 
 	function determineClientType(client: Client): string {

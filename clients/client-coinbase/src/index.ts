@@ -1,8 +1,6 @@
-import { Coinbase, Wallet } from "@coinbase/coinbase-sdk";
+import { Coinbase } from "@coinbase/coinbase-sdk";
 import {
 	type Client,
-	Content,
-	HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
 	ModelClass,
@@ -27,15 +25,10 @@ import {
 } from "@realityspiral/plugin-coinbase";
 import { postTweet } from "@realityspiral/plugin-twitter";
 import express from "express";
-import {
-	http,
-	createWalletClient,
-	erc20Abi,
-	formatUnits,
-	publicActions,
-} from "viem";
+import { http, createWalletClient, erc20Abi, publicActions } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
+import { getTokenMetadata } from "../../../plugins/plugin-0x/src/utils";
 import {
 	type WebhookEvent,
 	blockExplorerBaseAddressUrl,
@@ -51,19 +44,11 @@ export type WalletType =
 	| "dry_powder"
 	| "operational_capital";
 
-const TOKEN_DECIMALS: { [key: string]: number } = {
-	USDC: 6,
-	ETH: 18,
-	BTC: 8,
-	CBBTC: 18,
-};
-
 export class CoinbaseClient implements Client {
 	private runtime: IAgentRuntime;
 	private server: express.Application;
 	private port: number;
 	private wallets: CoinbaseWallet[];
-	private initialBalanceETH: number;
 
 	constructor(runtime: IAgentRuntime) {
 		this.runtime = runtime;
@@ -75,7 +60,6 @@ export class CoinbaseClient implements Client {
 		this.server = express();
 		this.port = Number(runtime.getSetting("COINBASE_WEBHOOK_PORT")) || 3001;
 		this.wallets = [];
-		this.initialBalanceETH = 1;
 	}
 
 	async initialize(): Promise<void> {
@@ -204,7 +188,7 @@ export class CoinbaseClient implements Client {
 		}
 	}
 
-	private async generateTweetContent(
+	private async generateMediaContent(
 		event: WebhookEvent,
 		amountInCurrency: number,
 		pnl: string,
@@ -299,12 +283,16 @@ Generate only the tweet text, no commentary or markdown.`;
 
 		// Execute token swap
 		const buy = event.event.toUpperCase() === "BUY";
-		const tokenDecimals = TOKEN_DECIMALS[event.ticker] || 18; // Default to 18 if not found
-		const usdcDecimals = TOKEN_DECIMALS.USDC; // 6 decimals for USDC
+		const tokenMetadata = getTokenMetadata(event.ticker);
+		const usdcMetadata = getTokenMetadata("USDC");
+		const tokenDecimals = tokenMetadata?.decimals || 18; // Default to 18 if not found
+		const usdcDecimals = usdcMetadata?.decimals || 6; // Default to 6 if not found
 
-		const amountInCurrency = buy
-			? amount * 10 ** usdcDecimals // Convert USD amount to USDC base units
-			: (amount / Number(event.price)) * 10 ** tokenDecimals; // Convert to token base units
+		const amountInCurrency = Math.floor(
+			buy
+				? amount * 10 ** usdcDecimals // Convert USD amount to USDC base units
+				: (amount / Number(event.price)) * 10 ** tokenDecimals, // Convert to token base units
+		);
 		elizaLogger.info(
 			"amountInCurrency non base units ",
 			amount / Number(event.price),
@@ -335,7 +323,7 @@ Generate only the tweet text, no commentary or markdown.`;
 		elizaLogger.info("txHash ", txHash);
 
 		// Generate and post tweet
-		await this.handleTweetPosting(
+		await this.handleMediaPosting(
 			event,
 			amount,
 			pnl,
@@ -404,7 +392,7 @@ Generate only the tweet text, no commentary or markdown.`;
 		);
 	}
 
-	private async handleTweetPosting(
+	private async handleMediaPosting(
 		event: WebhookEvent,
 		amount: number,
 		pnl: string,
@@ -412,8 +400,9 @@ Generate only the tweet text, no commentary or markdown.`;
 		state: State,
 		txHash: string,
 	) {
+		let mediaContent = "";
 		try {
-			const tweetContent = await this.generateTweetContent(
+			mediaContent = await this.generateMediaContent(
 				event,
 				amount,
 				pnl,
@@ -421,17 +410,39 @@ Generate only the tweet text, no commentary or markdown.`;
 				state,
 				txHash,
 			);
-			elizaLogger.info("Generated tweet content:", tweetContent);
+			elizaLogger.info("Generated media content:", mediaContent);
 
 			if (this.runtime.getSetting("TWITTER_DRY_RUN").toLowerCase() === "true") {
 				elizaLogger.info("Dry run mode enabled. Skipping tweet posting.");
-				return;
+			} else {
+				// post tweet to twitter
+				const response = await postTweet(this.runtime, mediaContent);
+				elizaLogger.info("Tweet response:", response);
 			}
-
-			const response = await postTweet(this.runtime, tweetContent);
-			elizaLogger.info("Tweet response:", response);
 		} catch (error) {
 			elizaLogger.error("Failed to post tweet:", error);
+		}
+		try {
+			if (
+				this.runtime.getSetting("TELEGRAM_CLIENT_DISABLED").toLowerCase() ===
+					"true" &&
+				this.runtime.getSetting("TELEGRAM_BOT_TOKEN") !== null
+			) {
+				elizaLogger.info(
+					"Telegram client disabled. Skipping telegram posting.",
+				);
+			} else {
+				// post message to telegram
+				if (mediaContent.length > 0) {
+					// TODO: remove hardcoded channel id
+					await this.runtime.clients.telegram.messageManager.bot.telegram.sendMessage(
+						this.runtime.getSetting("TELEGRAM_CHANNEL_ID"),
+						mediaContent,
+					);
+				}
+			}
+		} catch (error) {
+			elizaLogger.error("Failed to post telegram:", error);
 		}
 	}
 
@@ -564,7 +575,6 @@ export async function getTotalBalanceUSD(
 		"base-mainnet",
 		erc20Abi,
 	);
-	elizaLogger.info(`cbbtcBalanceBaseUnits ${cbbtcBalanceBaseUnits}`);
 	const cbbtcPriceInquiry = await getPriceInquiry(
 		runtime,
 		"CBBTC",
@@ -578,6 +588,7 @@ export async function getTotalBalanceUSD(
 	}
 	const cbbtcQuote = await getQuoteObj(runtime, cbbtcPriceInquiry, publicKey);
 	const cbbtcBalanceUSD = Number(cbbtcQuote.buyAmount) / 1000000;
+	elizaLogger.info(`cbbtcBalanceUSD ${cbbtcBalanceUSD}`);
 	return ethBalanceUSD + usdcBalance + cbbtcBalanceUSD;
 }
 

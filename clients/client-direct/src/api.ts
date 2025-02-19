@@ -21,6 +21,21 @@ import type { TeeLogQuery, TeeLogService } from "@elizaos/plugin-tee-log";
 import type { WebhookEvent } from "@realityspiral/client-coinbase";
 import { REST, Routes } from "discord.js";
 import type { DirectClient } from ".";
+import { setupSwagger } from "./config/swagger.ts";
+import {
+	addTemplate,
+	batchUpdateCharacterData,
+	deleteTemplate,
+	getTemplates,
+	updateTemplate,
+} from "./controllers/templateController";
+import {
+	getAllTraces,
+	getTracesByAgentId,
+	getTracesByRoom,
+	getUniqueAgentId,
+	getUniqueRoomIdByAgent,
+} from "./controllers/tracesController.ts";
 
 const GITHUB_REPO_URL = "https://github.com/Sifchain/realityspiral";
 
@@ -79,7 +94,6 @@ export function createApiRouter(
 	directClient: DirectClient,
 ): Router {
 	const router = express.Router();
-
 	router.use(cors());
 	router.use(bodyParser.json());
 	router.use(bodyParser.urlencoded({ extended: true }));
@@ -557,6 +571,47 @@ export function createApiRouter(
 		} else {
 			res.status(404).json({ error: "Agent not found" });
 		}
+	});
+
+	router.get("/traces", async (req, res) => {
+		getAllTraces(req, res);
+	});
+
+	router.get("/traces/unique-agent-ids", async (req, res) => {
+		getUniqueAgentId(req, res);
+	});
+
+	router.get("/traces/unique-room_id/by-agent/:agent_id", async (req, res) => {
+		getUniqueRoomIdByAgent(req, res);
+	});
+
+	router.get("/traces/by-room/:roomId", async (req, res) => {
+		getTracesByRoom(req, res);
+	});
+
+	router.get("/traces/by-agent/:agentId", async (req, res) => {
+		getTracesByAgentId(req, res);
+	});
+
+	router.get("/templates/:characterName", async (req, res) => {
+		console.log("get template called with request", req);
+		getTemplates(req, res);
+	});
+
+	router.post("/templates/:characterName", async (req, res) => {
+		addTemplate(req, res);
+	});
+
+	router.put("/templates/:characterName", async (req, res) => {
+		updateTemplate(req, res);
+	});
+
+	router.delete("/templates/:characterName/:templateName", async (req, res) => {
+		deleteTemplate(req, res);
+	});
+
+	router.post("/templates/:characterName/batch-update", async (req, res) => {
+		batchUpdateCharacterData(req, res);
 	});
 
 	return router;
