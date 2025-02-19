@@ -79,10 +79,7 @@ export function createApiRouter(
 	agents: Map<string, AgentRuntime>,
 	directClient: DirectClient,
 ): Router {
-	const router = express.Router();
-
-	// setupSwagger(router);
-	
+	const router = express.Router();	
 	router.use(cors());
 	router.use(bodyParser.json());
 	router.use(bodyParser.urlencoded({ extended: true }));
