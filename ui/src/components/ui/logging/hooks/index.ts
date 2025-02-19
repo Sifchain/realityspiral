@@ -15,7 +15,7 @@ export const use = () => {
     const fetchUniqueAgents = async () => {
         setLoading(true);
         try {
-            const response = await fetch(
+            const response = await fetch( 
                 `${API_BASE_URL}/unique-agent-ids`
             );
             if (!response.ok)
