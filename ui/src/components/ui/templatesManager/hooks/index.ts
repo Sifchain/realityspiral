@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export const use = () => {
-    const API_BASE_URL = "http://localhost:3000/templates";
+    const API_BASE_URL =  `${process.env.UI_SERVER_URL || "http://localhost:3000"}/templates`;
 
     const [character, setCharacter] = useState("prosper");
     const [templates, setTemplates] = useState<{ [key: string]: string }>({});
