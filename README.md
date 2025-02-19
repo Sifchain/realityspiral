@@ -67,6 +67,8 @@ pnpm install
 # Start development servers
 pnpm dev
 
+# Set POSTGRES_URL, UI_SERVER_URL and POSTGRES_URL
+
 # Start with a specific character
 
 # start with staff-engineer
