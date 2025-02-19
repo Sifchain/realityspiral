@@ -1,131 +1,133 @@
-import { useQuery } from "@tanstack/react-query";
-import info from "@/lib/info.json";
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarMenuSkeleton,
+	Sidebar,
+	SidebarContent,
+	SidebarFooter,
+	SidebarGroup,
+	SidebarGroupContent,
+	SidebarGroupLabel,
+	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	SidebarMenuSkeleton,
 } from "@/components/ui/sidebar";
 import { apiClient } from "@/lib/api";
+import type { UUID } from "@elizaos/core";
+import { useQuery } from "@tanstack/react-query";
+import { Book, Cog, Info, User } from "lucide-react";
 import { NavLink, useLocation } from "react-router";
-import { type UUID } from "@elizaos/core";
-import { Book, Cog, User } from "lucide-react";
 import ConnectionStatus from "./connection-status";
 
 export function AppSidebar() {
-    const location = useLocation();
-    const query = useQuery({
-        queryKey: ["agents"],
-        queryFn: () => apiClient.getAgents(),
-        refetchInterval: 5_000,
-    });
+	const location = useLocation();
+	const query = useQuery({
+		queryKey: ["agents"],
+		queryFn: () => apiClient.getAgents(),
+		refetchInterval: 5_000,
+	});
 
-    const agents = query?.data?.agents;
+	const versionQuery = useQuery({
+		queryKey: ["version"],
+		queryFn: () => apiClient.getVersion(),
+	});
 
-    return (
-        <Sidebar>
-            <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <NavLink to="/">
-                                <img
-                                    src="/elizaos-icon.png"
-                                    width="100%"
-                                    height="100%"
-                                    className="size-7"
-                                />
+	const agents = query?.data?.agents;
+	const version = versionQuery.data?.version;
+	const url = versionQuery.data?.url;
 
-                                <div className="flex flex-col gap-0.5 leading-none">
-                                    <span className="font-semibold">
-                                        ElizaOS
-                                    </span>
-                                    <span className="">v{info?.version}</span>
-                                </div>
-                            </NavLink>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarHeader>
-            <SidebarContent>
-                <SidebarGroup>
-                    <SidebarGroupLabel>Agents</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            {query?.isPending ? (
-                                <div>
-                                    {Array.from({ length: 5 }).map(
-                                        (_, index) => (
-                                            <SidebarMenuItem key={index}>
-                                                <SidebarMenuSkeleton />
-                                            </SidebarMenuItem>
-                                        )
-                                    )}
-                                </div>
-                            ) : (
-                                <div>
-                                    {agents?.map(
-                                        (agent: { id: UUID; name: string }) => (
-                                            <SidebarMenuItem key={agent.id}>
-                                                <NavLink
-                                                    to={`/chat/${agent.id}`}
-                                                >
-                                                    <SidebarMenuButton
-                                                        isActive={location.pathname.includes(
-                                                            agent.id
-                                                        )}
-                                                    >
-                                                        <User />
-                                                        <span>
-                                                            {agent.name}
-                                                        </span>
-                                                    </SidebarMenuButton>
-                                                </NavLink>
-                                            </SidebarMenuItem>
-                                        )
-                                    )}
-                                </div>
-                            )}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-            </SidebarContent>
-            <SidebarFooter>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <NavLink
-                            to="https://elizaos.github.io/eliza/docs/intro/"
-                            target="_blank"
-                        >
-                            <SidebarMenuButton>
-                                <Book /> Documentation
-                            </SidebarMenuButton>
-                        </NavLink>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <NavLink to="/logs">
-                            <SidebarMenuButton>
-                                <Cog /> Settings
-                            </SidebarMenuButton>
-                        </NavLink>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <NavLink to="/templates">
-                            <SidebarMenuButton>
-                                <Book /> Templates
-                            </SidebarMenuButton>
-                        </NavLink>
-                    </SidebarMenuItem>
-                    <ConnectionStatus />
-                </SidebarMenu>
-            </SidebarFooter>
-        </Sidebar>
-    );
+	return (
+		<Sidebar>
+			<SidebarHeader>
+				<SidebarMenu>
+					<SidebarMenuItem>
+						<SidebarMenuButton size="lg" asChild>
+							<NavLink to="/">
+								<img
+									alt="Reality Spiral"
+									src="/favicon-32x32.png"
+									width="100%"
+									height="100%"
+									className="size-7"
+								/>
+
+								<div className="flex flex-col gap-0.5 leading-none">
+									<span className="font-semibold">Reality Spiral</span>
+								</div>
+							</NavLink>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+				</SidebarMenu>
+			</SidebarHeader>
+			<SidebarContent>
+				<SidebarGroup>
+					<SidebarGroupLabel>Agents</SidebarGroupLabel>
+					<SidebarGroupContent>
+						<SidebarMenu>
+							{query?.isPending ? (
+								<div>
+									{Array.from({ length: 5 }).map((_, index) => (
+										// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+										<SidebarMenuItem key={`skeleton-item-${index}`}>
+											<SidebarMenuSkeleton />
+										</SidebarMenuItem>
+									))}
+								</div>
+							) : (
+								<div>
+									{agents?.map((agent: { id: UUID; name: string }) => (
+										<SidebarMenuItem key={agent.id}>
+											<NavLink to={`/chat/${agent.id}`}>
+												<SidebarMenuButton
+													isActive={location.pathname.includes(agent.id)}
+												>
+													<User />
+													<span>{agent.name}</span>
+												</SidebarMenuButton>
+											</NavLink>
+										</SidebarMenuItem>
+									))}
+								</div>
+							)}
+						</SidebarMenu>
+					</SidebarGroupContent>
+				</SidebarGroup>
+			</SidebarContent>
+			<SidebarFooter>
+				<SidebarMenu>
+					<SidebarMenuItem>
+						<NavLink
+							to="https://github.com/Sifchain/realityspiral/blob/main/docs/AI_Agents_UI_Interface_Documentation.md"
+							target="_blank"
+						>
+							<SidebarMenuButton>
+								<Book /> Documentation
+							</SidebarMenuButton>
+						</NavLink>
+					</SidebarMenuItem>
+					<SidebarMenuItem>
+						<NavLink to="/logs">
+							<SidebarMenuButton>
+								<Cog /> Settings
+							</SidebarMenuButton>
+						</NavLink>
+					</SidebarMenuItem>
+					<SidebarMenuItem>
+						<NavLink to="/templates">
+							<SidebarMenuButton>
+								<Book /> Templates
+							</SidebarMenuButton>
+						</NavLink>
+					</SidebarMenuItem>
+					<SidebarMenuItem>
+						<NavLink to={url ?? ""} target="_blank">
+							<SidebarMenuButton disabled>
+								<Info /> {version ? `${version}` : "---"}
+							</SidebarMenuButton>
+						</NavLink>
+					</SidebarMenuItem>
+					<ConnectionStatus />
+				</SidebarMenu>
+			</SidebarFooter>
+		</Sidebar>
+	);
 }

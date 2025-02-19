@@ -108,6 +108,28 @@ pnpm build
 │   ├── github/      # GitHub repository automation plugins
 │   └── twitter/     # Custom Eliza Twitter/X social media plugins
 └── ui/              # User interface components and utilities
+```
+
+## Releasing New Versions
+
+To release a new version of Reality Spiral:
+
+1. Go to the GitHub repository's [Draft a new release](https://github.com/Sifchain/realityspiral/releases/new) page
+2. Create a new tag following [semver.org semantic versioning](https://semver.org/) (e.g., `v0.9.3`)
+3. Use the same version number as the release title (e.g., `v0.9.3`)
+4. Click on the "Generate release notes" button
+5. Click "Publish release"
+
+This will trigger the production Docker workflow which:
+- Builds a new Docker image
+- Tags it with the release version
+- Pushes it to GitHub Container Registry (ghcr.io)
+- Automatically deploys the new version to production
+
+The Docker image will be tagged with:
+- Full version (e.g., `v0.9.3`)
+- Minor version (e.g., `0.9`)
+- Major version (e.g., `0`)
 
 ## Contributing
 

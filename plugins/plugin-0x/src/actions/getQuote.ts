@@ -347,107 +347,124 @@ export const getQuoteObj = async (
 		apiKey: runtime.getSetting("ZERO_EX_API_KEY"),
 	});
 
-	try {
-		const quote = (await zxClient.swap.allowanceHolder.getQuote.query({
-			sellAmount: sellAmountBaseUnits,
-			sellToken: sellTokenObject.address,
-			buyToken: buyTokenObject.address,
-			chainId: chainId,
-			taker: address,
-		})) as GetQuoteResponse;
-		if (!quote.liquidityAvailable) {
+	const maxRetries = 6;
+	let attempt = 0;
+
+	while (attempt < maxRetries) {
+		try {
+			const quote = (await zxClient.swap.allowanceHolder.getQuote.query({
+				sellAmount: sellAmountBaseUnits,
+				sellToken: sellTokenObject.address,
+				buyToken: buyTokenObject.address,
+				chainId: chainId,
+				taker: address,
+			})) as GetQuoteResponse;
+			if (!quote.liquidityAvailable) {
+				elizaLogger.info(
+					"No liquidity available for this swap. Please try again with a different token or amount.",
+				);
+				return;
+			}
+
+			const buyAmountBaseUnitsQuoted = formatUnits(
+				BigInt(quote.buyAmount),
+				buyTokenObject.decimals,
+			);
+			elizaLogger.info(`buyAmountBaseUnitsQuoted: ${buyAmountBaseUnitsQuoted}`);
+
+			const sellAmountBaseUnitsQuoted = formatUnits(
+				BigInt(quote.sellAmount),
+				sellTokenObject.decimals,
+			);
 			elizaLogger.info(
-				"No liquidity available for this swap. Please try again with a different token or amount.",
+				`sellAmountBaseUnitsQuoted: ${sellAmountBaseUnitsQuoted}`,
 			);
-			return;
-		}
 
-		const buyAmountBaseUnitsQuoted = formatUnits(
-			BigInt(quote.buyAmount),
-			buyTokenObject.decimals,
-		);
-
-		const sellAmountBaseUnitsQuoted = formatUnits(
-			BigInt(quote.sellAmount),
-			sellTokenObject.decimals,
-		);
-
-		const warnings = [];
-		if (quote.issues?.balance) {
-			warnings.push(
-				"⚠️ Warnings:",
-				`  • Insufficient balance (Have ${formatTokenAmountManual(
-					quote.issues.balance.actual,
-					quote.issues.balance.token,
+			const warnings = [];
+			if (quote.issues?.balance) {
+				warnings.push(
+					"⚠️ Warnings:",
+					`  • Insufficient balance (Have ${formatTokenAmountManual(
+						quote.issues.balance.actual,
+						quote.issues.balance.token,
+						sellTokenObject.symbol,
+					)})`,
+				);
+			}
+			elizaLogger.info(`warnings: ${warnings}`);
+			const formattedResponse = [
+				"🎯 Firm Quote Details:",
+				"────────────────",
+				// Basic swap details (same as price)
+				`📤 Sell: ${formatTokenAmountManual(
+					quote.sellAmount,
+					sellTokenObject.address,
 					sellTokenObject.symbol,
-				)})`,
+				)}`,
+				`📥 Buy: ${formatTokenAmountManual(
+					quote.buyAmount,
+					buyTokenObject.address,
+					buyTokenObject.symbol,
+				)}`,
+				`📊 Rate: 1 ${sellTokenObject.symbol} = ${(
+					Number(buyAmountBaseUnitsQuoted) / Number(sellAmountBaseUnitsQuoted)
+				).toFixed(4)} ${buyTokenObject.symbol}`,
+
+				// New information specific to quote
+				`💱 Minimum Buy Amount: ${formatTokenAmountManual(
+					quote.minBuyAmount,
+					quote.buyToken,
+					buyTokenObject.symbol,
+				)}`,
+
+				// Fee breakdown
+				"💰 Fees Breakdown:",
+				`  • 0x Protocol Fee: ${formatTokenAmountManual(
+					quote.fees.zeroExFee?.amount,
+					quote.fees.zeroExFee?.token,
+					sellTokenObject.symbol,
+				)}`,
+				`  • Integrator Fee: ${formatTokenAmountManual(
+					quote.fees.integratorFee?.amount,
+					quote.fees.integratorFee?.token,
+					sellTokenObject.symbol,
+				)}`,
+				`  • Network Gas Fee: ${
+					quote.totalNetworkFee
+						? formatTokenAmountManual(
+								quote.totalNetworkFee,
+								NATIVE_TOKENS[chainId].address,
+								NATIVE_TOKENS[chainId].symbol,
+							)
+						: "Will be estimated at execution"
+				}`,
+
+				...formatRouteInfo(quote),
+
+				// Chain
+				`🔗 Chain: ${CHAIN_NAMES[chainId]}`,
+
+				...(warnings.length > 0 ? warnings : []),
+
+				"────────────────",
+			]
+				.filter(Boolean)
+				.join("\n");
+			elizaLogger.info(formattedResponse);
+			return quote;
+		} catch (error) {
+			attempt++;
+			elizaLogger.error(
+				`Error getting quote (attempt ${attempt}):`,
+				error.message,
 			);
+			if (attempt >= maxRetries) {
+				return null;
+			}
+			await new Promise((resolve) => setTimeout(resolve, 5000)); // Sleep for 5 second before retrying
 		}
-
-		const formattedResponse = [
-			"🎯 Firm Quote Details:",
-			"────────────────",
-			// Basic swap details (same as price)
-			`📤 Sell: ${formatTokenAmountManual(
-				quote.sellAmount,
-				sellTokenObject.address,
-				sellTokenObject.symbol,
-			)}`,
-			`📥 Buy: ${formatTokenAmountManual(
-				quote.buyAmount,
-				buyTokenObject.address,
-				buyTokenObject.symbol,
-			)}`,
-			`📊 Rate: 1 ${sellTokenObject.symbol} = ${(
-				Number(buyAmountBaseUnitsQuoted) / Number(sellAmountBaseUnitsQuoted)
-			).toFixed(4)} ${buyTokenObject.symbol}`,
-
-			// New information specific to quote
-			`💱 Minimum Buy Amount: ${formatTokenAmountManual(
-				quote.minBuyAmount,
-				quote.buyToken,
-				buyTokenObject.symbol,
-			)}`,
-
-			// Fee breakdown
-			"💰 Fees Breakdown:",
-			`  • 0x Protocol Fee: ${formatTokenAmountManual(
-				quote.fees.zeroExFee?.amount,
-				quote.fees.zeroExFee?.token,
-				sellTokenObject.symbol,
-			)}`,
-			`  • Integrator Fee: ${formatTokenAmountManual(
-				quote.fees.integratorFee?.amount,
-				quote.fees.integratorFee?.token,
-				sellTokenObject.symbol,
-			)}`,
-			`  • Network Gas Fee: ${
-				quote.totalNetworkFee
-					? formatTokenAmountManual(
-							quote.totalNetworkFee,
-							NATIVE_TOKENS[chainId].address,
-							NATIVE_TOKENS[chainId].symbol,
-						)
-					: "Will be estimated at execution"
-			}`,
-
-			...formatRouteInfo(quote),
-
-			// Chain
-			`🔗 Chain: ${CHAIN_NAMES[chainId]}`,
-
-			...(warnings.length > 0 ? warnings : []),
-
-			"────────────────",
-		]
-			.filter(Boolean)
-			.join("\n");
-		elizaLogger.info("formattedResponse ", formattedResponse);
-		return quote;
-	} catch (error) {
-		elizaLogger.error("Error getting quote:", error.message);
-		return null;
 	}
+	return null;
 };
 
 /**

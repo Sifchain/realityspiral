@@ -1,11 +1,11 @@
-import express, { Router } from "express";
+import express, { type Router } from "express";
 import {
-    getTemplates,
-    addTemplate,
-    updateTemplate,
-    deleteTemplate,
-    batchUpdateCharacterData,
-} from '../controllers/templateController';
+	addTemplate,
+	batchUpdateCharacterData,
+	deleteTemplate,
+	getTemplates,
+	updateTemplate,
+} from "../controllers/templateController";
 
 const router: Router = express.Router();
 
@@ -31,9 +31,8 @@ const router: Router = express.Router();
  *         description: Character not found.
  */
 router.post("/:characterName", async (req, res) => {
-    getTemplates(req, res)
+	getTemplates(req, res);
 });
-
 
 /**
  * @swagger
@@ -68,7 +67,7 @@ router.post("/:characterName", async (req, res) => {
  *         description: Character not found.
  */
 router.post("/:characterName", async (req, res) => {
-    addTemplate(req, res)
+	addTemplate(req, res);
 });
 
 /**
@@ -102,7 +101,7 @@ router.post("/:characterName", async (req, res) => {
  *         description: Template or character not found.
  */
 router.post("/:characterName", async (req, res) => {
-    updateTemplate(req, res)
+	updateTemplate(req, res);
 });
 
 /**
@@ -131,7 +130,7 @@ router.post("/:characterName", async (req, res) => {
  *         description: Template or character not found.
  */
 router.post("/:characterName/:templateName", async (req, res) => {
-    deleteTemplate(req, res)
+	deleteTemplate(req, res);
 });
 
 /** ========================== Batch Update API ========================== **/
@@ -183,7 +182,7 @@ router.post("/:characterName/:templateName", async (req, res) => {
  *         description: Character not found.
  */
 router.post("/:characterName/batch-update", async (req, res) => {
-    batchUpdateCharacterData(req, res)
+	batchUpdateCharacterData(req, res);
 });
 
 export default router;

@@ -1,11 +1,11 @@
-import express, { Router } from "express";
+import express, { type Router } from "express";
 import {
-    getTracesByAgentId,
-    getUniqueAgentId,
-    getUniqueRuns,
-    getAllTraces,
-    getTracesByRoom,
-    getUniqueRoomIdByAgent,
+	getAllTraces,
+	getTracesByAgentId,
+	getTracesByRoom,
+	getUniqueAgentId,
+	getUniqueRoomIdByAgent,
+	getUniqueRuns,
 } from "../controllers/tracesController";
 
 const router: Router = express.Router();
@@ -91,7 +91,7 @@ router.get("/unique-agent-ids", getUniqueAgentId);
  *         description: Server error
  */
 router.post("/unique-room_id/by-agent/:agent_id", async (req, res) => {
-    getUniqueRoomIdByAgent(req, res)
+	getUniqueRoomIdByAgent(req, res);
 });
 
 /**
@@ -167,7 +167,7 @@ router.post("/unique-room_id/by-agent/:agent_id", async (req, res) => {
  *         description: Server error.
  */
 router.post("/by-room/:roomId", async (req, res) => {
-    getTracesByRoom(req, res)
+	getTracesByRoom(req, res);
 });
 
 /**
@@ -272,7 +272,7 @@ router.get("/unique-runs", getUniqueRuns);
  *         description: Server error.
  */
 router.post("/by-room/:agentId", async (req, res) => {
-    getTracesByAgentId(req, res)
+	getTracesByAgentId(req, res);
 });
 
 export default router;

@@ -1,22 +1,22 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import pkg from "pg";
 
 const { Pool } = pkg;
 
 const pool = new Pool({
 	connectionString:
-		process.env.POSTGRES_URL || "postgresql://user@localhost:5432/tracing_database"
+		process.env.POSTGRES_URL ||
+		"postgresql://user@localhost:5432/tracing_database",
 });
 
-
-export const getAllTraces = async (req: Request, res: Response) => {
-    try {
-        const { rows } = await pool.query("SELECT * FROM traces");
-        res.status(200).json(rows);
-    } catch (error) {
-        console.error("Error fetching traces:", error);
-        res.status(500).json({ error: "Failed to fetch traces" });
-    }
+export const getAllTraces = async (_req: Request, res: Response) => {
+	try {
+		const { rows } = await pool.query("SELECT * FROM traces");
+		res.status(200).json(rows);
+	} catch (error) {
+		console.error("Error fetching traces:", error);
+		res.status(500).json({ error: "Failed to fetch traces" });
+	}
 };
 
 /**
@@ -31,19 +31,20 @@ export const getAllTraces = async (req: Request, res: Response) => {
  *       500:
  *         description: Server error
  */
-export const getUniqueAgentId = async (req: Request, res: Response) => {
-    console.log("getUniqueAgentId called");
-    try {
-        const result = await pool.query(
-            "SELECT DISTINCT agent_id FROM traces WHERE agent_id IS NOT NULL"
-        );
-        res.status(200).json({
-            unique_agent_ids: result.rows.map((row) => row.agent_id),
-        });
-    } catch (error: any) {
-        console.error("❌ Error fetching unique agent IDs:", error);
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
+export const getUniqueAgentId = async (_req: Request, res: Response) => {
+	console.log("getUniqueAgentId called");
+	try {
+		const result = await pool.query(
+			"SELECT DISTINCT agent_id FROM traces WHERE agent_id IS NOT NULL",
+		);
+		res.status(200).json({
+			unique_agent_ids: result.rows.map((row) => row.agent_id),
+		});
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	} catch (error: any) {
+		console.error("❌ Error fetching unique agent IDs:", error);
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
 };
 
 /**
@@ -68,25 +69,26 @@ export const getUniqueAgentId = async (req: Request, res: Response) => {
  *         description: Server error
  */
 export const getUniqueRoomIdByAgent = async (req: Request, res: Response) => {
-    try {
-        const { agent_id } = req.params;
-        if (!agent_id) {
-            return res.status(400).json({ message: "Missing or invalid Agent ID" });
-        }
+	try {
+		const { agent_id } = req.params;
+		if (!agent_id) {
+			return res.status(400).json({ message: "Missing or invalid Agent ID" });
+		}
 
-        const result = await pool.query(
-            'SELECT DISTINCT "room_id" FROM traces WHERE "agent_id" = $1 AND "room_id" IS NOT NULL',
-            [agent_id]
-        );
+		const result = await pool.query(
+			'SELECT DISTINCT "room_id" FROM traces WHERE "agent_id" = $1 AND "room_id" IS NOT NULL',
+			[agent_id],
+		);
 
-        res.status(200).json({
-            agent_id: agent_id,
-            unique_room_ids: result.rows.map((row) => row.room_id),
-        });
-    } catch (error: any) {
-        console.error("❌ Error fetching unique runs by Agent ID:", error);
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
+		res.status(200).json({
+			agent_id: agent_id,
+			unique_room_ids: result.rows.map((row) => row.room_id),
+		});
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	} catch (error: any) {
+		console.error("❌ Error fetching unique runs by Agent ID:", error);
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
 };
 
 /**
@@ -111,23 +113,26 @@ export const getUniqueRoomIdByAgent = async (req: Request, res: Response) => {
  *         description: Server error
  */
 export const getTracesByRoom = async (req: Request, res: Response) => {
-    try {
-        const { roomId } = req.params;
-        if (!roomId) {
-            return res.status(400).json({ message: "Missing or invalid ROOM ID" });
-        }
+	try {
+		const { roomId } = req.params;
+		if (!roomId) {
+			return res.status(400).json({ message: "Missing or invalid ROOM ID" });
+		}
 
-        const result = await pool.query("SELECT * FROM traces WHERE room_id = $1", [roomId]);
+		const result = await pool.query("SELECT * FROM traces WHERE room_id = $1", [
+			roomId,
+		]);
 
-        res.status(200).json({
-            room_id: roomId,
-            total_records: result.rowCount ?? 0,
-            data: result.rows,
-        });
-    } catch (error: any) {
-        console.error("❌ Error fetching traces by ROOM:", error);
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
+		res.status(200).json({
+			room_id: roomId,
+			total_records: result.rowCount ?? 0,
+			data: result.rows,
+		});
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	} catch (error: any) {
+		console.error("❌ Error fetching traces by ROOM:", error);
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
 };
 
 /**
@@ -142,16 +147,17 @@ export const getTracesByRoom = async (req: Request, res: Response) => {
  *       500:
  *         description: Server error
  */
-export const getUniqueRuns = async (req: Request, res: Response) => {
-    try {
-        const result = await pool.query("SELECT DISTINCT RUN FROM traces");
-        res.status(200).json({
-            unique_runs: result.rows.map((row) => row.run),
-        });
-    } catch (error: any) {
-        console.error("❌ Error fetching unique RUN values:", error);
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
+export const getUniqueRuns = async (_req: Request, res: Response) => {
+	try {
+		const result = await pool.query("SELECT DISTINCT RUN FROM traces");
+		res.status(200).json({
+			unique_runs: result.rows.map((row) => row.run),
+		});
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	} catch (error: any) {
+		console.error("❌ Error fetching unique RUN values:", error);
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
 };
 
 /**
@@ -193,21 +199,25 @@ export const getUniqueRuns = async (req: Request, res: Response) => {
  *         description: Server error
  */
 export const getTracesByAgentId = async (req: Request, res: Response) => {
-    try {
-        const { agentId } = req.params;
-        if (!agentId) {
-            return res.status(400).json({ message: "Missing or invalid Agent ID" });
-        }
+	try {
+		const { agentId } = req.params;
+		if (!agentId) {
+			return res.status(400).json({ message: "Missing or invalid Agent ID" });
+		}
 
-        const result = await pool.query('SELECT * FROM traces WHERE "agentId" = $1', [agentId]);
+		const result = await pool.query(
+			'SELECT * FROM traces WHERE "agentId" = $1',
+			[agentId],
+		);
 
-        res.status(200).json({
-            agent_id: agentId,
-            total_records: result.rowCount ?? 0,
-            data: result.rows,
-        });
-    } catch (error: any) {
-        console.error("❌ Error fetching traces by Agent ID:", error);
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
+		res.status(200).json({
+			agent_id: agentId,
+			total_records: result.rowCount ?? 0,
+			data: result.rows,
+		});
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	} catch (error: any) {
+		console.error("❌ Error fetching traces by Agent ID:", error);
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
 };

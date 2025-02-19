@@ -146,4 +146,7 @@ export const apiClient = {
 			body: formData,
 		});
 	},
+	async getVersion(): Promise<{ version: string; url: string }> {
+		return fetcher({ url: "/version" });
+	},
 };

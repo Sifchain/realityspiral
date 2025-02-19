@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { SqliteDatabaseAdapter } from "@elizaos/adapter-sqlite";
 import { AutoClientInterface } from "@elizaos/client-auto";
+import { TelegramClientInterface } from "@elizaos/client-telegram";
 import { TwitterClientInterface } from "@elizaos/client-twitter";
 import {
 	AgentRuntime,
@@ -148,6 +149,7 @@ export enum Clients {
 	TWITTER = "twitter",
 	COINBASE = "coinbase",
 	GITHUB = "github",
+	TELEGRAM = "telegram",
 }
 
 export const CharacterSchema = BaseCharacterSchema.extend({
@@ -432,23 +434,39 @@ export async function initializeClients(
 		if (autoClient) clients.auto = autoClient;
 	}
 
-	if (clientTypes.includes(Clients.TWITTER)) {
+	if (
+		clientTypes.includes(Clients.TWITTER) &&
+		getSecret(character, "TWITTER_CLIENT_DISABLED") !== "true"
+	) {
 		const twitterClient = await TwitterClientInterface.start(runtime);
 		if (twitterClient) {
 			clients.twitter = twitterClient;
 		}
 	}
 
-	if (clientTypes.includes(Clients.COINBASE)) {
+	if (
+		clientTypes.includes(Clients.COINBASE) &&
+		getSecret(character, "COINBASE_CLIENT_DISABLED") !== "true"
+	) {
 		const coinbaseClient = await CoinbaseClientInterface.start(runtime);
 		if (coinbaseClient) clients.coinbase = coinbaseClient;
 	}
 
-	if (clientTypes.includes(Clients.GITHUB)) {
+	if (
+		clientTypes.includes(Clients.GITHUB) &&
+		getSecret(character, "GITHUB_CLIENT_DISABLED") !== "true"
+	) {
 		const githubClient = await GitHubClientInterface.start(runtime);
 		if (githubClient) clients.github = githubClient;
 	}
 
+	if (
+		clientTypes.includes(Clients.TELEGRAM) &&
+		getSecret(character, "TELEGRAM_CLIENT_DISABLED") !== "true"
+	) {
+		const telegramClient = await TelegramClientInterface.start(runtime);
+		if (telegramClient) clients.telegram = telegramClient;
+	}
 	elizaLogger.log("client keys", Object.keys(clients));
 
 	function determineClientType(client: Client): string {
