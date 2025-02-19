@@ -25,6 +25,7 @@
 		"class-variance-authority": "^0.7.1",
 		"clsx": "2.1.1",
 		"dayjs": "^1.11.13",
+		"framer-motion": "^12.4.3",
 		"lucide-react": "^0.469.0",
 		"react": "^19.0.0",
 		"react-aiwriter": "^1.0.0",

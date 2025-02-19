@@ -26,6 +26,7 @@ import multer from "multer";
 import OpenAI from "openai";
 import { z } from "zod";
 import { createApiRouter } from "./api.ts";
+import { setupSwagger } from "./config/swagger.ts";
 import { createVerifiableLogApiRouter } from "./verifiable-log-api.ts";
 
 const storage = multer.diskStorage({
@@ -42,6 +43,8 @@ const storage = multer.diskStorage({
 		cb(null, `${uniqueSuffix}-${file.originalname}`);
 	},
 });
+import templateRoutes from "./routes/templateRoutes";
+import tracesRoutes from "./routes/tracesRoutes";
 
 // some people have more memory than disk.io
 const upload = multer({ storage /*: multer.memoryStorage() */ });
@@ -141,6 +144,11 @@ export class DirectClient {
 
 		const apiRouter = createApiRouter(this.agents, this);
 		this.app.use(apiRouter);
+
+		this.app.use("/api/templates", templateRoutes);
+
+		this.app.use("/api/traces", tracesRoutes);
+		setupSwagger(this.app);
 
 		const apiLogRouter = createVerifiableLogApiRouter(this.agents);
 		this.app.use(apiLogRouter);

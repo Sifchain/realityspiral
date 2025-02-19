@@ -19,8 +19,8 @@
 	"dependencies": {
 		"@elizaos/core": "^0.1.9",
 		"@elizaos/plugin-image-generation": "^0.1.9",
-		"@elizaos/plugin-tee-verifiable-log": "^0.1.9",
 		"@elizaos/plugin-tee-log": "^0.1.9",
+		"@elizaos/plugin-tee-verifiable-log": "^0.1.9",
 		"@realityspiral/client-coinbase": "workspace:*",
 		"@types/body-parser": "1.19.5",
 		"@types/cors": "2.8.17",
@@ -31,10 +31,14 @@
 		"express": "4.21.1",
 		"multer": "1.4.5-lts.1",
 		"openai": "4.73.0",
+		"pg": "^8.13.3",
+		"swagger-jsdoc": "^6.2.8",
+		"swagger-ui-express": "^5.0.1",
 		"zod": "3.23.8"
 	},
 	"devDependencies": {
 		"@types/multer": "^1.4.12",
+		"@types/pg": "^8.11.11",
 		"tsup": "8.3.5"
 	},
 	"scripts": {

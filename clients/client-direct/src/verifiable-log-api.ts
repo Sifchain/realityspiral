@@ -8,11 +8,13 @@ import type {
 	VerifiableLogQuery,
 	VerifiableLogService,
 } from "@elizaos/plugin-tee-verifiable-log";
+import { setupSwagger } from "./config/swagger";
 
 export function createVerifiableLogApiRouter(
 	agents: Map<string, AgentRuntime>,
 ): Router {
 	const router = express.Router();
+	setupSwagger(router);
 	router.use(cors());
 	router.use(bodyParser.json());
 	router.use(bodyParser.urlencoded({ extended: true }));

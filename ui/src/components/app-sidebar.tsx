@@ -14,7 +14,7 @@ import {
 import { apiClient } from "@/lib/api";
 import type { UUID } from "@elizaos/core";
 import { useQuery } from "@tanstack/react-query";
-import { Book, Info, User } from "lucide-react";
+import { Book, Cog, Info, User } from "lucide-react";
 import { NavLink, useLocation } from "react-router";
 import ConnectionStatus from "./connection-status";
 
@@ -104,11 +104,20 @@ export function AppSidebar() {
 							</SidebarMenuButton>
 						</NavLink>
 					</SidebarMenuItem>
-					{/* <SidebarMenuItem>
-						<SidebarMenuButton disabled>
-							<Cog /> Settings
-						</SidebarMenuButton>
-					</SidebarMenuItem> */}
+					<SidebarMenuItem>
+						<NavLink to="/logs">
+							<SidebarMenuButton>
+								<Cog /> Settings
+							</SidebarMenuButton>
+						</NavLink>
+					</SidebarMenuItem>
+					<SidebarMenuItem>
+						<NavLink to="/templates">
+							<SidebarMenuButton>
+								<Book /> Templates
+							</SidebarMenuButton>
+						</NavLink>
+					</SidebarMenuItem>
 					<SidebarMenuItem>
 						<NavLink to={url ?? ""} target="_blank">
 							<SidebarMenuButton disabled>
