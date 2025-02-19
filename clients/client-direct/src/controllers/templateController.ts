@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import fs from "fs";
+import fs from "node:fs";
 import path from "path";
 
 // Function to get dynamic character file path based on request parameter
@@ -13,7 +13,7 @@ const getCharacterFilePath = (characterName: string) => {
 // Function to read character JSON file
 const readCharacterFile = (characterName: string) => {
     try {
-        
+
         const characterFilePath = getCharacterFilePath(characterName);
         console.log("Checking existence of:", characterFilePath);
 
