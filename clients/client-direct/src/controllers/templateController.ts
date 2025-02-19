@@ -13,6 +13,7 @@ const getCharacterFilePath = (characterName: string) => {
 // Function to read character JSON file
 const readCharacterFile = (characterName: string) => {
     try {
+        
         const characterFilePath = getCharacterFilePath(characterName);
         console.log("Checking existence of:", characterFilePath);
 
