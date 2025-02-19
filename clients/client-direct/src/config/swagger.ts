@@ -1,6 +1,6 @@
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
-import { Express } from "express";
+import { Express, Router } from "express";
 
 const options: swaggerJSDoc.Options = {
   definition: {
@@ -12,15 +12,17 @@ const options: swaggerJSDoc.Options = {
     },
     servers: [
       {
-        url: "http://localhost:3000", // Update with your server URL
+        url: process.env.BASE_URL || "http://localhost:3000", // Make sure this matches your running server
       },
     ],
   },
-  apis: ["./src/api.ts", "./src/controllers/*.ts"], // Define paths to files containing API annotations
+  apis: ["**/*.ts"], // Path to API routes
+  // Make sure these paths are correct
 };
+
 
 const swaggerSpec = swaggerJSDoc(options);
 
-export function setupSwagger(app: Express) {
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-}
+export const setupSwagger = (router: Router) => {
+  router.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+};

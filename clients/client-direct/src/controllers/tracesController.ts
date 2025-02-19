@@ -14,13 +14,24 @@ export const getAllTraces = async (req: Request, res: Response) => {
     try {
         const { rows } = await pool.query("SELECT * FROM traces");
         res.status(200).json(rows);
-      } catch (error) {
+    } catch (error) {
         console.error("Error fetching traces:", error);
         res.status(500).json({ error: "Failed to fetch traces" });
-      }
+    }
 };
 
-
+/**
+ * @swagger
+ * /traces/unique-agent-ids:
+ *   get:
+ *     summary: Get unique agent IDs
+ *     description: Retrieves a list of unique agent IDs from traces.
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved unique agent IDs
+ *       500:
+ *         description: Server error
+ */
 export const getUniqueAgentId = async (req: Request, res: Response) => {
     console.log("getUniqueAgentId called");
     try {
@@ -36,16 +47,34 @@ export const getUniqueAgentId = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @swagger
+ * /traces/unique-room_id/by-agent/{agent_id}:
+ *   get:
+ *     summary: Get unique room IDs by Agent ID
+ *     description: Retrieves unique room IDs associated with a specific agent ID.
+ *     parameters:
+ *       - in: path
+ *         name: agent_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the agent
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved unique room IDs
+ *       400:
+ *         description: Missing or invalid Agent ID
+ *       500:
+ *         description: Server error
+ */
 export const getUniqueRoomIdByAgent = async (req: Request, res: Response) => {
     try {
         const { agent_id } = req.params;
         if (!agent_id) {
-            return res
-                .status(400)
-                .json({ message: "Missing or invalid Agent ID" });
+            return res.status(400).json({ message: "Missing or invalid Agent ID" });
         }
 
-        // Query to fetch distinct run values where agent_id is provided
         const result = await pool.query(
             'SELECT DISTINCT "room_id" FROM traces WHERE "agent_id" = $1 AND "room_id" IS NOT NULL',
             [agent_id]
@@ -61,39 +90,35 @@ export const getUniqueRoomIdByAgent = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @swagger
+ * /traces/by-room/{roomId}:
+ *   get:
+ *     summary: Get traces by Room ID
+ *     description: Retrieves all traces associated with a given Room ID.
+ *     parameters:
+ *       - in: path
+ *         name: roomId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The Room ID
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved traces
+ *       400:
+ *         description: Missing or invalid ROOM ID
+ *       500:
+ *         description: Server error
+ */
 export const getTracesByRoom = async (req: Request, res: Response) => {
     try {
         const { roomId } = req.params;
         if (!roomId) {
-            return res
-                .status(400)
-                .json({ message: "Missing or invalid ROOM ID" });
+            return res.status(400).json({ message: "Missing or invalid ROOM ID" });
         }
 
-        const { name, start_date, end_date } = req.query;
-
-        let query = "SELECT * FROM traces WHERE room_id = $1";
-        const queryParams: any[] = [roomId];
-
-        let paramIndex = 2; // Next index for query placeholders ($2, $3, ...)
-
-        // Optional Filters
-        if (name) {
-            query += ` AND name ILIKE $${paramIndex}`;
-            queryParams.push(`%${name}%`);
-            paramIndex++;
-        }
-
-        if (start_date && end_date) {
-            query += ` AND DATE(start_time) >= $${paramIndex} AND DATE(end_time) <= $${paramIndex + 1}`;
-            queryParams.push(start_date, end_date);
-            paramIndex += 2;
-        }
-
-        // Order results by `start_time`
-        query += " ORDER BY start_time DESC";
-
-        const result = await pool.query(query, queryParams);
+        const result = await pool.query("SELECT * FROM traces WHERE room_id = $1", [roomId]);
 
         res.status(200).json({
             room_id: roomId,
@@ -106,6 +131,18 @@ export const getTracesByRoom = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @swagger
+ * /traces/unique-runs:
+ *   get:
+ *     summary: Get unique run values
+ *     description: Retrieves all unique run values from traces.
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved unique run values
+ *       500:
+ *         description: Server error
+ */
 export const getUniqueRuns = async (req: Request, res: Response) => {
     try {
         const result = await pool.query("SELECT DISTINCT RUN FROM traces");
@@ -118,52 +155,56 @@ export const getUniqueRuns = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @swagger
+ * /traces/by-agent/{agentId}:
+ *   get:
+ *     summary: Get traces by Agent ID
+ *     description: Retrieves traces associated with a given Agent ID.
+ *     parameters:
+ *       - in: path
+ *         name: agentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the agent
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Optional filter by trace name
+ *       - in: query
+ *         name: start_date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date filter
+ *       - in: query
+ *         name: end_date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date filter
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved traces
+ *       400:
+ *         description: Missing or invalid Agent ID
+ *       500:
+ *         description: Server error
+ */
 export const getTracesByAgentId = async (req: Request, res: Response) => {
     try {
         const { agentId } = req.params;
         if (!agentId) {
-            return res
-                .status(400)
-                .json({ message: "Missing or invalid Agent ID" });
+            return res.status(400).json({ message: "Missing or invalid Agent ID" });
         }
 
-        const { name, start_date, end_date, page, limit } = req.query;
-
-        let query = 'SELECT * FROM traces WHERE "agentId" = $1';
-        const queryParams: any[] = [agentId];
-
-        let paramIndex = 2; // Next index for query placeholders ($2, $3, ...)
-
-        // Optional Filters
-        if (name) {
-            query += ` AND name ILIKE $${paramIndex}`;
-            queryParams.push(`%${name}%`);
-            paramIndex++;
-        }
-
-        if (start_date && end_date) {
-            query += ` AND DATE(time) BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
-            queryParams.push(start_date, end_date);
-            paramIndex += 2;
-        }
-
-        query += " ORDER BY id";
-
-        // Pagination
-        const pageNumber = page ? parseInt(page as string, 10) : 1;
-        const pageSize = limit ? parseInt(limit as string, 10) : 20;
-        const offset = (pageNumber - 1) * pageSize;
-
-        query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-        queryParams.push(pageSize, offset);
-
-        const result = await pool.query(query, queryParams);
+        const result = await pool.query('SELECT * FROM traces WHERE "agentId" = $1', [agentId]);
 
         res.status(200).json({
             agent_id: agentId,
-            total_records: result.rowCount ?? 0, // Ensure it always returns a number
-            current_page: pageNumber,
-            total_pages: Math.ceil((result.rowCount ?? 0) / pageSize),
+            total_records: result.rowCount ?? 0,
             data: result.rows,
         });
     } catch (error: any) {

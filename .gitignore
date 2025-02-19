@@ -4,7 +4,7 @@
 node_modules
 .pnp
 .pnp.js
-
+tsup.config.bundled_*.mjs
 # Local env files
 .env
 .env.local

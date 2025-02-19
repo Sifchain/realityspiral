@@ -7,3 +7,4 @@
 .env*
 /data
 /generatedImages
+tsup.config.bundled_*.mjs

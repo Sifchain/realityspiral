@@ -47,7 +47,7 @@ const writeCharacterFile = (characterName: string, data: object) => {
 
 /** ========================== Templates API ========================== **/
 export const getTemplates = (req: Request, res: Response) => {
-debugger
+
     console.log("get template called", req);
 
     const { characterName } = req.params;

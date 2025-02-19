@@ -21,11 +21,9 @@ import type { TeeLogQuery, TeeLogService } from "@elizaos/plugin-tee-log";
 import type { WebhookEvent } from "@realityspiral/client-coinbase";
 import { REST, Routes } from "discord.js";
 import type { DirectClient } from ".";
-import { getAllTraces, getTracesByAgentId, getTracesByRoom, getUniqueRuns, getUniqueAgentId, getUniqueRoomIdByAgent } from "./controllers/tracesController.ts";
-// import { db } from "./config/db";
-import pkg from "pg";
+import { getAllTraces, getTracesByAgentId, getTracesByRoom, getUniqueAgentId, getUniqueRoomIdByAgent } from "./controllers/tracesController.ts";
 import { addTemplate, updateTemplate, deleteTemplate, batchUpdateCharacterData, getTemplates } from "./controllers/templateController";
-
+import { setupSwagger } from "./config/swagger.ts";
 
 interface UUIDParams {
 	agentId: UUID;
@@ -83,6 +81,8 @@ export function createApiRouter(
 ): Router {
 	const router = express.Router();
 
+	// setupSwagger(router);
+	
 	router.use(cors());
 	router.use(bodyParser.json());
 	router.use(bodyParser.urlencoded({ extended: true }));
@@ -456,9 +456,7 @@ export function createApiRouter(
 		}
 	});
 
-	router.post(
-		"/tee/logs",
-		async (req: express.Request, res: express.Response) => {
+	router.post("/tee/logs",async (req: express.Request, res: express.Response) => {
 			try {
 				const query = req.body.query || {};
 				const page = Number.parseInt(req.body.page) || 1;
@@ -546,7 +544,9 @@ export function createApiRouter(
 			res.status(404).json({ error: "Agent not found" });
 		}
 	});
+	
 
+ 
 	router.get("/traces", async (req, res) =>{
 		getAllTraces(req, res)
 	});
