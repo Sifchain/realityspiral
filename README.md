@@ -67,7 +67,9 @@ pnpm install
 # Start development servers
 pnpm dev
 
-# Set POSTGRES_URL, UI_SERVER_URL and POSTGRES_URL
+# Set POSTGRES_URL=postgresql://user@localhost:5432/tracing_database, 
+# Set UI_SERVER_URL = http://localhost:3000
+# Set SERVER_PORT=3000
 
 # Start with a specific character
 
