@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import fs from "node:fs";
-import path from "path";
+import path from "node:path";
 
 // Function to get dynamic character file path based on request parameter
 const getCharacterFilePath = (characterName: string) => {
