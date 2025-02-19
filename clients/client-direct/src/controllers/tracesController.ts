@@ -5,7 +5,7 @@ const { Pool } = pkg;
 
 const pool = new Pool({
 	connectionString:
-        POSTGRES_URL  || "postgresql://user@localhost:5432/tracing_database"
+		process.env.POSTGRES_URL || "postgresql://user@localhost:5432/tracing_database"
 });
 
 
