@@ -128,7 +128,6 @@ export class DirectClient {
 		elizaLogger.log("DirectClient constructor");
 		this.app = express();
 		this.app.use(cors());
-		// setupSwagger(this.app);
 		this.agents = new Map();
 
 		this.app.use(bodyParser.json());
