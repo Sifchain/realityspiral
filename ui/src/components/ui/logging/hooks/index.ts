@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export const use = () => {
-    const API_BASE_URL = process.env.UI_SERVER_URL;
+    const API_BASE_URL =  process.env.UI_SERVER_URL || "http://localhost:3000/traces";
 
     const [uniqueAgents, setUniqueAgents] = useState<string[]>([]);
     const [uniqueRooms, setUniqueRooms] = useState<string[]>([]);
