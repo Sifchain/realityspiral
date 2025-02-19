@@ -12,14 +12,14 @@ const options: swaggerJSDoc.Options = {
     },
     servers: [
       {
-        url: process.env.BASE_URL || "http://localhost:3000", // Make sure this matches your running server
+        url: process.env.UI_SERVER_URL
+          ? `${process.env.UI_SERVER_URL}:${process.env.SERVER_PORT || "3000"}`
+          : "http://localhost:3000", // Fallback if env variables are missing
       },
     ],
   },
-  apis: ["**/*.ts"], // Path to API routes
-  // Make sure these paths are correct
+  apis: ["./src/controllers/*.ts"], // Ensure it correctly points to your API files
 };
-
 
 const swaggerSpec = swaggerJSDoc(options);
 
