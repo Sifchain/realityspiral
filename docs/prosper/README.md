@@ -64,5 +64,5 @@ By balancing financial performance with community engagement, Prosper continues 
 
 - **Reality Spiral Website**: [Reality Spiral](https://www.realityspiral.com/)
 - **GitHub**: [Sifchain/realityspiral](https://github.com/Sifchain/realityspiral)
-- **Telegram**: [Reality Spiral](https://t.me/reality_spiral)
+- **Telegram**: [Prosper Spiral](https://t.me/ProsperSpiral)
 - **Twitter/X**: [@Prosper_Spiral](https://x.com/Prosper_spiral)
