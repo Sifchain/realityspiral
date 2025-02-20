@@ -45,159 +45,164 @@ export type WalletType =
 	| "operational_capital";
 
 export class CoinbaseClient implements Client {
-	private runtime: IAgentRuntime;
-	private server: express.Application;
-	private port: number;
-	private wallets: CoinbaseWallet[];
+		private runtime: IAgentRuntime;
+		private server: express.Application;
+		private port: number;
+		private wallets: CoinbaseWallet[];
+		private initialBuyAmountInCurrency: number | null;
 
-	constructor(runtime: IAgentRuntime) {
-		this.runtime = runtime;
-		// add providers to runtime
-		this.runtime.providers.push(pnlProvider);
-		this.runtime.providers.push(balanceProvider);
-		this.runtime.providers.push(addressProvider);
-		this.runtime.providers.push(tradingSignalBackTestProvider);
-		this.server = express();
-		this.port = Number(runtime.getSetting("COINBASE_WEBHOOK_PORT")) || 3001;
-		this.wallets = [];
-	}
-
-	async initialize(): Promise<void> {
-		elizaLogger.info("Initializing Coinbase client");
-		try {
-			// await this.initializeWallets();
-			elizaLogger.info("Wallets initialized successfully");
-			await this.setupWebhookEndpoint();
-			elizaLogger.info("Webhook endpoint setup successfully");
-		} catch (error) {
-			elizaLogger.error("Failed to initialize Coinbase client:", error);
-			throw error;
+		constructor(runtime: IAgentRuntime) {
+			this.runtime = runtime;
+			// add providers to runtime
+			this.runtime.providers.push(pnlProvider);
+			this.runtime.providers.push(balanceProvider);
+			this.runtime.providers.push(addressProvider);
+			this.runtime.providers.push(tradingSignalBackTestProvider);
+			this.server = express();
+			this.port = Number(runtime.getSetting("COINBASE_WEBHOOK_PORT")) || 3001;
+			this.wallets = [];
+			this.initialBuyAmountInCurrency = null;
 		}
-	}
 
-	private setupWebhookEndpoint() {
-		this.server.use(express.json());
-
-		// Add CORS middleware to allow external requests
-		this.server.use((req, res, next) => {
-			res.header("Access-Control-Allow-Origin", "*");
-			res.header("Access-Control-Allow-Methods", "POST");
-			res.header("Access-Control-Allow-Headers", "Content-Type");
-			if (req.method === "OPTIONS") {
-				return res.sendStatus(200);
-			}
-			next();
-		});
-
-		// Add webhook validation middleware
-		const _validateWebhook = (
-			req: express.Request,
-			res: express.Response,
-			next: express.NextFunction,
-		) => {
-			const event = req.body as WebhookEvent;
-			elizaLogger.info("event ", JSON.stringify(event));
-			if (!event.event || !event.ticker || !event.timestamp || !event.price) {
-				res.status(400).json({ error: "Invalid webhook payload" });
-				return;
-			}
-			if (event.event !== "buy" && event.event !== "sell") {
-				res.status(400).json({ error: "Invalid event type" });
-				return;
-			}
-			next();
-		};
-
-		// Add health check endpoint
-		this.server.get("/health", (_req, res) => {
-			res.status(200).json({ status: "ok" });
-		});
-
-		this.server.get("/webhook/coinbase/health", (_req, res) => {
-			elizaLogger.info("Health check received");
-			res.status(200).json({ status: "ok" });
-		});
-
-		this.server.post("/webhook/coinbase/:agentId", async (req, res) => {
-			elizaLogger.info("Webhook received for agent:", req.params.agentId);
-			const runtime = this.runtime;
-
-			if (!runtime) {
-				res.status(404).json({ error: "Agent not found" });
-				return;
-			}
-
-			// Validate the webhook payload
-			const event = req.body as WebhookEvent;
-			if (!event.event || !event.ticker || !event.timestamp || !event.price) {
-				res.status(400).json({ error: "Invalid webhook payload" });
-				return;
-			}
-			if (event.event !== "buy" && event.event !== "sell") {
-				res.status(400).json({ error: "Invalid event type" });
-				return;
-			}
-
+		async initialize(): Promise<void> {
+			elizaLogger.info("Initializing Coinbase client");
 			try {
-				// Forward the webhook event to the client's handleWebhookEvent method
-				await this.handleWebhookEvent(event);
-				res.status(200).json({ status: "success" });
+				// await this.initializeWallets();
+				elizaLogger.info("Wallets initialized successfully");
+				await this.setupWebhookEndpoint();
+				elizaLogger.info("Webhook endpoint setup successfully");
 			} catch (error) {
-				elizaLogger.error("Error processing Coinbase webhook:", error.message);
-				res.status(500).json({ error: "Internal Server Error" });
+				elizaLogger.error("Failed to initialize Coinbase client:", error);
+				throw error;
 			}
-		});
-
-		return new Promise<void>((resolve, reject) => {
-			try {
-				this.server.listen(this.port, "0.0.0.0", () => {
-					elizaLogger.info(`Webhook server listening on port ${this.port}`);
-					resolve();
-				});
-			} catch (error) {
-				reject(error);
-			}
-		});
-	}
-
-	private async initializeWallets() {
-		Coinbase.configure({
-			apiKeyName:
-				this.runtime.getSetting("COINBASE_API_KEY") ??
-				process.env.COINBASE_API_KEY,
-			privateKey:
-				this.runtime.getSetting("COINBASE_PRIVATE_KEY") ??
-				process.env.COINBASE_PRIVATE_KEY,
-		});
-		const walletTypes: WalletType[] = [
-			"short_term_trading",
-			"long_term_trading",
-			"dry_powder",
-			"operational_capital",
-		];
-		const networkId = Coinbase.networks.BaseMainnet;
-		for (const walletType of walletTypes) {
-			elizaLogger.info("walletType ", walletType);
-			const wallet = await initializeWallet(
-				this.runtime,
-				networkId,
-				walletType,
-			);
-			elizaLogger.info("Successfully loaded wallet ", wallet.wallet.getId());
-			this.wallets.push(wallet);
 		}
-	}
 
-	private async generateMediaContent(
-		event: WebhookEvent,
-		amountInCurrency: number,
-		pnl: string,
-		formattedTimestamp: string,
-		state: State,
-		hash: string | null,
-	): Promise<string> {
-		try {
-			const tradeTweetTemplate = `
+		private setupWebhookEndpoint() {
+			this.server.use(express.json());
+
+			// Add CORS middleware to allow external requests
+			this.server.use((req, res, next) => {
+				res.header("Access-Control-Allow-Origin", "*");
+				res.header("Access-Control-Allow-Methods", "POST");
+				res.header("Access-Control-Allow-Headers", "Content-Type");
+				if (req.method === "OPTIONS") {
+					return res.sendStatus(200);
+				}
+				next();
+			});
+
+			// Add webhook validation middleware
+			const _validateWebhook = (
+				req: express.Request,
+				res: express.Response,
+				next: express.NextFunction,
+			) => {
+				const event = req.body as WebhookEvent;
+				elizaLogger.info("event ", JSON.stringify(event));
+				if (!event.event || !event.ticker || !event.timestamp || !event.price) {
+					res.status(400).json({ error: "Invalid webhook payload" });
+					return;
+				}
+				if (event.event !== "buy" && event.event !== "sell") {
+					res.status(400).json({ error: "Invalid event type" });
+					return;
+				}
+				next();
+			};
+
+			// Add health check endpoint
+			this.server.get("/health", (_req, res) => {
+				res.status(200).json({ status: "ok" });
+			});
+
+			this.server.get("/webhook/coinbase/health", (_req, res) => {
+				elizaLogger.info("Health check received");
+				res.status(200).json({ status: "ok" });
+			});
+
+			this.server.post("/webhook/coinbase/:agentId", async (req, res) => {
+				elizaLogger.info("Webhook received for agent:", req.params.agentId);
+				const runtime = this.runtime;
+
+				if (!runtime) {
+					res.status(404).json({ error: "Agent not found" });
+					return;
+				}
+
+				// Validate the webhook payload
+				const event = req.body as WebhookEvent;
+				if (!event.event || !event.ticker || !event.timestamp || !event.price) {
+					res.status(400).json({ error: "Invalid webhook payload" });
+					return;
+				}
+				if (event.event !== "buy" && event.event !== "sell") {
+					res.status(400).json({ error: "Invalid event type" });
+					return;
+				}
+
+				try {
+					// Forward the webhook event to the client's handleWebhookEvent method
+					await this.handleWebhookEvent(event);
+					res.status(200).json({ status: "success" });
+				} catch (error) {
+					elizaLogger.error(
+						"Error processing Coinbase webhook:",
+						error.message,
+					);
+					res.status(500).json({ error: "Internal Server Error" });
+				}
+			});
+
+			return new Promise<void>((resolve, reject) => {
+				try {
+					this.server.listen(this.port, "0.0.0.0", () => {
+						elizaLogger.info(`Webhook server listening on port ${this.port}`);
+						resolve();
+					});
+				} catch (error) {
+					reject(error);
+				}
+			});
+		}
+
+		private async initializeWallets() {
+			Coinbase.configure({
+				apiKeyName:
+					this.runtime.getSetting("COINBASE_API_KEY") ??
+					process.env.COINBASE_API_KEY,
+				privateKey:
+					this.runtime.getSetting("COINBASE_PRIVATE_KEY") ??
+					process.env.COINBASE_PRIVATE_KEY,
+			});
+			const walletTypes: WalletType[] = [
+				"short_term_trading",
+				"long_term_trading",
+				"dry_powder",
+				"operational_capital",
+			];
+			const networkId = Coinbase.networks.BaseMainnet;
+			for (const walletType of walletTypes) {
+				elizaLogger.info("walletType ", walletType);
+				const wallet = await initializeWallet(
+					this.runtime,
+					networkId,
+					walletType,
+				);
+				elizaLogger.info("Successfully loaded wallet ", wallet.wallet.getId());
+				this.wallets.push(wallet);
+			}
+		}
+
+		private async generateMediaContent(
+			event: WebhookEvent,
+			amountInCurrency: number,
+			pnl: string,
+			formattedTimestamp: string,
+			state: State,
+			hash: string | null,
+		): Promise<string> {
+			try {
+				const tradeTweetTemplate = `
 # Task
 Craft a compelling and concise tweet to announce a Coinbase trade. Aim for creativity and professionalism.
 
@@ -217,192 +222,129 @@ Guidelines:
 
 Sample buy tweets:
 "📈 Added $${amountInCurrency.toFixed(2)} of ${event.ticker} at $${Number(
-				event.price,
-			).toFixed(2)}."
+					event.price,
+				).toFixed(2)}."
 "🎯 Strategic ${event.ticker} buy: $${amountInCurrency.toFixed(2)} at $${Number(
-				event.price,
-			).toFixed(2)}."
+					event.price,
+				).toFixed(2)}."
 
 Sample sell tweets:
 "💫 Sold ${event.ticker}: $${amountInCurrency.toFixed(2)} at $${Number(
-				event.price,
-			).toFixed(2)}."
+					event.price,
+				).toFixed(2)}."
 "📊 Sold $${amountInCurrency.toFixed(2)} of ${event.ticker} at $${Number(
-				event.price,
-			).toFixed(2)}."
+					event.price,
+				).toFixed(2)}."
 
 Generate only the tweet text, no commentary or markdown.`;
-			const context = composeContext({
-				template: tradeTweetTemplate,
-				state,
-			});
+				const context = composeContext({
+					template: tradeTweetTemplate,
+					state,
+				});
 
-			const tweetContent = await generateText({
-				runtime: this.runtime,
-				context,
-				modelClass: ModelClass.LARGE,
-			});
+				const tweetContent = await generateText({
+					runtime: this.runtime,
+					context,
+					modelClass: ModelClass.LARGE,
+				});
 
-			const trimmedContent = tweetContent.trim();
-			const finalContent = `${trimmedContent} PNL: ${pnl} ${blockExplorerBaseTxUrl(hash)}`;
-			return finalContent.length > 280
-				? `${finalContent.substring(0, 277)}...`
-				: finalContent;
-		} catch (error) {
-			elizaLogger.error("Error generating tweet content:", error);
+				const trimmedContent = tweetContent.trim();
+				const finalContent = `${trimmedContent} PNL: ${pnl} ${blockExplorerBaseTxUrl(hash)}`;
+				return finalContent.length > 280
+					? `${finalContent.substring(0, 277)}...`
+					: finalContent;
+			} catch (error) {
+				elizaLogger.error("Error generating tweet content:", error);
+				const amount =
+					Number(this.runtime.getSetting("COINBASE_TRADING_AMOUNT")) ?? 1;
+				const fallbackTweet = `🚀 ${event.event.toUpperCase()}: $${amount.toFixed(
+					2,
+				)} of ${event.ticker} at $${Number(event.price).toFixed(2)}`;
+				return fallbackTweet;
+			}
+		}
+
+		private async handleWebhookEvent(event: WebhookEvent) {
+			// for now just support ETH
+			if (!supportedTickers.includes(event.ticker)) {
+				elizaLogger.info("Unsupported ticker:", event.ticker);
+				return;
+			}
+			// Set up room and ensure participation
+			const roomId = stringToUuid("coinbase-trading");
+			await this.setupRoom(roomId);
+
+			// Get trading amount from settings
 			const amount =
 				Number(this.runtime.getSetting("COINBASE_TRADING_AMOUNT")) ?? 1;
-			const fallbackTweet = `🚀 ${event.event.toUpperCase()}: $${amount.toFixed(
-				2,
-			)} of ${event.ticker} at $${Number(event.price).toFixed(2)}`;
-			return fallbackTweet;
-		}
-	}
 
-	private async handleWebhookEvent(event: WebhookEvent) {
-		// for now just support ETH
-		if (!supportedTickers.includes(event.ticker)) {
-			elizaLogger.info("Unsupported ticker:", event.ticker);
-			return;
-		}
-		// Set up room and ensure participation
-		const roomId = stringToUuid("coinbase-trading");
-		await this.setupRoom(roomId);
+			// Create and store memory of trade
+			const memory = this.createTradeMemory(event, amount, roomId);
+			await this.runtime.messageManager.createMemory(memory);
 
-		// Get trading amount from settings
-		const amount =
-			Number(this.runtime.getSetting("COINBASE_TRADING_AMOUNT")) ?? 1;
+			// Generate state and format timestamp
+			const state = await this.runtime.composeState(memory);
+			const formattedTimestamp = this.getFormattedTimestamp();
 
-		// Create and store memory of trade
-		const memory = this.createTradeMemory(event, amount, roomId);
-		await this.runtime.messageManager.createMemory(memory);
+			// Execute token swap
+			const buy = event.event.toUpperCase() === "BUY";
+			if (buy) {
+				this.initialBuyAmountInCurrency = amount / Number(event.price);
+			}
+			// if sell, use the initial buy amount in currency instead of the current price
+			let amountInCurrency: number;
+			const tokenMetadata = getTokenMetadata(event.ticker);
+			const usdcMetadata = getTokenMetadata("USDC");
+			const tokenDecimals = tokenMetadata?.decimals || 18; // Default to 18 if not found
+			const usdcDecimals = usdcMetadata?.decimals || 6; // Default to 6 if not found
 
-		// Generate state and format timestamp
-		const state = await this.runtime.composeState(memory);
-		const formattedTimestamp = this.getFormattedTimestamp();
+			amountInCurrency = Math.floor(
+				buy
+					? amount * 10 ** usdcDecimals // Convert USD amount to USDC base units
+					: (amount / Number(event.price)) * 10 ** tokenDecimals, // Convert to token base units
+			);
+			if (buy) {
+				this.initialBuyAmountInCurrency = amountInCurrency;
+			}
+			if (this.initialBuyAmountInCurrency != null) {
+				amountInCurrency = this.initialBuyAmountInCurrency;
+			}
+			elizaLogger.info(
+				"amountInCurrency non base units ",
+				amount / Number(event.price),
+			);
+			const pnl = await calculateOverallPNL(
+				this.runtime,
+				this.runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
+				1000,
+			);
+			elizaLogger.info("pnl ", pnl);
+			elizaLogger.info("amountInCurrency ", amountInCurrency);
+			const enoughBalance = await hasEnoughBalance(
+				this.runtime,
+				this.runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
+				buy ? "USDC" : event.ticker,
+				amountInCurrency,
+			);
+			elizaLogger.info("enoughBalance ", enoughBalance);
+			if (!enoughBalance) {
+				elizaLogger.error("Not enough balance to trade");
+				return;
+			}
+			const txHash = await this.executeTokenSwap(event, amountInCurrency, buy);
+			if (txHash == null) {
+				elizaLogger.error("txHash is null");
+				return;
+			}
+			elizaLogger.info("txHash ", txHash);
+			console.log("buy ", buy);
+			console.log(
+				"this.initialBuyAmountInCurrency ",
+				this.initialBuyAmountInCurrency,
+			);
 
-		// Execute token swap
-		const buy = event.event.toUpperCase() === "BUY";
-		const tokenMetadata = getTokenMetadata(event.ticker);
-		const usdcMetadata = getTokenMetadata("USDC");
-		const tokenDecimals = tokenMetadata?.decimals || 18; // Default to 18 if not found
-		const usdcDecimals = usdcMetadata?.decimals || 6; // Default to 6 if not found
-
-		const amountInCurrency = Math.floor(
-			buy
-				? amount * 10 ** usdcDecimals // Convert USD amount to USDC base units
-				: (amount / Number(event.price)) * 10 ** tokenDecimals, // Convert to token base units
-		);
-		elizaLogger.info(
-			"amountInCurrency non base units ",
-			amount / Number(event.price),
-		);
-		const pnl = await calculateOverallPNL(
-			this.runtime,
-			this.runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
-			1000,
-		);
-		elizaLogger.info("pnl ", pnl);
-		elizaLogger.info("amountInCurrency ", amountInCurrency);
-		const enoughBalance = await hasEnoughBalance(
-			this.runtime,
-			this.runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
-			buy ? "USDC" : event.ticker,
-			amountInCurrency,
-		);
-		elizaLogger.info("enoughBalance ", enoughBalance);
-		if (!enoughBalance) {
-			elizaLogger.error("Not enough balance to trade");
-			return;
-		}
-		const txHash = await this.executeTokenSwap(event, amountInCurrency, buy);
-		if (txHash == null) {
-			elizaLogger.error("txHash is null");
-			return;
-		}
-		elizaLogger.info("txHash ", txHash);
-
-		// Generate and post tweet
-		await this.handleMediaPosting(
-			event,
-			amount,
-			pnl,
-			formattedTimestamp,
-			state,
-			txHash,
-		);
-	}
-
-	private async setupRoom(roomId: UUID) {
-		await this.runtime.ensureRoomExists(roomId);
-		await this.runtime.ensureParticipantInRoom(this.runtime.agentId, roomId);
-	}
-
-	private createTradeMemory(
-		event: WebhookEvent,
-		amount: number,
-		roomId: UUID,
-	): Memory {
-		return {
-			id: stringToUuid(`coinbase-${event.timestamp}`),
-			userId: this.runtime.agentId,
-			agentId: this.runtime.agentId,
-			roomId,
-			content: {
-				text: `${event.event.toUpperCase()} $${amount} worth of ${
-					event.ticker
-				}`,
-				action: "SWAP",
-				source: "coinbase",
-				metadata: {
-					ticker: event.ticker,
-					side: event.event.toUpperCase(),
-					price: event.price,
-					amount: amount,
-					timestamp: event.timestamp,
-					walletType: "short_term_trading",
-				},
-			},
-			createdAt: Date.now(),
-		};
-	}
-
-	private getFormattedTimestamp(): string {
-		return new Intl.DateTimeFormat("en-US", {
-			hour: "2-digit",
-			minute: "2-digit",
-			second: "2-digit",
-			timeZoneName: "short",
-		}).format(new Date());
-	}
-
-	private async executeTokenSwap(
-		event: WebhookEvent,
-		amount: number,
-		buy: boolean,
-	): Promise<string | null> {
-		return await tokenSwap(
-			this.runtime,
-			amount,
-			buy ? "USDC" : event.ticker,
-			buy ? event.ticker : "USDC",
-			this.runtime.getSetting("WALLET_PUBLIC_KEY"),
-			this.runtime.getSetting("WALLET_PRIVATE_KEY"),
-			"base",
-		);
-	}
-
-	private async handleMediaPosting(
-		event: WebhookEvent,
-		amount: number,
-		pnl: string,
-		formattedTimestamp: string,
-		state: State,
-		txHash: string,
-	) {
-		let mediaContent = "";
-		try {
-			mediaContent = await this.generateMediaContent(
+			// Generate and post tweet
+			await this.handleMediaPosting(
 				event,
 				amount,
 				pnl,
@@ -410,71 +352,151 @@ Generate only the tweet text, no commentary or markdown.`;
 				state,
 				txHash,
 			);
-			elizaLogger.info("Generated media content:", mediaContent);
-
-			if (this.runtime.getSetting("TWITTER_DRY_RUN").toLowerCase() === "true") {
-				elizaLogger.info("Dry run mode enabled. Skipping tweet posting.");
-			} else {
-				// post tweet to twitter
-				const response = await postTweet(this.runtime, mediaContent);
-				elizaLogger.info("Tweet response:", response);
-			}
-		} catch (error) {
-			elizaLogger.error("Failed to post tweet:", error);
 		}
-		try {
-			if (
-				this.runtime.getSetting("TELEGRAM_CLIENT_DISABLED").toLowerCase() ===
-					"true" &&
-				this.runtime.getSetting("TELEGRAM_BOT_TOKEN") !== null
-			) {
-				elizaLogger.info(
-					"Telegram client disabled. Skipping telegram posting.",
+
+		private async setupRoom(roomId: UUID) {
+			await this.runtime.ensureRoomExists(roomId);
+			await this.runtime.ensureParticipantInRoom(this.runtime.agentId, roomId);
+		}
+
+		private createTradeMemory(
+			event: WebhookEvent,
+			amount: number,
+			roomId: UUID,
+		): Memory {
+			return {
+				id: stringToUuid(`coinbase-${event.timestamp}`),
+				userId: this.runtime.agentId,
+				agentId: this.runtime.agentId,
+				roomId,
+				content: {
+					text: `${event.event.toUpperCase()} $${amount} worth of ${
+						event.ticker
+					}`,
+					action: "SWAP",
+					source: "coinbase",
+					metadata: {
+						ticker: event.ticker,
+						side: event.event.toUpperCase(),
+						price: event.price,
+						amount: amount,
+						timestamp: event.timestamp,
+						walletType: "short_term_trading",
+					},
+				},
+				createdAt: Date.now(),
+			};
+		}
+
+		private getFormattedTimestamp(): string {
+			return new Intl.DateTimeFormat("en-US", {
+				hour: "2-digit",
+				minute: "2-digit",
+				second: "2-digit",
+				timeZoneName: "short",
+			}).format(new Date());
+		}
+
+		private async executeTokenSwap(
+			event: WebhookEvent,
+			amount: number,
+			buy: boolean,
+		): Promise<string | null> {
+			return await tokenSwap(
+				this.runtime,
+				amount,
+				buy ? "USDC" : event.ticker,
+				buy ? event.ticker : "USDC",
+				this.runtime.getSetting("WALLET_PUBLIC_KEY"),
+				this.runtime.getSetting("WALLET_PRIVATE_KEY"),
+				"base",
+			);
+		}
+
+		private async handleMediaPosting(
+			event: WebhookEvent,
+			amount: number,
+			pnl: string,
+			formattedTimestamp: string,
+			state: State,
+			txHash: string,
+		) {
+			let mediaContent = "";
+			try {
+				mediaContent = await this.generateMediaContent(
+					event,
+					amount,
+					pnl,
+					formattedTimestamp,
+					state,
+					txHash,
 				);
-			} else {
-				// post message to telegram
-				if (mediaContent.length > 0) {
-					// TODO: remove hardcoded channel id
-					await this.runtime.clients.telegram.messageManager.bot.telegram.sendMessage(
-						this.runtime.getSetting("TELEGRAM_CHANNEL_ID"),
-						mediaContent,
-					);
+				elizaLogger.info("Generated media content:", mediaContent);
+
+				if (
+					this.runtime.getSetting("TWITTER_DRY_RUN").toLowerCase() === "true"
+				) {
+					elizaLogger.info("Dry run mode enabled. Skipping tweet posting.");
+				} else {
+					// post tweet to twitter
+					const response = await postTweet(this.runtime, mediaContent);
+					elizaLogger.info("Tweet response:", response);
 				}
+			} catch (error) {
+				elizaLogger.error("Failed to post tweet:", error);
 			}
-		} catch (error) {
-			elizaLogger.error("Failed to post telegram:", error);
+			try {
+				if (
+					this.runtime.getSetting("TELEGRAM_CLIENT_DISABLED").toLowerCase() ===
+						"true" &&
+					this.runtime.getSetting("TELEGRAM_BOT_TOKEN") !== null
+				) {
+					elizaLogger.info(
+						"Telegram client disabled. Skipping telegram posting.",
+					);
+				} else {
+					// post message to telegram
+					if (mediaContent.length > 0) {
+						await this.runtime.clients.telegram.messageManager.bot.telegram.sendMessage(
+							this.runtime.getSetting("TELEGRAM_CHANNEL_ID"),
+							mediaContent,
+						);
+					}
+				}
+			} catch (error) {
+				elizaLogger.error("Failed to post telegram:", error);
+			}
 		}
-	}
 
-	async stop(): Promise<void> {
-		try {
-			if (this.server?.listen) {
-				await new Promise<void>((resolve, reject) => {
-					this.server.listen().close((err: Error | undefined) => {
-						if (err) reject(err);
-						else resolve();
+		async stop(): Promise<void> {
+			try {
+				if (this.server?.listen) {
+					await new Promise<void>((resolve, reject) => {
+						this.server.listen().close((err: Error | undefined) => {
+							if (err) reject(err);
+							else resolve();
+						});
 					});
-				});
+				}
+				elizaLogger.info("Coinbase client stopped successfully");
+			} catch (error) {
+				elizaLogger.error("Error stopping Coinbase client:", error);
+				throw error;
 			}
-			elizaLogger.info("Coinbase client stopped successfully");
-		} catch (error) {
-			elizaLogger.error("Error stopping Coinbase client:", error);
-			throw error;
+		}
+
+		getType(): string {
+			return "coinbase";
+		}
+
+		getName(): string {
+			return "coinbase";
+		}
+
+		async start(): Promise<void> {
+			await this.initialize();
 		}
 	}
-
-	getType(): string {
-		return "coinbase";
-	}
-
-	getName(): string {
-		return "coinbase";
-	}
-
-	async start(): Promise<void> {
-		await this.initialize();
-	}
-}
 
 export const CoinbaseClientInterface: Client = {
 	start: async (runtime: IAgentRuntime) => {
