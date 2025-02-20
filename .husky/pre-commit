@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+pnpm format || (echo "❌ Format check failed. Please run 'pnpm format' to fix the issues." && exit 1) 
