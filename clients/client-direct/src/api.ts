@@ -28,6 +28,7 @@ import {
 	deleteTemplate,
 	getTemplates,
 	updateTemplate,
+	getCharacters
 } from "./controllers/templateController";
 import {
 	getAllTraces,
@@ -482,9 +483,7 @@ export function createApiRouter(
 		}
 	});
 
-	router.post(
-		"/tee/logs",
-		async (req: express.Request, res: express.Response) => {
+	router.post("/tee/logs",async (req: express.Request, res: express.Response) => {
 			try {
 				const query = req.body.query || {};
 				const page = Number.parseInt(req.body.page) || 1;
@@ -573,7 +572,30 @@ export function createApiRouter(
 		}
 	});
 
-	router.get("/traces", async (req, res) => {
+/**
+ * @swagger
+ * /api/traces:
+ *   get:
+ *     summary: Fetch all traces
+ *     description: Retrieves all traces from the database.
+ *     responses:
+ *       200:
+ *         description: A JSON array of traces.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total_records:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       500:
+ *         description: Server error
+ */
+router.get("/traces", async (req, res) => {
 		getAllTraces(req, res);
 	});
 
@@ -591,6 +613,10 @@ export function createApiRouter(
 
 	router.get("/traces/by-agent/:agentId", async (req, res) => {
 		getTracesByAgentId(req, res);
+	});
+
+	router.get("/templates/characters", async (req, res) =>{
+		 getCharacters(req, res);
 	});
 
 	router.get("/templates/:characterName", async (req, res) => {

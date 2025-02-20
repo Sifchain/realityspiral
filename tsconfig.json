@@ -20,7 +20,8 @@
 		"noEmitOnError": false,
 		"moduleDetection": "force",
 		"allowArbitraryExtensions": true,
-		"customConditions": ["@realityspiral/source"]
+		"customConditions": ["@realityspiral/source"],
+		"types": ["node"]
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist", "src/**/*.d.ts", "types/**/*.test.ts"]
