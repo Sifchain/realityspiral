@@ -44,6 +44,7 @@ export default defineConfig({
 		"advanced-sdk-ts",
 		"jsonwebtoken",
 		"whatwg-url",
+		"ethers",
 	],
 	platform: "node",
 	target: "node23",

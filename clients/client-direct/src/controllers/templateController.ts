@@ -1,8 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Request, Response } from "express";
-import { fileURLToPath } from "url";
-
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,23 +10,24 @@ const charactersDir = path.join(__dirname, "../../../characters");
 
 // Function to get a dynamic character file path
 const getCharacterFilePath = (characterName: string) => {
-    return path.join(charactersDir, `${characterName}.character.json`);
+	return path.join(charactersDir, `${characterName}.character.json`);
 };
 
-
 // Function to get available characters dynamically
-export const getCharacters = (req: Request, res: Response) => {
-    fs.readdir(charactersDir, (err, files) => {
-        if (err) {
-            return res.status(500).json({ error: "Failed to read characters directory" });
-        }
+export const getCharacters = (_req: Request, res: Response) => {
+	fs.readdir(charactersDir, (err, files) => {
+		if (err) {
+			return res
+				.status(500)
+				.json({ error: "Failed to read characters directory" });
+		}
 
-        const characterNames = files
-            .filter((file) => file.endsWith(".character.json"))
-            .map((file) => file.replace(".character.json", "")); // Remove extension
+		const characterNames = files
+			.filter((file) => file.endsWith(".character.json"))
+			.map((file) => file.replace(".character.json", "")); // Remove extension
 
-        res.json({ characters: characterNames });
-    });
+		res.json({ characters: characterNames });
+	});
 };
 
 // Register the route

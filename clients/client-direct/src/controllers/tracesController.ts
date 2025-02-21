@@ -113,48 +113,48 @@ export const getUniqueRoomIdByAgent = async (req: Request, res: Response) => {
  *         description: Server error
  */
 export const getTracesByRoom = async (req: Request, res: Response) => {
-    try {
-        const { roomId } = req.params;
-        if (!roomId) {
-            return res
-                .status(400)
-                .json({ message: "Missing or invalid ROOM ID" });
-        }
+	try {
+		const { roomId } = req.params;
+		if (!roomId) {
+			return res.status(400).json({ message: "Missing or invalid ROOM ID" });
+		}
 
-        const { name, start_date, end_date } = req.query;
+		const { name, start_date, end_date } = req.query;
 
-        let query = "SELECT * FROM traces WHERE room_id = $1";
-        const queryParams: any[] = [roomId];
+		let query = "SELECT * FROM traces WHERE room_id = $1";
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		const queryParams: any[] = [roomId];
 
-        let paramIndex = 2; // Next index for query placeholders ($2, $3, ...)
+		let paramIndex = 2; // Next index for query placeholders ($2, $3, ...)
 
-        // Optional Filters
-        if (name) {
-            query += ` AND name ILIKE $${paramIndex}`;
-            queryParams.push(`%${name}%`);
-            paramIndex++;
-        }
+		// Optional Filters
+		if (name) {
+			query += ` AND name ILIKE $${paramIndex}`;
+			queryParams.push(`%${name}%`);
+			paramIndex++;
+		}
 
-        if (start_date && end_date) {
-            query += ` AND DATE(start_time) >= $${paramIndex} AND DATE(end_time) <= $${paramIndex + 1}`;
-            queryParams.push(start_date, end_date);
-            paramIndex += 2;
-        }
+		if (start_date && end_date) {
+			query += ` AND DATE(start_time) >= $${paramIndex} AND DATE(end_time) <= $${paramIndex + 1}`;
+			queryParams.push(start_date, end_date);
+			paramIndex += 2;
+		}
 
-        // Order results by `start_time`
-        query += " ORDER BY start_time DESC";
+		// Order results by `start_time`
+		query += " ORDER BY start_time DESC";
 
-        const result = await pool.query(query, queryParams);
+		const result = await pool.query(query, queryParams);
 
-        res.status(200).json({
-            room_id: roomId,
-            total_records: result.rowCount ?? 0,
-            data: result.rows,
-        });
-    } catch (error: any) {
-        console.error("❌ Error fetching traces by ROOM:", error);
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
+		res.status(200).json({
+			room_id: roomId,
+			total_records: result.rowCount ?? 0,
+			data: result.rows,
+		});
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	} catch (error: any) {
+		console.error("❌ Error fetching traces by ROOM:", error);
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
 };
 
 /**
