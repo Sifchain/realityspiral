@@ -47,7 +47,7 @@ export const orchestrateAction: Action = {
 			state = await runtime.composeState(message);
 		} else {
 			// biome-ignore lint/style/noParameterAssign: <explanation>
-			state = await runtime.composeState(message, state);
+			state = await runtime.updateRecentMessageState(state);
 		}
 
 		// Get the orchestration plan
@@ -83,7 +83,7 @@ export const orchestrateAction: Action = {
 			{
 				user: "{{user1}}",
 				content: {
-					text: "Plan and implement a new feature to improve user experience in user1/repo1",
+					text: "Orchestrate a new feature to improve user experience in user1/repo1",
 				},
 			},
 			{
@@ -158,12 +158,15 @@ async function executeAction(
 		roomId: state.roomId,
 	};
 
+	// create memory for the action
+	await runtime.messageManager.createMemory(actionMemory);
+
 	// Execute the action
 	const result =
 		(await actionHandler.handler(
 			runtime,
 			actionMemory,
-			state,
+			null,
 			undefined,
 			callback,
 		)) || {};

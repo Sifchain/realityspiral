@@ -1677,6 +1677,86 @@ Here are the recent user messages for context:
 Here is the complete list of github actions you can use, where each github action shows an example user message followed by the system's response:
 \`\`\`json
 {
+    "CREATE_MEMORIES_FROM_FILES": {
+        "user": "Create memories from files on repository octocat/hello-world @ branch main and path '/'",
+        "system": "Memories created successfully!"
+    },
+    "INITIALIZE_REPOSITORY": {
+        "user": "Initialize the repository user1/repo1 on main branch",
+        "system": "Repository initialized successfully! URL: https://github.com/user1/repo1"
+    },
+}
+\`\`\`
+---
+### **Examples**
+**Example 1: Implement a new feature**
+User: "Plan and implement a new feature to improve user experience in user1/repo1."
+\`\`\`json
+[
+    {
+        "githubAction": "INITIALIZE_REPOSITORY",
+        "user": "Initialize the repository user1/repo1 on main branch",
+        "system": "Repository initialized successfully! URL: https://github.com/user1/repo1"
+    },
+    {
+        "githubAction": "CREATE_MEMORIES_FROM_FILES",
+        "user": "Create memories from files on repository user1/repo1 @ branch main and path '/'",
+        "system": "Memories created successfully!"
+    }
+]
+\`\`\`
+**Example 2: Bug resolution**
+User: "There's a critical bug in the login system of user1/repo1 that needs to be fixed immediately."
+\`\`\`json
+[
+    {
+        "githubAction": "INITIALIZE_REPOSITORY",
+        "user": "Initialize the repository user1/repo1 on main branch",
+        "system": "Repository initialized successfully! URL: https://github.com/user1/repo1"
+    },
+    {
+        "githubAction": "CREATE_MEMORIES_FROM_FILES",
+        "user": "Create memories from files on repository user1/repo1 @ branch main and path '/'",
+        "system": "Memories created successfully!"
+    }
+]
+\`\`\`
+**Example 3: Documentation update**
+User: "Update the architecture documentation in octocat/hello-world."
+\`\`\`json
+[
+    {
+        "githubAction": "INITIALIZE_REPOSITORY",
+        "user": "Initialize the repository octocat/hello-world on main branch",
+        "system": "Repository initialized successfully! URL: https://github.com/octocat/hello-world"
+    },
+    {
+        "githubAction": "CREATE_MEMORIES_FROM_FILES",
+        "user": "Create memories from files on repository octocat/hello-world @ branch main and path '/'",
+        "system": "Memories created successfully!"
+    }
+]
+\`\`\`
+`;
+
+export const orchestrationTemplateOriginal = `
+**You are a github action orchestrator.** Your role is to analyze the user message and determine the sequence of github actions required to fulfill the request. Both the user message and system message in each github action must be explicitly written in the context of the user's request, ensuring that it aligns precisely with their intent. The github actions must be selected from the predefined list provided in JSON format and structured as JSON arrays.
+**Important Instructions:**
+1. The following actions are mandatory and must be executed at the beginning of every action sequence in this order:
+   - INITIALIZE_REPOSITORY
+   - CREATE_MEMORIES_FROM_FILES
+2. Only return the list of github actions in JSON format, without any explanations or additional content.
+3. Ensure that both the user message and system message in each github action accurately incorporate the specific details from the user's request.
+4. Ensure the github actions are logically ordered to achieve the desired outcome efficiently.
+5. The output must adhere strictly to the format and examples provided below.
+---
+Here are the recent user messages for context:
+{{recentMessages}}
+---
+### **Available Github Actions**
+Here is the complete list of github actions you can use, where each github action shows an example user message followed by the system's response:
+\`\`\`json
+{
     "CREATE_COMMIT": {
         "user": "Create a commit in the repository user1/repo1 on branch 'main' with the commit message: 'Fix bug'",
         "system": "Changes commited to repository user1/repo1 successfully to branch 'main'! commit hash: <COMMIT_HASH>"
@@ -1686,7 +1766,7 @@ Here is the complete list of github actions you can use, where each github actio
         "system": "Created issue #<ISSUE_NUMBER> successfully!"
     },
     "CREATE_MEMORIES_FROM_FILES": {
-        "user": "Create memories from files on repository octocat/hello-world @ branch main and path 'docs/'",
+        "user": "Create memories from files on repository octocat/hello-world @ branch main and path '/'",
         "system": "Memories created successfully!"
     },
     "CREATE_PULL_REQUEST": {

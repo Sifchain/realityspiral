@@ -89,11 +89,13 @@ export const createPullRequestAction: Action = {
 		const repoPath = getRepoPath(content.owner, content.repo);
 
 		try {
+			const token = runtime.getSetting("GITHUB_API_TOKEN");
+
 			await checkoutBranch(repoPath, content.branch, true);
 			await writeFiles(repoPath, content.files);
-			await commitAndPushChanges(repoPath, content.title, content.branch);
+			await commitAndPushChanges(token, repoPath, content.title, content.branch);
 			const pullRequest = await createPullRequest(
-				runtime.getSetting("GITHUB_API_TOKEN"),
+				token,
 				content.owner,
 				content.repo,
 				content.branch,
@@ -108,7 +110,7 @@ export const createPullRequestAction: Action = {
 				content.owner,
 				content.repo,
 				content.branch,
-				runtime.getSetting("GITHUB_API_TOKEN"),
+				token,
 			);
 
 			elizaLogger.info(
