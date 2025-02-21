@@ -1,8 +1,8 @@
+import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
+import axios from "axios";
 import { Contract, type Signer } from "ethers";
 import { JsonRpcProvider } from "ethers/providers";
 import { formatUnits } from "ethers/utils";
-import axios from "axios";
-import { elizaLogger, type IAgentRuntime } from "@elizaos/core";
 
 // prosper
 export const PROSPER_STAKING_CONTRACT_ADDRESS =

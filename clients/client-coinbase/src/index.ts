@@ -823,7 +823,4 @@ const currentPriceProvider = {
 	},
 };
 
-
-
-
 export default CoinbaseClientInterface;
