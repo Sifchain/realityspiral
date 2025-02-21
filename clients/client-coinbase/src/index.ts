@@ -247,9 +247,15 @@ Generate only the tweet text, no commentary or markdown.`;
 					context,
 					modelClass: ModelClass.LARGE,
 				});
-
+				const isSellTrade = event.event.toUpperCase() === "SELL";
+				const sellTradePNL = isSellTrade
+					? await calculateSellTradePNL(
+							this.runtime,
+							this.initialBuyAmountInCurrency,
+						)
+					: "";
 				const trimmedContent = tweetContent.trim();
-				const finalContent = `${trimmedContent} PNL: ${pnl} ${blockExplorerBaseTxUrl(hash)}`;
+				const finalContent = `${trimmedContent} ${isSellTrade ? `Trade PNL: ${sellTradePNL}` : ""} Overall PNL: ${pnl} ${blockExplorerBaseTxUrl(hash)}`;
 				return finalContent.length > 280
 					? `${finalContent.substring(0, 277)}...`
 					: finalContent;
@@ -537,6 +543,27 @@ export const calculateOverallPNL = async (
 	elizaLogger.info(`formattedPNL ${formattedPNL}`);
 	const formattedPNLUSD = `${pnlUSD < 0 ? "-" : ""}${formattedPNL}`;
 	elizaLogger.info(`formattedPNLUSD ${formattedPNLUSD}`);
+	return formattedPNLUSD;
+};
+
+export const calculateSellTradePNL = async (
+	runtime: IAgentRuntime,
+	initialBuyAmountInCurrency: number,
+): Promise<string> => {
+	const tradingAmount = Number(runtime.getSetting("COINBASE_TRADING_AMOUNT"));
+	const pnlUSD = initialBuyAmountInCurrency - tradingAmount;
+	elizaLogger.info(`Sell Trade pnlUSD ${pnlUSD}`);
+	const absoluteValuePNL = Math.abs(pnlUSD);
+	elizaLogger.info(`Sell Trade absoluteValuePNL ${absoluteValuePNL}`);
+	const formattedPNL = new Intl.NumberFormat("en-US", {
+		style: "currency",
+		currency: "USD",
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
+	}).format(absoluteValuePNL);
+	elizaLogger.info(`Sell Trade formattedPNL ${formattedPNL}`);
+	const formattedPNLUSD = `${pnlUSD < 0 ? "-" : ""}${formattedPNL}`;
+	elizaLogger.info(`Sell Trade formattedPNLUSD ${formattedPNLUSD}`);
 	return formattedPNLUSD;
 };
 
