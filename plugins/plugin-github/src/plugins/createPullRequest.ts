@@ -93,7 +93,12 @@ export const createPullRequestAction: Action = {
 
 			await checkoutBranch(repoPath, content.branch, true);
 			await writeFiles(repoPath, content.files);
-			await commitAndPushChanges(token, repoPath, content.title, content.branch);
+			await commitAndPushChanges(
+				token,
+				repoPath,
+				content.title,
+				content.branch,
+			);
 			const pullRequest = await createPullRequest(
 				token,
 				content.owner,

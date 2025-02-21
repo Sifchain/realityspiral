@@ -46,7 +46,7 @@ export async function initRepo(
 ) {
 	const repoPath = getRepoPath(owner, repo);
 	elizaLogger.info(`Repository path: ${repoPath}`);
-	
+
 	await createReposDirectory(owner);
 	await cloneOrPullRepository(token, owner, repo, repoPath, branch);
 	await checkoutBranch(repoPath, branch);
@@ -135,37 +135,37 @@ export async function getGitHubUserInfo(token: string) {
 }
 
 export async function commitAndPushChanges(
-		token: string,
-		repoPath: string,
-		message: string,
-		branch?: string,
-	): Promise<CommitResult> {
-		try {
-			const git = simpleGit(repoPath);
+	token: string,
+	repoPath: string,
+	message: string,
+	branch?: string,
+): Promise<CommitResult> {
+	try {
+		const git = simpleGit(repoPath);
 
-			// Get GitHub user info
-			const userInfo = await getGitHubUserInfo(token);
+		// Get GitHub user info
+		const userInfo = await getGitHubUserInfo(token);
 
-			await git.addConfig("user.name", userInfo.name);
-			await git.addConfig("user.email", userInfo.email);
+		await git.addConfig("user.name", userInfo.name);
+		await git.addConfig("user.email", userInfo.email);
 
-			await git.add(".");
-			const commit = await git.commit(message);
+		await git.add(".");
+		const commit = await git.commit(message);
 
-			// biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
-			let pushResult;
-			if (branch) {
-				pushResult = await git.push("origin", branch);
-			} else {
-				pushResult = await git.push();
-			}
-			elizaLogger.info("Push result:", pushResult);
-			return commit;
-		} catch (error) {
-			elizaLogger.error("Error committing and pushing changes:", error);
-			throw new Error(`Error committing and pushing changes: ${error}`);
+		// biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
+		let pushResult;
+		if (branch) {
+			pushResult = await git.push("origin", branch);
+		} else {
+			pushResult = await git.push();
 		}
+		elizaLogger.info("Push result:", pushResult);
+		return commit;
+	} catch (error) {
+		elizaLogger.error("Error committing and pushing changes:", error);
+		throw new Error(`Error committing and pushing changes: ${error}`);
 	}
+}
 
 export async function checkoutBranch(
 	repoPath: string,
