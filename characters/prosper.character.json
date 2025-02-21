@@ -1,7 +1,7 @@
 {
 	"name": "Prosper",
 	"clients": ["coinbase", "twitter", "telegram"],
-	"username": "The Financial Strategist and Community Influencer",
+	"username": "Prosper",
 	"modelProvider": "openai",
 	"imageModelProvider": "openai",
 	"knowledge": [

@@ -35,6 +35,7 @@ import {
 	blockExplorerBaseTxUrl,
 	supportedTickers,
 } from "./types";
+import { calculateAPR, fetchTokenPrice } from "./utils";
 
 export type { WebhookEvent };
 
@@ -57,6 +58,10 @@ export class CoinbaseClient implements Client {
 		this.runtime.providers.push(balanceProvider);
 		this.runtime.providers.push(addressProvider);
 		this.runtime.providers.push(tradingSignalBackTestProvider);
+		this.runtime.providers.push(baseTokenAddressProvider);
+		this.runtime.providers.push(solTokenAddressProvider);
+		this.runtime.providers.push(stakingLiquidityPoolingProvider);
+		this.runtime.providers.push(currentPriceProvider);
 		this.server = express();
 		this.port = Number(runtime.getSetting("COINBASE_WEBHOOK_PORT")) || 3001;
 		this.wallets = [];
@@ -778,6 +783,43 @@ export const tradingSignalBackTestProvider: Provider = {
         ${backtestResults}
 		AS OF ${new Date().toLocaleString()} subject to change will be updated periodically
         `;
+	},
+};
+
+const baseTokenAddressProvider = {
+	get: async (runtime: IAgentRuntime, _message: Memory) => {
+		return `BASE Token Address: ${runtime.getSetting("COINBASE_TOKEN_ADDRESS_BASE")}`;
+	},
+};
+
+const solTokenAddressProvider = {
+	get: async (runtime: IAgentRuntime, _message: Memory) => {
+		return `SOL Token Address: ${runtime.getSetting("COINBASE_TOKEN_ADDRESS_SOL")}`;
+	},
+};
+
+const stakingLiquidityPoolingProvider = {
+	get: async (runtime: IAgentRuntime, _message: Memory) => {
+		return `How to stake on BASE: 
+		1. Go to uniswap v2 (https://app.uniswap.org/positions/create/v2) and add liquidity to ${runtime.character.username.toUpperCase()} / ETH and receive the LP token 
+		2. Go to staking website (https://stakeprosper.com/) and stake your LP tokens and receive rewards 
+		Notes you can claim rewards whenever and there is a 7 day lockup period for unstaking.
+		
+		How to pool on SOL: Go to raydium (https://raydium.io/liquidity-pools/?token=${runtime.getSetting("COINBASE_TOKEN_ADDRESS_SOL")}) and add liquidity to ${runtime.character.username.toUpperCase()} / ETH and receive rewards you can withdraw anytime`;
+	},
+};
+
+const currentPriceProvider = {
+	get: async (_runtime: IAgentRuntime, _message: Memory) => {
+		// const priceOnBase = await fetchTokenPrice(
+		// 	runtime,
+		// 	runtime.getSetting("COINBASE_TOKEN_ADDRESS_BASE"),
+		// );
+		// const aprOnBase = await calculateAPR(
+		// 	runtime.getSetting("COINBASE_TOKEN_ADDRESS_BASE"),
+		// );
+		// return `Current price of ${runtime.character.name.toUpperCase} on Base is ${priceOnBase.current} and APR is ${aprOnBase}.
+		// `;
 	},
 };
 
