@@ -951,7 +951,7 @@ export const getRewardPerToken = async (token: "PROSPER" | "RSP") => {
 			? PROSPER_STAKING_CONTRACT_ADDRESS
 			: RSP_STAKING_CONTRACT_ADDRESS,
 	);
-	const rewardPerToken = await contract.rewardPerToken(0); 
+	const rewardPerToken = await contract.rewardPerToken(0);
 	return formatUnits(rewardPerToken, 18);
 };
 
