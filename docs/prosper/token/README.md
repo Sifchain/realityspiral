@@ -15,6 +15,10 @@ Radium LP: https://raydium.io/swap/?inputMint=sol&outputMint=7PJRUcofFytiF8jDpdg
 
 ## Staking Prosper with high APR
 
+
+<img src="../_assets/Staking.png" alt="image" width="500"/>
+
+
 You can now stake your $PROSPER tokens at https://www.stakeprosper.com and get an amazing APR if you hurry up!
 
 
