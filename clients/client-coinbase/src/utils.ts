@@ -15,6 +15,8 @@ export const RSP_STAKING_CONTRACT_ADDRESS =
 	"0xb9EAfef078A903C16c269bD63A5F5D5636c4004C"; // staking contract rsp/eth lp
 export const RSP_TOKEN_ADDRESS = "0x6F8097E84fdD24C482d1982416f85CF32De594F5"; // rsp
 export const RSP_STAKING_TOKEN = "0x5131c2D2DdCBfdA5F5b5A7a9D5C173A99Eb36C5b"; // rsp/eth lp
+const RPC_URL =
+	"https://base-mainnet.infura.io/v3/f2ace3972c5d4c75bfd063d4016d423a";
 
 const ABI = [
 	{
@@ -751,9 +753,7 @@ const ABI = [
 
 export const getContract = (address: string, signer?: Signer) => {
 	try {
-		const rpcUrl =
-			"https://base-mainnet.infura.io/v3/f2ace3972c5d4c75bfd063d4016d423a";
-		const provider = new JsonRpcProvider(rpcUrl);
+		const provider = new JsonRpcProvider(RPC_URL);
 		elizaLogger.info("Getting contract for " + address);
 		elizaLogger.info("Signer: " + signer);
 		elizaLogger.info("Provider: " + provider);
@@ -935,16 +935,13 @@ export const getAvailableToken = async (
 	userWallet: string,
 	token: "PROSPER" | "RSP",
 ) => {
-	const rpcUrl =
-		"https://base-mainnet.infura.io/v3/f2ace3972c5d4c75bfd063d4016d423a";
-	const provider = new JsonRpcProvider(rpcUrl);
+	const provider = new JsonRpcProvider(RPC_URL);
 	const prosperContract = new Contract(
 		token === "PROSPER" ? PROSPER_STAKING_TOKEN : RSP_STAKING_TOKEN,
 		ABI,
 		provider,
 	); // token being staked
 	const balance = await prosperContract.balanceOf(userWallet);
-	// console.log("AAAAA alance: " + balance, userWallet, token)
 	return formatUnits(balance, 18);
 };
 
@@ -954,7 +951,7 @@ export const getRewardPerToken = async (token: "PROSPER" | "RSP") => {
 			? PROSPER_STAKING_CONTRACT_ADDRESS
 			: RSP_STAKING_CONTRACT_ADDRESS,
 	);
-	const rewardPerToken = await contract.rewardPerToken(0); // Assuming pool ID 0
+	const rewardPerToken = await contract.rewardPerToken(0); 
 	return formatUnits(rewardPerToken, 18);
 };
 
