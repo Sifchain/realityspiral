@@ -1,6 +1,8 @@
-import { Express, type Router } from "express";
+import type { Application } from "express";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+
+const filesPath = new URL("../", import.meta.url).pathname;
 
 const options: swaggerJSDoc.Options = {
 	definition: {
@@ -16,12 +18,11 @@ const options: swaggerJSDoc.Options = {
 			},
 		],
 	},
-	apis: ["**/*.ts"], // Path to API routes
-	// Make sure these paths are correct
+	apis: [`${filesPath}**/*.ts`], // Path to API routes
 };
 
 const swaggerSpec = swaggerJSDoc(options);
 
-export const setupSwagger = (router: Router) => {
-	router.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+export const setupSwagger = (app: Application) => {
+	app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 };

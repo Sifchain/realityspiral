@@ -3,6 +3,7 @@ import { useState } from "react";
 export const use = () => {
 	const API_BASE_URL = `${import.meta.env.VITE_SERVER_URL}/templates`;
 
+	const [characters, setCharacters] = useState<string[]>([]);
 	const [character, setCharacter] = useState("prosper");
 	const [templates, setTemplates] = useState<{ [key: string]: string }>({});
 	const [newTemplateName, setNewTemplateName] = useState("");
@@ -10,14 +11,20 @@ export const use = () => {
 	const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 	const [updatedTemplateContent, setUpdatedTemplateContent] = useState("");
 
+	const fetchCharacters = async () => {
+		try {
+			const response = await fetch(`${API_BASE_URL}/characters`);
+			const data = await response.json();
+			setCharacters(data.characters || []);
+			fetchTemplates();
+		} catch (error) {
+			console.error("❌ Error fetching characters:", error);
+		}
+	};
+
 	const fetchTemplates = async () => {
 		try {
-			const response = await fetch(`${API_BASE_URL}/${character}`, {
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json",
-				},
-			});
+			const response = await fetch(`${API_BASE_URL}/${character}`);
 			const data = await response.json();
 			setTemplates(data.templates || {});
 		} catch (error) {
@@ -116,6 +123,7 @@ export const use = () => {
 	};
 
 	return {
+		fetchCharacters,
 		fetchTemplates,
 		addTemplate,
 		updateTemplate,
@@ -125,6 +133,7 @@ export const use = () => {
 		newTemplateContent,
 		character,
 		setCharacter,
+		characters,
 		selectedTemplate,
 		setSelectedTemplate,
 		updatedTemplateContent,

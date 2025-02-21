@@ -4,7 +4,7 @@ import { use } from "./hooks";
 
 function TemplateManager() {
 	const {
-		fetchTemplates,
+		fetchCharacters,
 		addTemplate,
 		updateTemplate,
 		deleteTemplate,
@@ -13,6 +13,7 @@ function TemplateManager() {
 		newTemplateContent,
 		character,
 		setCharacter,
+		characters,
 		selectedTemplate,
 		setSelectedTemplate,
 		updatedTemplateContent,
@@ -23,7 +24,7 @@ function TemplateManager() {
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
-		fetchTemplates();
+		fetchCharacters();
 	}, [character]);
 
 	return (
@@ -53,27 +54,23 @@ function TemplateManager() {
 							onChange={(e) => setCharacter(e.target.value)}
 							className="p-3 rounded-lg text-white border border-gray-600 w-full shadow-md transition hover:bg-gray-600 focus:ring focus:ring-blue-500 appearance-none cursor-pointer"
 						>
-							{[
-								"c3po",
-								"chronis",
-								"cosmosHelper",
-								"dobby",
-								"eternalai",
-								"logging-addict",
-								"prosper",
-								"staff-engineer",
-								"tate",
-								"trump",
-							].map((char) => (
-								<option
-									key={char}
-									value={char}
-									className="bg-gray-800 text-white p-2 hover:bg-gray-700 cursor-pointer"
-								>
-									{char.toUpperCase()}
+							{characters.length > 0 ? (
+								characters.map((char) => (
+									<option
+										key={char}
+										value={char}
+										className="bg-gray-800 text-white p-2 hover:bg-gray-700 cursor-pointer"
+									>
+										{char.toUpperCase()}
+									</option>
+								))
+							) : (
+								<option value="" disabled>
+									Loading...
 								</option>
-							))}
+							)}
 						</select>
+
 						<div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
 							▼
 						</div>
@@ -124,10 +121,8 @@ function TemplateManager() {
 					{Object.keys(templates).length > 0 ? (
 						<ul>
 							{Object.entries(templates).map(([name, content]) => (
-								<motion.li
+								<li
 									key={name}
-									whileHover={{ scale: 1.02 }}
-									whileTap={{ scale: 0.98 }}
 									className="mb-4 p-4 bg-[#161616] rounded-lg flex justify-between items-center shadow-md border border-gray-700 transition hover:bg-gray-700"
 								>
 									<div>
@@ -156,7 +151,7 @@ function TemplateManager() {
 											Delete
 										</button>
 									</div>
-								</motion.li>
+								</li>
 							))}
 						</ul>
 					) : (
