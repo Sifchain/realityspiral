@@ -43,8 +43,6 @@ const storage = multer.diskStorage({
 		cb(null, `${uniqueSuffix}-${file.originalname}`);
 	},
 });
-import templateRoutes from "./routes/templateRoutes";
-import tracesRoutes from "./routes/tracesRoutes";
 
 // some people have more memory than disk.io
 const upload = multer({ storage /*: multer.memoryStorage() */ });
@@ -145,9 +143,6 @@ export class DirectClient {
 		const apiRouter = createApiRouter(this.agents, this);
 		this.app.use(apiRouter);
 
-		this.app.use("/api/templates", templateRoutes);
-
-		this.app.use("/api/traces", tracesRoutes);
 		setupSwagger(this.app);
 
 		const apiLogRouter = createVerifiableLogApiRouter(this.agents);
@@ -199,6 +194,62 @@ export class DirectClient {
 			},
 		);
 
+		/**
+		 * @swagger
+		 * /{agentId}/message:
+		 *   post:
+		 *     summary: Send a message to an agent
+		 *     description: Send a message to a specific agent and get their response
+		 *     parameters:
+		 *       - in: path
+		 *         name: agentId
+		 *         required: true
+		 *         schema:
+		 *           type: string
+		 *         description: ID of the agent to message
+		 *     requestBody:
+		 *       required: true
+		 *       content:
+		 *         multipart/form-data:
+		 *           schema:
+		 *             type: object
+		 *             properties:
+		 *               text:
+		 *                 type: string
+		 *                 description: Message text to send
+		 *               roomId:
+		 *                 type: string
+		 *                 description: Optional room ID for the conversation
+		 *               userId:
+		 *                 type: string
+		 *                 description: Optional user ID for the sender
+		 *               file:
+		 *                 type: string
+		 *                 format: binary
+		 *                 description: Optional file attachment
+		 *     responses:
+		 *       200:
+		 *         description: Message processed successfully
+		 *         content:
+		 *           application/json:
+		 *             schema:
+		 *               type: array
+		 *               items:
+		 *                 type: object
+		 *                 properties:
+		 *                   text:
+		 *                     type: string
+		 *                   action:
+		 *                     type: string
+		 *                   attachments:
+		 *                     type: array
+		 *                     items:
+		 *                       type: object
+		 *       404:
+		 *         description: Agent not found
+		 *       500:
+		 *         description: Server error
+		 */
 		this.app.post(
 			"/:agentId/message",
 			upload.single("file"),
@@ -710,6 +761,50 @@ export class DirectClient {
 			},
 		);
 
+		/**
+		 * @swagger
+		 * /{agentId}/speak:
+		 *   post:
+		 *     summary: Convert agent's response to speech
+		 *     description: Send a message to an agent and receive an audio response
+		 *     parameters:
+		 *       - in: path
+		 *         name: agentId
+		 *         required: true
+		 *         schema:
+		 *           type: string
+		 *         description: ID of the agent
+		 *     requestBody:
+		 *       required: true
+		 *       content:
+		 *         application/json:
+		 *           schema:
+		 *             type: object
+		 *             required:
+		 *               - text
+		 *             properties:
+		 *               text:
+		 *                 type: string
+		 *                 description: Text to convert to speech
+		 *               roomId:
+		 *                 type: string
+		 *               userId:
+		 *                 type: string
+		 *     responses:
+		 *       200:
+		 *         description: Audio response
+		 *         content:
+		 *           audio/mpeg:
+		 *             schema:
+		 *               type: string
+		 *               format: binary
+		 *       400:
+		 *         description: No text provided
+		 *       404:
+		 *         description: Agent not found
+		 *       500:
+		 *         description: Server error or ElevenLabs API error
+		 */
 		this.app.post("/:agentId/speak", async (req, res) => {
 			const agentId = req.params.agentId;
 			const roomId = stringToUuid(req.body.roomId ?? `default-room-${agentId}`);
@@ -874,6 +969,44 @@ export class DirectClient {
 			}
 		});
 
+		/**
+		 * @swagger
+		 * /{agentId}/tts:
+		 *   post:
+		 *     summary: Text-to-speech conversion
+		 *     description: Convert text to speech using ElevenLabs API
+		 *     parameters:
+		 *       - in: path
+		 *         name: agentId
+		 *         required: true
+		 *         schema:
+		 *           type: string
+		 *         description: ID of the agent
+		 *     requestBody:
+		 *       required: true
+		 *       content:
+		 *         application/json:
+		 *           schema:
+		 *             type: object
+		 *             required:
+		 *               - text
+		 *             properties:
+		 *               text:
+		 *                 type: string
+		 *                 description: Text to convert to speech
+		 *     responses:
+		 *       200:
+		 *         description: Audio response
+		 *         content:
+		 *           audio/mpeg:
+		 *             schema:
+		 *               type: string
+		 *               format: binary
+		 *       400:
+		 *         description: No text provided
+		 *       500:
+		 *         description: ElevenLabs API error
+		 */
 		this.app.post("/:agentId/tts", async (req, res) => {
 			const text = req.body.text;
 

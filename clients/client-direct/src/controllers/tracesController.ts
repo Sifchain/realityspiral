@@ -119,9 +119,31 @@ export const getTracesByRoom = async (req: Request, res: Response) => {
 			return res.status(400).json({ message: "Missing or invalid ROOM ID" });
 		}
 
-		const result = await pool.query("SELECT * FROM traces WHERE room_id = $1", [
-			roomId,
-		]);
+		const { name, start_date, end_date } = req.query;
+
+		let query = "SELECT * FROM traces WHERE room_id = $1";
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		const queryParams: any[] = [roomId];
+
+		let paramIndex = 2; // Next index for query placeholders ($2, $3, ...)
+
+		// Optional Filters
+		if (name) {
+			query += ` AND name ILIKE $${paramIndex}`;
+			queryParams.push(`%${name}%`);
+			paramIndex++;
+		}
+
+		if (start_date && end_date) {
+			query += ` AND DATE(start_time) >= $${paramIndex} AND DATE(end_time) <= $${paramIndex + 1}`;
+			queryParams.push(start_date, end_date);
+			paramIndex += 2;
+		}
+
+		// Order results by `start_time`
+		query += " ORDER BY start_time DESC";
+
+		const result = await pool.query(query, queryParams);
 
 		res.status(200).json({
 			room_id: roomId,

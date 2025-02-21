@@ -38,6 +38,7 @@
 	},
 	"devDependencies": {
 		"@types/multer": "^1.4.12",
+		"@types/node": "^22.13.4",
 		"@types/pg": "^8.11.11",
 		"tsup": "8.3.5"
 	},

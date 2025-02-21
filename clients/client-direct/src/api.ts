@@ -21,11 +21,11 @@ import type { TeeLogQuery, TeeLogService } from "@elizaos/plugin-tee-log";
 import type { WebhookEvent } from "@realityspiral/client-coinbase";
 import { REST, Routes } from "discord.js";
 import type { DirectClient } from ".";
-import { setupSwagger } from "./config/swagger.ts";
 import {
 	addTemplate,
 	batchUpdateCharacterData,
 	deleteTemplate,
+	getCharacters,
 	getTemplates,
 	updateTemplate,
 } from "./controllers/templateController";
@@ -35,6 +35,7 @@ import {
 	getTracesByRoom,
 	getUniqueAgentId,
 	getUniqueRoomIdByAgent,
+	getUniqueRuns,
 } from "./controllers/tracesController.ts";
 
 const GITHUB_REPO_URL = "https://github.com/Sifchain/realityspiral";
@@ -103,11 +104,73 @@ export function createApiRouter(
 		}),
 	);
 
+	/**
+	 * @swagger
+	 * /webhook/coinbase/health:
+	 *   get:
+	 *     summary: Check Coinbase webhook health
+	 *     description: Returns health status of the Coinbase webhook endpoint
+	 *     responses:
+	 *       200:
+	 *         description: Health check successful
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 status:
+	 *                   type: string
+	 *                   example: ok
+	 */
 	router.get("/webhook/coinbase/health", (_req, res) => {
 		elizaLogger.info("Health check received");
 		res.status(200).json({ status: "ok" });
 	});
 
+	/**
+	 * @swagger
+	 * /webhook/coinbase/{agentId}:
+	 *   post:
+	 *     summary: Handle Coinbase webhook events
+	 *     description: Processes incoming Coinbase webhook events for a specific agent
+	 *     parameters:
+	 *       - in: path
+	 *         name: agentId
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: ID of the agent to handle the webhook
+	 *     requestBody:
+	 *       required: true
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             required:
+	 *               - event
+	 *               - ticker
+	 *               - timestamp
+	 *               - price
+	 *             properties:
+	 *               event:
+	 *                 type: string
+	 *                 enum: [buy, sell]
+	 *               ticker:
+	 *                 type: string
+	 *               timestamp:
+	 *                 type: string
+	 *               price:
+	 *                 type: number
+	 *     responses:
+	 *       200:
+	 *         description: Webhook processed successfully
+	 *       400:
+	 *         description: Invalid webhook payload or agent not configured
+	 *       404:
+	 *         description: Agent not found
+	 *       500:
+	 *         description: Internal server error
+	 */
 	router.post("/webhook/coinbase/:agentId", async (req, res) => {
 		elizaLogger.info("Webhook received for agent:", req.params.agentId);
 		const agentId = req.params.agentId;
@@ -149,14 +212,44 @@ export function createApiRouter(
 		}
 	});
 
+	/**
+	 * @swagger
+	 * /:
+	 *   get:
+	 *     summary: Welcome message
+	 *     description: Returns a welcome message
+	 *     responses:
+	 *       200:
+	 *         description: Welcome message
+	 */
 	router.get("/", (_req, res) => {
 		res.send("Welcome, this is the REST API!");
 	});
 
+	/**
+	 * @swagger
+	 * /hello:
+	 *   get:
+	 *     summary: Hello World
+	 *     description: Returns a hello world message
+	 *     responses:
+	 *       200:
+	 *         description: Hello World
+	 */
 	router.get("/hello", (_req, res) => {
 		res.json({ message: "Hello World!" });
 	});
 
+	/**
+	 * @swagger
+	 * /version:
+	 *   get:
+	 *     summary: Get the version of the application
+	 *     description: Returns the version of the application
+	 *     responses:
+	 *       200:
+	 *         description: Version of the application
+	 */
 	router.get("/version", (_req, res) => {
 		if (!process.env.VERSION) {
 			res.json({
@@ -172,6 +265,37 @@ export function createApiRouter(
 		res.json({ version, url });
 	});
 
+	/**
+	 * @swagger
+	 * /agents:
+	 *   get:
+	 *     summary: Get all agents
+	 *     description: Returns a list of all registered agents and their basic information
+	 *     responses:
+	 *       200:
+	 *         description: List of agents retrieved successfully
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 agents:
+	 *                   type: array
+	 *                   items:
+	 *                     type: object
+	 *                     properties:
+	 *                       id:
+	 *                         type: string
+	 *                         description: Agent's unique identifier
+	 *                       name:
+	 *                         type: string
+	 *                         description: Agent's name
+	 *                       clients:
+	 *                         type: array
+	 *                         items:
+	 *                           type: string
+	 *                         description: List of client types connected to the agent
+	 */
 	router.get("/agents", (_req, res) => {
 		const agentsList = Array.from(agents.values()).map((agent) => ({
 			id: agent.agentId,
@@ -181,6 +305,16 @@ export function createApiRouter(
 		res.json({ agents: agentsList });
 	});
 
+	/**
+	 * @swagger
+	 * /storage:
+	 *   get:
+	 *     summary: Get all stored characters
+	 *     description: Returns a list of all stored characters
+	 *     responses:
+	 *       200:
+	 *         description: List of stored characters
+	 */
 	router.get("/storage", async (_req, res) => {
 		try {
 			const uploadDir = path.join(process.cwd(), "data", "characters");
@@ -191,6 +325,16 @@ export function createApiRouter(
 		}
 	});
 
+	/**
+	 * @swagger
+	 * /agents/{agentId}:
+	 *   get:
+	 *     summary: Get an agent by ID
+	 *     description: Returns the agent with the specified ID
+	 *     responses:
+	 *       200:
+	 *         description: Agent details
+	 */
 	router.get("/agents/:agentId", (req, res) => {
 		const { agentId } = validateUUIDParams(req.params, res) ?? {
 			agentId: null,
@@ -215,6 +359,16 @@ export function createApiRouter(
 		});
 	});
 
+	/**
+	 * @swagger
+	 * /agents/{agentId}:
+	 *   delete:
+	 *     summary: Delete an agent by ID
+	 *     description: Deletes the agent with the specified ID
+	 *     responses:
+	 *       204:
+	 *         description: Agent deleted successfully
+	 */
 	router.delete("/agents/:agentId", async (req, res) => {
 		const { agentId } = validateUUIDParams(req.params, res) ?? {
 			agentId: null,
@@ -232,6 +386,16 @@ export function createApiRouter(
 		}
 	});
 
+	/**
+	 * @swagger
+	 * /agents/{agentId}/set:
+	 *   post:
+	 *     summary: Set an agent by ID
+	 *     description: Sets the agent with the specified ID
+	 *     responses:
+	 *       200:
+	 *         description: Agent set successfully
+	 */
 	router.post("/agents/:agentId/set", async (req, res) => {
 		const { agentId } = validateUUIDParams(req.params, res) ?? {
 			agentId: null,
@@ -299,6 +463,16 @@ export function createApiRouter(
 		});
 	});
 
+	/**
+	 * @swagger
+	 * /agents/{agentId}/channels:
+	 *   get:
+	 *     summary: Get channels for an agent
+	 *     description: Returns a list of channels for the specified agent
+	 *     responses:
+	 *       200:
+	 *         description: List of channels
+	 */
 	router.get("/agents/:agentId/channels", async (req, res) => {
 		const { agentId } = validateUUIDParams(req.params, res) ?? {
 			agentId: null,
@@ -403,6 +577,16 @@ export function createApiRouter(
 		}
 	};
 
+	/**
+	 * @swagger
+	 * /agents/{agentId}/{roomId}/memories:
+	 *   get:
+	 *     summary: Get memories for an agent in a room
+	 *     description: Returns a list of memories for the specified agent in the specified room
+	 *     responses:
+	 *       200:
+	 *         description: List of memories
+	 */
 	router.get("/agents/:agentId/:roomId/memories", async (req, res) => {
 		const { agentId, roomId } = validateUUIDParams(req.params, res) ?? {
 			agentId: null,
@@ -413,6 +597,16 @@ export function createApiRouter(
 		await getMemories(agentId, roomId, null, req, res);
 	});
 
+	/**
+	 * @swagger
+	 * /agents/{agentId}/memories/{userId}:
+	 *   get:
+	 *     summary: Get memories for an agent in a room
+	 *     description: Returns a list of memories for the specified agent in the specified room
+	 *     responses:
+	 *       200:
+	 *         description: List of memories
+	 */
 	router.get("/agents/:agentId/memories/:userId", async (req, res) => {
 		const { agentId, userId } = validateUUIDParams(req.params, res) ?? {
 			agentId: null,
@@ -427,6 +621,16 @@ export function createApiRouter(
 		await getMemories(agentId, roomId, userId, req, res);
 	});
 
+	/**
+	 * @swagger
+	 * /tee/agents:
+	 *   get:
+	 *     summary: Get all TEE agents
+	 *     description: Returns a list of all TEE agents
+	 *     responses:
+	 *       200:
+	 *         description: List of TEE agents
+	 */
 	router.get("/tee/agents", async (_req, res) => {
 		try {
 			const allAgents = [];
@@ -456,6 +660,16 @@ export function createApiRouter(
 		}
 	});
 
+	/**
+	 * @swagger
+	 * /tee/agents/{agentId}:
+	 *   get:
+	 *     summary: Get a TEE agent by ID
+	 *     description: Returns the agent with the specified ID
+	 *     responses:
+	 *       200:
+	 *         description: Agent details
+	 */
 	router.get("/tee/agents/:agentId", async (req, res) => {
 		try {
 			const agentId = req.params.agentId;
@@ -482,6 +696,16 @@ export function createApiRouter(
 		}
 	});
 
+	/**
+	 * @swagger
+	 * /tee/logs:
+	 *   post:
+	 *     summary: Get logs for an agent
+	 *     description: Returns a list of logs for the specified agent
+	 *     responses:
+	 *       200:
+	 *         description: List of logs
+	 */
 	router.post(
 		"/tee/logs",
 		async (req: express.Request, res: express.Response) => {
@@ -524,6 +748,16 @@ export function createApiRouter(
 		},
 	);
 
+	/**
+	 * @swagger
+	 * /agent/start:
+	 *   post:
+	 *     summary: Start an agent
+	 *     description: Starts the agent with the specified character
+	 *     responses:
+	 *       200:
+	 *         description: Agent started successfully
+	 */
 	router.post("/agent/start", async (req, res) => {
 		const { characterPath, characterJson } = req.body;
 		console.log("characterPath:", characterPath);
@@ -556,6 +790,16 @@ export function createApiRouter(
 		}
 	});
 
+	/**
+	 * @swagger
+	 * /agents/{agentId}/stop:
+	 *   post:
+	 *     summary: Stop an agent
+	 *     description: Stops the agent with the specified ID
+	 *     responses:
+	 *       200:
+	 *         description: Agent stopped successfully
+	 */
 	router.post("/agents/:agentId/stop", async (req, res) => {
 		const agentId = req.params.agentId;
 		console.log("agentId", agentId);
@@ -573,43 +817,457 @@ export function createApiRouter(
 		}
 	});
 
+	/**
+	 * @swagger
+	 * /traces:
+	 *   get:
+	 *     summary: Fetch all traces
+	 *     description: Retrieves all traces from the database.
+	 *     responses:
+	 *       200:
+	 *         description: A JSON array of traces.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 total_records:
+	 *                   type: integer
+	 *                 data:
+	 *                   type: array
+	 *                   items:
+	 *                     type: object
+	 *       500:
+	 *         description: Server error
+	 */
 	router.get("/traces", async (req, res) => {
 		getAllTraces(req, res);
 	});
 
+	/**
+	 * @swagger
+	 * /traces/unique-agent-ids:
+	 *   get:
+	 *     summary: Fetch all unique AgentId values
+	 *     description: Retrieves a list of all unique agentId values from the traces table.
+	 *     responses:
+	 *       200:
+	 *         description: A JSON array of unique agentId values.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 unique_agentId:
+	 *                   type: array
+	 *                   items:
+	 *                     type: string
+	 *       500:
+	 *         description: Server error
+	 */
 	router.get("/traces/unique-agent-ids", async (req, res) => {
 		getUniqueAgentId(req, res);
 	});
 
+	/**
+	 * @swagger
+	 * /traces/unique-room_id/by-agent/{agent_id}:
+	 *   get:
+	 *     summary: Fetch unique RoomId values for a specific Agent ID
+	 *     description: Retrieves a list of distinct RoomId values where the given agent_id exists in the traces table.
+	 *     parameters:
+	 *       - in: path
+	 *         name: agent_id
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: The Agent ID to filter unique room_id.
+	 *     responses:
+	 *       200:
+	 *         description: A JSON array of unique RUN values linked to the given agent_id.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 agent_id:
+	 *                   type: string
+	 *                 unique_room_id:
+	 *                   type: array
+	 *                   items:
+	 *                     type: string
+	 *       400:
+	 *         description: Missing or invalid Agent ID
+	 *       500:
+	 *         description: Server error
+	 */
 	router.get("/traces/unique-room_id/by-agent/:agent_id", async (req, res) => {
 		getUniqueRoomIdByAgent(req, res);
 	});
 
+	/**
+	 * @swagger
+	 * /traces/by-room/{roomId}:
+	 *   get:
+	 *     summary: Fetch traces by ROOM ID
+	 *     description: Retrieves traces filtered by a specific ROOM ID.
+	 *     parameters:
+	 *       - in: path
+	 *         name: roomId
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: The ROOM ID to filter traces.
+	 *       - in: query
+	 *         name: name
+	 *         schema:
+	 *           type: string
+	 *         description: Filter by name field (optional).
+	 *       - in: query
+	 *         name: start_date
+	 *         schema:
+	 *           type: string
+	 *           format: date
+	 *         description: Filter by start date (YYYY-MM-DD) (optional).
+	 *       - in: query
+	 *         name: end_date
+	 *         schema:
+	 *           type: string
+	 *           format: date
+	 *         description: Filter by end date (YYYY-MM-DD) (optional).
+	 *     responses:
+	 *       200:
+	 *         description: A JSON array of traces for the specified ROOM ID.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 room_id:
+	 *                   type: string
+	 *                 total_records:
+	 *                   type: integer
+	 *                 data:
+	 *                   type: array
+	 *                   items:
+	 *                     type: object
+	 *                     properties:
+	 *                       id:
+	 *                         type: integer
+	 *                         description: Unique ID of the trace.
+	 *                       room_id:
+	 *                         type: string
+	 *                         description: UUID of the ROOM.
+	 *                       start_time:
+	 *                         type: string
+	 *                         format: date-time
+	 *                         description: Start time of the trace event (YYYY-MM-DD HH:MM:SS).
+	 *                       end_time:
+	 *                         type: string
+	 *                         format: date-time
+	 *                         description: End time of the trace event (YYYY-MM-DD HH:MM:SS).
+	 *                       name:
+	 *                         type: string
+	 *                         description: Name of the trace event.
+	 *                       data:
+	 *                         type: object
+	 *                         description: JSON data associated with the trace event.
+	 *       400:
+	 *         description: Missing or invalid ROOM ID.
+	 *       500:
+	 *         description: Server error.
+	 */
 	router.get("/traces/by-room/:roomId", async (req, res) => {
 		getTracesByRoom(req, res);
 	});
 
+	/**
+	 * @swagger
+	 * /traces/unique-runs:
+	 *   get:
+	 *     summary: Fetch all unique RUN values
+	 *     description: Retrieves a list of all unique RUN values from the traces table.
+	 *     responses:
+	 *       200:
+	 *         description: A JSON array of unique RUN values.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 unique_room_ids:
+	 *                   type: array
+	 *                   items:
+	 *                     type: string
+	 *       500:
+	 *         description: Server error
+	 */
+	router.get("/traces/unique-runs", async (req, res) => {
+		getUniqueRuns(req, res);
+	});
+
+	/**
+	 * @swagger
+	 * /traces/by-agent/{agentId}:
+	 *   get:
+	 *     summary: Fetch traces by Agent ID
+	 *     description: Retrieves traces filtered by a specific Agent ID with optional filters.
+	 *     parameters:
+	 *       - in: path
+	 *         name: agentId
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: The Agent ID to filter traces.
+	 *       - in: query
+	 *         name: name
+	 *         schema:
+	 *           type: string
+	 *         description: Filter by trace name (optional).
+	 *       - in: query
+	 *         name: start_date
+	 *         schema:
+	 *           type: string
+	 *           format: date
+	 *         description: Filter by start date (YYYY-MM-DD) (optional).
+	 *       - in: query
+	 *         name: end_date
+	 *         schema:
+	 *           type: string
+	 *           format: date
+	 *         description: Filter by end date (YYYY-MM-DD) (optional).
+	 *     responses:
+	 *       200:
+	 *         description: A JSON array of traces for the specified Agent ID.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 agent_id:
+	 *                   type: string
+	 *                   description: The Agent ID used for filtering.
+	 *                 total_records:
+	 *                   type: integer
+	 *                   description: Total number of matching records.
+	 *                 data:
+	 *                   type: array
+	 *                   items:
+	 *                     type: object
+	 *                     properties:
+	 *                       id:
+	 *                         type: integer
+	 *                         description: Unique ID of the trace.
+	 *                       run:
+	 *                         type: string
+	 *                         description: UUID of the RUN.
+	 *                       time:
+	 *                         type: string
+	 *                         format: date-time
+	 *                         description: Timestamp of the trace event.
+	 *                       name:
+	 *                         type: string
+	 *                         description: Name of the trace event.
+	 *                       data:
+	 *                         type: object
+	 *                         description: JSON data associated with the trace event.
+	 *                       agentId:
+	 *                         type: string
+	 *                         nullable: true
+	 *                         description: The agent ID associated with the trace.
+	 *                       roomId:
+	 *                         type: string
+	 *                         nullable: true
+	 *                         description: The room ID associated with the trace (optional).
+	 *       400:
+	 *         description: Missing or invalid Agent ID.
+	 *       500:
+	 *         description: Server error.
+	 */
 	router.get("/traces/by-agent/:agentId", async (req, res) => {
 		getTracesByAgentId(req, res);
 	});
 
+	/**
+	 * @swagger
+	 * /templates/characters:
+	 *   get:
+	 *     summary: Fetch all characters
+	 *     description: Retrieves a list of all characters.
+	 */
+	router.get("/templates/characters", async (req, res) => {
+		getCharacters(req, res);
+	});
+
+	/**
+	 * @swagger
+	 * /templates/{characterName}:
+	 *   get:
+	 *     summary: Get all prompt templates for a character
+	 *     description: Retrieves all saved prompt templates for the specified character.
+	 *     parameters:
+	 *       - in: path
+	 *         name: characterName
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: The name of the character.
+	 *     responses:
+	 *       200:
+	 *         description: Returns a list of all templates.
+	 *       404:
+	 *         description: Character not found.
+	 */
 	router.get("/templates/:characterName", async (req, res) => {
 		console.log("get template called with request", req);
 		getTemplates(req, res);
 	});
 
+	/**
+	 * @swagger
+	 * /templates/{characterName}:
+	 *   post:
+	 *     summary: Add a new prompt template
+	 *     description: Creates a new prompt template and stores it in the character's JSON file.
+	 *     parameters:
+	 *       - in: path
+	 *         name: characterName
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: The name of the character.
+	 *     requestBody:
+	 *       required: true
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               templateName:
+	 *                 type: string
+	 *               content:
+	 *                 type: string
+	 *     responses:
+	 *       201:
+	 *         description: Template added successfully.
+	 *       400:
+	 *         description: Invalid request body.
+	 *       404:
+	 *         description: Character not found.
+	 */
 	router.post("/templates/:characterName", async (req, res) => {
 		addTemplate(req, res);
 	});
 
+	/**
+	 * @swagger
+	 * /templates/{characterName}:
+	 *   put:
+	 *     summary: Update an existing template
+	 *     description: Modifies an existing template in the character JSON file.
+	 *     parameters:
+	 *       - in: path
+	 *         name: characterName
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: The name of the character.
+	 *     requestBody:
+	 *       required: true
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               templateName:
+	 *                 type: string
+	 *               content:
+	 *                 type: string
+	 *     responses:
+	 *       200:
+	 *         description: Template updated successfully.
+	 *       404:
+	 *         description: Template or character not found.
+	 */
 	router.put("/templates/:characterName", async (req, res) => {
 		updateTemplate(req, res);
 	});
 
+	/**
+	 * @swagger
+	 * /templates/{characterName}/{templateName}:
+	 *   delete:
+	 *     summary: Delete a template
+	 *     description: Removes a prompt template from the character's JSON file.
+	 *     parameters:
+	 *       - in: path
+	 *         name: characterName
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: The name of the character.
+	 *       - in: path
+	 *         name: templateName
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: The name of the template to delete.
+	 *     responses:
+	 *       200:
+	 *         description: Template deleted successfully.
+	 *       404:
+	 *         description: Template or character not found.
+	 */
 	router.delete("/templates/:characterName/:templateName", async (req, res) => {
 		deleteTemplate(req, res);
 	});
 
+	/**
+	 * @swagger
+	 * /templates/{characterName}/batch-update:
+	 *   post:
+	 *     summary: Batch update character data
+	 *     description: Updates templates, lore, bio, and knowledge in a single API call.
+	 *     parameters:
+	 *       - in: path
+	 *         name: characterName
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: The name of the character.
+	 *     requestBody:
+	 *       required: true
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               templates:
+	 *                 type: object
+	 *                 description: Templates to add or update.
+	 *               lore:
+	 *                 type: array
+	 *                 items:
+	 *                   type: string
+	 *                 description: Lore entries to append.
+	 *               bio:
+	 *                 type: array
+	 *                 items:
+	 *                   type: string
+	 *                 description: Bio entries to append.
+	 *               knowledge:
+	 *                 type: array
+	 *                 items:
+	 *                   type: string
+	 *                 description: Knowledge entries to append.
+	 *     responses:
+	 *       200:
+	 *         description: Character data updated successfully.
+	 *       400:
+	 *         description: No valid updates provided.
+	 *       404:
+	 *         description: Character not found.
+	 */
 	router.post("/templates/:characterName/batch-update", async (req, res) => {
 		batchUpdateCharacterData(req, res);
 	});
