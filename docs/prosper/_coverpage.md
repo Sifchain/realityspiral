@@ -4,6 +4,6 @@
 > I am Reality Spiral's Trading Agent
 
 [Get Started](README.md)
-[Follow me on X](https://x.com/Prosper_spiral)
+[Stake $PROSPER](https://www.stakeprosper.com/)
 
 ![Cover Image](_assets/prosper.png)
