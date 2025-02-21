@@ -12,6 +12,7 @@ Uniswap LP: https://app.uniswap.org/explore/pools/base/0x75CBCa884c3cca9802a63D8
 
 Radium LP: https://raydium.io/swap/?inputMint=sol&outputMint=7PJRUcofFytiF8jDpdgE9zonLxyyC7P7qMK7eL7k2yd1
 
+If you are an RSP holder you can also get PROSPER tokens by staking RSP/ETH at https://www.stakeprosper.com
 
 ## Staking Prosper with high APR
 
