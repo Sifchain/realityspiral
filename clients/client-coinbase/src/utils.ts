@@ -754,12 +754,12 @@ const ABI = [
 export const getContract = (address: string, signer?: Signer) => {
 	try {
 		const provider = new JsonRpcProvider(RPC_URL);
-		elizaLogger.info("Getting contract for " + address);
-		elizaLogger.info("Signer: " + signer);
-		elizaLogger.info("Provider: " + provider);
+		elizaLogger.info(`Getting contract for ${address}`);
+		elizaLogger.info(`Signer: ${signer}`);
+		elizaLogger.info(`Provider: ${provider}`);
 		return new Contract(address, ABI, signer || provider);
 	} catch (error) {
-		elizaLogger.error("Failed to get contract:", error);
+		elizaLogger.error(`Failed to get contract: ${error}`);
 		throw error;
 	}
 };
@@ -771,7 +771,7 @@ export const getTotalTokenStaked = async (token: "PROSPER" | "RSP") => {
 			: RSP_STAKING_CONTRACT_ADDRESS,
 	);
 	const totalSupply = await contract.totalSupply();
-	console.log("Total Staked" + totalSupply);
+	elizaLogger.info(`Total Staked: ${totalSupply}`);
 	return formatUnits(totalSupply, 18);
 };
 
@@ -792,12 +792,15 @@ export const getLPPrice = async (token: "PROSPER" | "RSP") => {
 		cache[token].price !== null &&
 		currentTime - cache[token].timestamp < CACHE_DURATION
 	) {
-		console.log("Returning cached price for", token + " " + cache[token].price);
+		elizaLogger.info(
+			`Returning cached price for ${token}: ${cache[token].price}`,
+		);
 		return cache[token].price;
 	}
 
 	const tokenAddress =
 		token === "PROSPER" ? PROSPER_TOKEN_ADDRESS : RSP_TOKEN_ADDRESS;
+	// biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
 	let response;
 	for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
 		try {
@@ -817,27 +820,27 @@ export const getLPPrice = async (token: "PROSPER" | "RSP") => {
 		throw new Error("Failed to fetch token price after multiple attempts");
 	}
 
-	console.log("Response:" + JSON.stringify(response.data));
+	elizaLogger.info(`Response: ${JSON.stringify(response.data)}`);
 
 	const totalLiquidityUSD = BigInt(
 		Math.floor(
 			Number.parseFloat(response.data.price.totalLiquidityUSD.toString()),
 		),
 	);
-	console.log("Total Liquidity USD:" + totalLiquidityUSD);
+	elizaLogger.info(`Total Liquidity USD: ${totalLiquidityUSD}`);
 
 	const contract = getContract(
 		token === "PROSPER" ? PROSPER_STAKING_TOKEN : RSP_STAKING_TOKEN,
 	);
 	let totalLPSupply = BigInt(await contract.totalSupply());
-	console.log("Total Supply:" + totalLPSupply);
+	elizaLogger.info(`Total Supply: ${totalLPSupply}`);
 	if (totalLPSupply === BigInt(0)) {
 		totalLPSupply = BigInt(9999999999999999999000n);
 	}
 
 	// Calculate liquidity pool price as a floating-point number
 	const liquidityPoolPrice = Number(totalLiquidityUSD) / Number(totalLPSupply);
-	console.log("Token Price:", liquidityPoolPrice);
+	elizaLogger.info(`Token Price: ${liquidityPoolPrice}`);
 
 	// Update the cache
 	cache[token] = { price: liquidityPoolPrice, timestamp: currentTime };
@@ -857,13 +860,13 @@ export const getTotalAmountStaked = async (token: "PROSPER" | "RSP") => {
 	// if (totalSupply === BigInt(0)) {
 	//   totalSupply = BigInt(9999999999999999999000);
 	// }
-	console.log("Total Supply: " + totalSupply);
+	elizaLogger.info(`Total Supply: ${totalSupply}`);
 
 	// Calculate total staked USD using number arithmetic
 	const totalStakedUSD = Number(totalSupply) * tokenPrice;
 
-	console.log("Total Staked USD" + totalStakedUSD);
-	console.log("Token Price " + tokenPrice);
+	elizaLogger.info(`Total Staked USD: ${totalStakedUSD}`);
+	elizaLogger.info(`Token Price: ${tokenPrice}`);
 
 	return totalStakedUSD.toFixed(4); // Return as a formatted string
 };
@@ -984,12 +987,12 @@ export const calculateAPR = async (address: string) => {
 		// Use a safer default value to avoid precision loss
 		totalSupply = BigInt("9999999999999999999000");
 	}
-	console.log(`Total Supply for ${address}:`, totalSupply.toString());
+	elizaLogger.info(`Total Supply for ${address}: ${totalSupply.toString()}`);
 
 	// Calculate APR
-	console.log("Reward Per Year:" + rewardPerYear.toString());
+	elizaLogger.info(`Reward Per Year: ${rewardPerYear.toString()}`);
 	const apr = (rewardPerYear / BigInt(totalSupply)) * BigInt(100);
-	console.log(`APR for ${address}:`, apr.toString());
+	elizaLogger.info(`APR for ${address}: ${apr.toString()}`);
 
 	return apr;
 };
@@ -1027,6 +1030,8 @@ export function formatUSD(value: number): string {
  * @param {number} decimals - Number of decimal places
  * @returns {string} - Formatted number string
  */
+
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export function safeNumberFormat(value: any, decimals = 2) {
 	const number = Number(value);
 	return Number.isNaN(number) ? "0.00" : number.toFixed(decimals);
@@ -1062,9 +1067,9 @@ export const fetchTokenPrice = async (
 		const tokenPrice = Number(response.data.usdPrice) || 0;
 		const priceChange24h = Number(response.data["24hrPercentChange"]) || 0;
 		const totalLiquidityUSD = Number(response.data.pairTotalLiquidityUsd) || 0;
-		elizaLogger.info("Token Price: " + tokenPrice);
-		elizaLogger.info("Price Change 24h: " + priceChange24h);
-		elizaLogger.info("Total Liquidity USD: " + totalLiquidityUSD);
+		elizaLogger.info(`Token Price: ${tokenPrice}`);
+		elizaLogger.info(`Price Change 24h: ${priceChange24h}`);
+		elizaLogger.info(`Total Liquidity USD: ${totalLiquidityUSD}`);
 		return {
 			current: tokenPrice,
 			change24h: priceChange24h,
