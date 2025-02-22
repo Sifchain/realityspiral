@@ -51,6 +51,7 @@ export class CoinbaseClient implements Client {
 		private port: number;
 		private wallets: CoinbaseWallet[];
 		private initialBuyAmountInCurrency: number | null;
+		private winningStreak: number;
 
 		constructor(runtime: IAgentRuntime) {
 			this.runtime = runtime;
@@ -67,6 +68,7 @@ export class CoinbaseClient implements Client {
 			this.port = Number(runtime.getSetting("COINBASE_WEBHOOK_PORT")) || 3001;
 			this.wallets = [];
 			this.initialBuyAmountInCurrency = null;
+			this.winningStreak = 0;
 		}
 
 		async initialize(): Promise<void> {
@@ -260,7 +262,7 @@ Generate only the tweet text, no commentary or markdown.`;
 						)
 					: "";
 				const trimmedContent = tweetContent.trim();
-				const finalContent = `${trimmedContent} ${isSellTrade ? `Trade PNL: ${sellTradePNL}` : ""} Overall PNL: ${pnl} ${blockExplorerBaseTxUrl(hash)}`;
+				const finalContent = `${trimmedContent} ${isSellTrade ? `Trade PNL: ${sellTradePNL}` : ""} Overall PNL: ${pnl} Winning Streak: ${this.winningStreak} ${blockExplorerBaseTxUrl(hash)}`;
 				return finalContent.length > 280
 					? `${finalContent.substring(0, 277)}...`
 					: finalContent;
@@ -330,6 +332,15 @@ Generate only the tweet text, no commentary or markdown.`;
 				1000,
 			);
 			elizaLogger.info("pnl ", pnl);
+
+			// Check if the PNL is positive or negative
+			if (Number.parseFloat(pnl) > 0) {
+				this.winningStreak++;
+			} else {
+				this.winningStreak = 0;
+			}
+			elizaLogger.info("winningStreak ", this.winningStreak);
+
 			elizaLogger.info("amountInCurrency ", amountInCurrency);
 			const enoughBalance = await hasEnoughBalance(
 				this.runtime,
