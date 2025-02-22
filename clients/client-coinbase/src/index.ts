@@ -46,42 +46,41 @@ export type WalletType =
 	| "operational_capital";
 
 export class CoinbaseClient implements Client {
-			private runtime: IAgentRuntime;
-			private server: express.Application;
-			private port: number;
-			private wallets: CoinbaseWallet[];
-		private initialBuyAmountInCurrency: number | null;
+		private runtime: IAgentRuntime;
+		private server: express.Application;
+		private port: number;
+		private wallets: CoinbaseWallet[];
 		private initialBuyAmountInCurrency: number | null;
 
-			constructor(runtime: IAgentRuntime) {
-				this.runtime = runtime;
-				// add providers to runtime
-				this.runtime.providers.push(pnlProvider);
-				this.runtime.providers.push(balanceProvider);
-				this.runtime.providers.push(addressProvider);
-				this.runtime.providers.push(tradingSignalBackTestProvider);
-				this.runtime.providers.push(baseTokenAddressProvider);
-				this.runtime.providers.push(solTokenAddressProvider);
-				this.runtime.providers.push(stakingLiquidityPoolingProvider);
-				this.runtime.providers.push(currentPriceProvider);
-				this.server = express();
-				this.port = Number(runtime.getSetting("COINBASE_WEBHOOK_PORT")) || 3001;
-				this.wallets = [];
-				this.initialBuyAmountInCurrency = null;
+		constructor(runtime: IAgentRuntime) {
+			this.runtime = runtime;
+			// add providers to runtime
+			this.runtime.providers.push(pnlProvider);
+			this.runtime.providers.push(balanceProvider);
+			this.runtime.providers.push(addressProvider);
+			this.runtime.providers.push(tradingSignalBackTestProvider);
+			this.runtime.providers.push(baseTokenAddressProvider);
+			this.runtime.providers.push(solTokenAddressProvider);
+			this.runtime.providers.push(stakingLiquidityPoolingProvider);
+			this.runtime.providers.push(currentPriceProvider);
+			this.server = express();
+			this.port = Number(runtime.getSetting("COINBASE_WEBHOOK_PORT")) || 3001;
+			this.wallets = [];
+			this.initialBuyAmountInCurrency = null;
 		}
 
-			async initialize(): Promise<void> {
-				elizaLogger.info("Initializing Coinbase client");
-				try {
-					// await this.initializeWallets();
-					elizaLogger.info("Wallets initialized successfully");
-					await this.setupWebhookEndpoint();
-					elizaLogger.info("Webhook endpoint setup successfully");
-				} catch (error) {
-					elizaLogger.error("Failed to initialize Coinbase client:", error);
-					throw error;
-				}
+		async initialize(): Promise<void> {
+			elizaLogger.info("Initializing Coinbase client");
+			try {
+				// await this.initializeWallets();
+				elizaLogger.info("Wallets initialized successfully");
+				await this.setupWebhookEndpoint();
+				elizaLogger.info("Webhook endpoint setup successfully");
+			} catch (error) {
+				elizaLogger.error("Failed to initialize Coinbase client:", error);
+				throw error;
 			}
+		}
 
 		private setupWebhookEndpoint() {
 			this.server.use(express.json());
