@@ -356,11 +356,8 @@ Generate only the tweet text, no commentary or markdown.`;
 			return;
 		}
 		elizaLogger.info("txHash ", txHash);
-		console.log("buy ", buy);
-		console.log(
-			"this.initialBuyAmountInCurrency ",
-			this.initialBuyAmountInCurrency,
-		);
+		elizaLogger.info("buy ", buy);
+		elizaLogger.info("this.initialBuyAmountInCurrency ", this.initialBuyAmountInCurrency);
 
 		// Generate and post tweet
 		await this.handleMediaPosting(
