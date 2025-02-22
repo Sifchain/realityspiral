@@ -802,8 +802,8 @@ const stakingLiquidityPoolingProvider = {
 	get: async (runtime: IAgentRuntime, _message: Memory) => {
 		return `How to stake on BASE: 
 		1. Go to uniswap v2 (https://app.uniswap.org/positions/create/v2) and add liquidity to ${runtime.character.username.toUpperCase()} / ETH and receive the LP token 
-		2. If you need to bridge RSP accross networks: Solana and Base, go to portalbridge (https://portalbridge.com/advanced-tools/#/transfer) to send and receive tokens
-  		and follow instructions in this video (https://x.com/reality_spiral/status/1858612836102222045)
+		2. If you need to bridge RSP accross networks: Solana and Base, go to portalbridge (https://portalbridge.com/) to send and receive tokens across networks
+  		and follow the instructions in this video (https://x.com/reality_spiral/status/1858612836102222045)
     		3. Go to staking website (https://stakeprosper.com/) and stake your LP tokens and receive rewards 
 		Notes you can claim rewards whenever and there is a 7 day lockup period for unstaking.
 		How to pool on SOL: Go to raydium (https://raydium.io/liquidity-pools/?token=${runtime.getSetting("COINBASE_TOKEN_ADDRESS_SOL")}) and add liquidity to ${runtime.character.username.toUpperCase()} / ETH and receive rewards you can withdraw anytime`;
