@@ -331,6 +331,8 @@ Generate only the tweet text, no commentary or markdown.`;
 				? this.initialBuyAmountInCurrency
 				: amountSellInCurrencyInBaseUnits,
 			amountSellInCurrencyInBaseUnits,
+			Number(price),
+			tokenDecimals,
 		);
 		elizaLogger.info(`pnl ${pnl}`);
 
@@ -567,8 +569,20 @@ export const calculateSellTradePNL = async (
 	runtime: IAgentRuntime,
 	initialBuyAmountInCurrency: number,
 	amountSellInCurrencyInBaseUnits: number,
+	price: number,
+	tokenDecimals: number,
 ): Promise<string> => {
-	const pnlUSD = initialBuyAmountInCurrency - amountSellInCurrencyInBaseUnits;
+	elizaLogger.info("calculateSellTradePNL");
+	elizaLogger.info(`initialBuyAmountInCurrency ${initialBuyAmountInCurrency}`);
+	elizaLogger.info(
+		`amountSellInCurrencyInBaseUnits ${amountSellInCurrencyInBaseUnits}`,
+	);
+	// its in base units
+	const pnlCurrencyInBaseUnits =
+		initialBuyAmountInCurrency - amountSellInCurrencyInBaseUnits;
+	elizaLogger.info(`pnlCurrencyInBaseUnits ${pnlCurrencyInBaseUnits}`);
+	const pnlUSD = (pnlCurrencyInBaseUnits / 10 ** tokenDecimals) * price;
+	elizaLogger.info(`pnlUSD ${pnlUSD}`);
 	elizaLogger.info(`Sell Trade pnlUSD ${pnlUSD}`);
 	const absoluteValuePNL = Math.abs(pnlUSD);
 	elizaLogger.info(`Sell Trade absoluteValuePNL ${absoluteValuePNL}`);
@@ -579,7 +593,7 @@ export const calculateSellTradePNL = async (
 		maximumFractionDigits: 2,
 	}).format(absoluteValuePNL);
 	elizaLogger.info(`Sell Trade formattedPNL ${formattedPNL}`);
-	const formattedPNLUSD = `${pnlUSD < 0 ? "-" : ""}${formattedPNL}`;
+	const formattedPNLUSD = `${pnlUSD <= -0.005 ? "-" : ""}${formattedPNL}`;
 	elizaLogger.info(`Sell Trade formattedPNLUSD ${formattedPNLUSD}`);
 	return formattedPNLUSD;
 };
