@@ -50,6 +50,8 @@ export class CoinbaseClient implements Client {
 	private server: express.Application;
 	private port: number;
 	private wallets: CoinbaseWallet[];
+	private initialBuyAmountInCurrency: number | null;
+	private winningStreak: number;
 
 	constructor(runtime: IAgentRuntime) {
 		this.runtime = runtime;
@@ -65,6 +67,8 @@ export class CoinbaseClient implements Client {
 		this.server = express();
 		this.port = Number(runtime.getSetting("COINBASE_WEBHOOK_PORT")) || 3001;
 		this.wallets = [];
+		this.initialBuyAmountInCurrency = null;
+		this.winningStreak = 0;
 	}
 
 	async initialize(): Promise<void> {
@@ -101,7 +105,7 @@ export class CoinbaseClient implements Client {
 			next: express.NextFunction,
 		) => {
 			const event = req.body as WebhookEvent;
-			elizaLogger.info("event ", JSON.stringify(event));
+			elizaLogger.info(`event ${JSON.stringify(event)}`);
 			if (!event.event || !event.ticker || !event.timestamp || !event.price) {
 				res.status(400).json({ error: "Invalid webhook payload" });
 				return;
@@ -182,13 +186,13 @@ export class CoinbaseClient implements Client {
 		];
 		const networkId = Coinbase.networks.BaseMainnet;
 		for (const walletType of walletTypes) {
-			elizaLogger.info("walletType ", walletType);
+			elizaLogger.info(`walletType ${walletType}`);
 			const wallet = await initializeWallet(
 				this.runtime,
 				networkId,
 				walletType,
 			);
-			elizaLogger.info("Successfully loaded wallet ", wallet.wallet.getId());
+			elizaLogger.info(`Successfully loaded wallet ${wallet.wallet.getId()}`);
 			this.wallets.push(wallet);
 		}
 	}
@@ -197,6 +201,7 @@ export class CoinbaseClient implements Client {
 		event: WebhookEvent,
 		amountInCurrency: number,
 		pnl: string,
+		sellTradePNL: string,
 		formattedTimestamp: string,
 		state: State,
 		hash: string | null,
@@ -247,9 +252,9 @@ Generate only the tweet text, no commentary or markdown.`;
 				context,
 				modelClass: ModelClass.LARGE,
 			});
-
+			const isSellTrade = event.event.toUpperCase() === "SELL";
 			const trimmedContent = tweetContent.trim();
-			const finalContent = `${trimmedContent} PNL: ${pnl} ${blockExplorerBaseTxUrl(hash)}`;
+			const finalContent = `${trimmedContent} ${isSellTrade ? `Trade PNL: ${sellTradePNL}` : ""} Overall PNL: ${pnl} Winning Streak: ${this.winningStreak} ${blockExplorerBaseTxUrl(hash)}`;
 			return finalContent.length > 280
 				? `${finalContent.substring(0, 277)}...`
 				: finalContent;
@@ -288,34 +293,63 @@ Generate only the tweet text, no commentary or markdown.`;
 
 		// Execute token swap
 		const buy = event.event.toUpperCase() === "BUY";
+		const price = event.price;
+		// if sell, use the initial buy amount in currency instead of the current price
+		let amountInCurrency: number;
 		const tokenMetadata = getTokenMetadata(event.ticker);
 		const usdcMetadata = getTokenMetadata("USDC");
 		const tokenDecimals = tokenMetadata?.decimals || 18; // Default to 18 if not found
 		const usdcDecimals = usdcMetadata?.decimals || 6; // Default to 6 if not found
+		const amountSellInCurrencyInBaseUnits = Math.floor(
+			(amount / Number(event.price)) * 10 ** tokenDecimals,
+		);
 
-		const amountInCurrency = Math.floor(
+		amountInCurrency = Math.floor(
 			buy
 				? amount * 10 ** usdcDecimals // Convert USD amount to USDC base units
-				: (amount / Number(event.price)) * 10 ** tokenDecimals, // Convert to token base units
+				: amountSellInCurrencyInBaseUnits, // Convert to token base units
 		);
+		if (buy) {
+			this.initialBuyAmountInCurrency = amountSellInCurrencyInBaseUnits;
+		}
+		if (!buy && this.initialBuyAmountInCurrency !== null) {
+			amountInCurrency = this.initialBuyAmountInCurrency;
+		}
+		elizaLogger.info(`buy ${buy}`);
 		elizaLogger.info(
-			"amountInCurrency non base units ",
-			amount / Number(event.price),
+			`this.initialBuyAmountInCurrency ${this.initialBuyAmountInCurrency}`,
 		);
+
 		const pnl = await calculateOverallPNL(
 			this.runtime,
 			this.runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
 			1000,
 		);
-		elizaLogger.info("pnl ", pnl);
-		elizaLogger.info("amountInCurrency ", amountInCurrency);
+		const sellTradePNL = await calculateSellTradePNL(
+			this.runtime,
+			this.initialBuyAmountInCurrency !== null
+				? this.initialBuyAmountInCurrency
+				: amountSellInCurrencyInBaseUnits,
+			amountSellInCurrencyInBaseUnits,
+			Number(price),
+			tokenDecimals,
+		);
+		elizaLogger.info(`pnl ${pnl}`);
+
+		// Check if the PNL is positive or negative
+		if (Number.parseFloat(sellTradePNL) > 0) {
+			this.winningStreak++;
+		} else {
+			this.winningStreak = 0;
+		}
+		elizaLogger.info(`winningStreak ${this.winningStreak}`);
 		const enoughBalance = await hasEnoughBalance(
 			this.runtime,
 			this.runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
 			buy ? "USDC" : event.ticker,
 			amountInCurrency,
 		);
-		elizaLogger.info("enoughBalance ", enoughBalance);
+		elizaLogger.info(`enoughBalance ${enoughBalance}`);
 		if (!enoughBalance) {
 			elizaLogger.error("Not enough balance to trade");
 			return;
@@ -325,13 +359,20 @@ Generate only the tweet text, no commentary or markdown.`;
 			elizaLogger.error("txHash is null");
 			return;
 		}
-		elizaLogger.info("txHash ", txHash);
-
+		elizaLogger.info(`txHash ${txHash}`);
+		let amountInUSD;
+		if (buy) {
+			amountInUSD = amount;
+		} else {
+			amountInUSD = (amountInCurrency / 10 ** tokenDecimals) * price;
+		}
+		elizaLogger.info(`amountInUSD ${amountInUSD}`);
 		// Generate and post tweet
 		await this.handleMediaPosting(
 			event,
-			amount,
+			amountInUSD,
 			pnl,
+			sellTradePNL,
 			formattedTimestamp,
 			state,
 			txHash,
@@ -399,8 +440,9 @@ Generate only the tweet text, no commentary or markdown.`;
 
 	private async handleMediaPosting(
 		event: WebhookEvent,
-		amount: number,
+		amountInUSD: number,
 		pnl: string,
+		sellTradePNL: string,
 		formattedTimestamp: string,
 		state: State,
 		txHash: string,
@@ -409,20 +451,21 @@ Generate only the tweet text, no commentary or markdown.`;
 		try {
 			mediaContent = await this.generateMediaContent(
 				event,
-				amount,
+				amountInUSD,
 				pnl,
+				sellTradePNL,
 				formattedTimestamp,
 				state,
 				txHash,
 			);
-			elizaLogger.info("Generated media content:", mediaContent);
+			elizaLogger.info(`Generated media content: ${mediaContent}`);
 
 			if (this.runtime.getSetting("TWITTER_DRY_RUN").toLowerCase() === "true") {
 				elizaLogger.info("Dry run mode enabled. Skipping tweet posting.");
 			} else {
 				// post tweet to twitter
 				const response = await postTweet(this.runtime, mediaContent);
-				elizaLogger.info("Tweet response:", response);
+				elizaLogger.info(`Tweet response: ${response}`);
 			}
 		} catch (error) {
 			elizaLogger.error("Failed to post tweet:", error);
@@ -439,7 +482,6 @@ Generate only the tweet text, no commentary or markdown.`;
 			} else {
 				// post message to telegram
 				if (mediaContent.length > 0) {
-					// TODO: remove hardcoded channel id
 					await this.runtime.clients.telegram.messageManager.bot.telegram.sendMessage(
 						this.runtime.getSetting("TELEGRAM_CHANNEL_ID"),
 						mediaContent,
@@ -520,6 +562,39 @@ export const calculateOverallPNL = async (
 	elizaLogger.info(`formattedPNL ${formattedPNL}`);
 	const formattedPNLUSD = `${pnlUSD < 0 ? "-" : ""}${formattedPNL}`;
 	elizaLogger.info(`formattedPNLUSD ${formattedPNLUSD}`);
+	return formattedPNLUSD;
+};
+
+export const calculateSellTradePNL = async (
+	runtime: IAgentRuntime,
+	initialBuyAmountInCurrency: number,
+	amountSellInCurrencyInBaseUnits: number,
+	price: number,
+	tokenDecimals: number,
+): Promise<string> => {
+	elizaLogger.info("calculateSellTradePNL");
+	elizaLogger.info(`initialBuyAmountInCurrency ${initialBuyAmountInCurrency}`);
+	elizaLogger.info(
+		`amountSellInCurrencyInBaseUnits ${amountSellInCurrencyInBaseUnits}`,
+	);
+	// its in base units
+	const pnlCurrencyInBaseUnits =
+		initialBuyAmountInCurrency - amountSellInCurrencyInBaseUnits;
+	elizaLogger.info(`pnlCurrencyInBaseUnits ${pnlCurrencyInBaseUnits}`);
+	const pnlUSD = (pnlCurrencyInBaseUnits / 10 ** tokenDecimals) * price;
+	elizaLogger.info(`pnlUSD ${pnlUSD}`);
+	elizaLogger.info(`Sell Trade pnlUSD ${pnlUSD}`);
+	const absoluteValuePNL = Math.abs(pnlUSD);
+	elizaLogger.info(`Sell Trade absoluteValuePNL ${absoluteValuePNL}`);
+	const formattedPNL = new Intl.NumberFormat("en-US", {
+		style: "currency",
+		currency: "USD",
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
+	}).format(absoluteValuePNL);
+	elizaLogger.info(`Sell Trade formattedPNL ${formattedPNL}`);
+	const formattedPNLUSD = `${pnlUSD <= -0.005 ? "-" : ""}${formattedPNL}`;
+	elizaLogger.info(`Sell Trade formattedPNLUSD ${formattedPNLUSD}`);
 	return formattedPNLUSD;
 };
 
@@ -683,7 +758,7 @@ export const pnlProvider: Provider = {
 				runtime.getSetting("WALLET_PUBLIC_KEY") as `0x${string}`,
 				1000,
 			);
-			elizaLogger.info("pnl ", pnl);
+			elizaLogger.info(`pnl ${pnl}`);
 			return `PNL: ${pnl}`;
 		} catch (error) {
 			elizaLogger.error("Error in pnlProvider: ", error.message);
