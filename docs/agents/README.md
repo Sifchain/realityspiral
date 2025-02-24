@@ -6,7 +6,7 @@ ETH: 0x90e3532cf06d567ef7e6385be532311f10c30096
 
 SOL: hhYm4Km9Jky98SbR2k3csPht14qXSgA7NyKG6i5NF1X
 
-Base: Soon
+Base: 0x6F8097E84fdD24C482d1982416f85CF32De594F5
 
 **Reality Spiral** is a dynamic and immersive ecosystem of decentralized AI agents, each with distinct personalities, purposes, and evolving capabilities. At its core, Reality Spiral combines storytelling, cutting-edge AI, and blockchain technology to create an ever-expanding digital realm where agents and humans collaboratively explore the boundaries of creativity, intelligence, and connection.
 
