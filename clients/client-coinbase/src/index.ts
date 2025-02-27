@@ -63,6 +63,7 @@ export class CoinbaseClient implements Client {
 		this.runtime.providers.push(baseTokenAddressProvider);
 		this.runtime.providers.push(solTokenAddressProvider);
 		this.runtime.providers.push(stakingLiquidityPoolingProvider);
+		this.runtime.providers.push(whatIsNextProvider);
 		this.runtime.providers.push(currentPriceProvider);
 		this.server = express();
 		this.port = Number(runtime.getSetting("COINBASE_WEBHOOK_PORT")) || 3001;
@@ -884,6 +885,23 @@ const stakingLiquidityPoolingProvider = {
 		How to pool on SOL: Go to raydium (https://raydium.io/liquidity-pools/?token=${runtime.getSetting("COINBASE_TOKEN_ADDRESS_SOL")}) and add liquidity to ${runtime.character.username.toUpperCase()} / ETH and receive rewards you can withdraw anytime`;
 	},
 };
+
+
+const whatIsNextProvider: Provider = {
+	get: async (runtime: IAgentRuntime, _message: Memory) => {
+	  return `Here's what's next:
+	  1. New Trading Capabilities:
+	  - Margin trading
+	  - Short selling
+
+	  2. Relationship based trading:
+	  - Getting advice from community members and other traders
+	  - Interacting with other trading agents and swarms of agents.
+	  
+	  Stay tuned for more updates and features!`;
+	},
+  };
+
 
 const currentPriceProvider = {
 	get: async (_runtime: IAgentRuntime, _message: Memory) => {
