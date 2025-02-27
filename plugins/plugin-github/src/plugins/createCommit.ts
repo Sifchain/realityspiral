@@ -90,9 +90,12 @@ export const createCommitAction: Action = {
 		const repoPath = getRepoPath(content.owner, content.repo);
 
 		try {
+			const token = runtime.getSetting("GITHUB_API_TOKEN");
+
 			await checkoutBranch(repoPath, content.branch, true);
 			await writeFiles(repoPath, content.files);
 			const commit = await commitAndPushChanges(
+				token,
 				repoPath,
 				content.message,
 				content.branch,

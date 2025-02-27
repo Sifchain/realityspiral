@@ -22,6 +22,7 @@ import {
 	type SimilarityIssueCheckContent,
 	SimilarityIssueCheckSchema,
 	isCreateIssueContent,
+	isSimilarityIssueCheckContent,
 } from "../types";
 import { saveIssueToMemory } from "../utils";
 export const createIssueAction: Action = {
@@ -119,8 +120,8 @@ export const createIssueAction: Action = {
 			schema: SimilarityIssueCheckSchema,
 		});
 
-		if (!isCreateIssueContent(details.object)) {
-			elizaLogger.error("Invalid content:", details.object);
+		if (!isSimilarityIssueCheckContent(similarityCheckDetails.object)) {
+			elizaLogger.error("Invalid content:", similarityCheckDetails.object);
 			throw new Error("Invalid content");
 		}
 
