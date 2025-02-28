@@ -3,6 +3,10 @@ import { useState } from "react";
 export const use = () => {
 	const API_BASE_URL = `${import.meta.env.VITE_SERVER_URL}/templates`;
 
+	const [lore, setLore] = useState("");
+	const [bio, setBio] = useState("");
+	const [knowledge, setKnowledge] = useState("");
+
 	const [characters, setCharacters] = useState<string[]>([]);
 	const [character, setCharacter] = useState("prosper");
 	const [templates, setTemplates] = useState<{ [key: string]: string }>({});
@@ -10,6 +14,57 @@ export const use = () => {
 	const [newTemplateContent, setNewTemplateContent] = useState("");
 	const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 	const [updatedTemplateContent, setUpdatedTemplateContent] = useState("");
+
+	const updateCharacterData = async () => {
+		if (!character.trim()) {
+			alert("Character name is required.");
+			return;
+		}
+
+		if (!newTemplateName.trim() || !newTemplateContent.trim()) {
+			alert("Template name and content are required.");
+			return;
+		}
+
+		// Merging new template into existing ones
+		const updatedTemplates = {
+			...templates,
+			[newTemplateName]: newTemplateContent, // Adding new template
+		};
+
+		try {
+			const requestBody = {
+				templates: updatedTemplates, // Includes all templates
+				lore: lore ? [lore] : [], // Ensures it's an array
+				bio: bio ? [bio] : [],
+				knowledge: knowledge ? [knowledge] : [],
+			};
+
+			const res = await fetch(`${API_BASE_URL}/${character}/batch-update`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(requestBody),
+			});
+
+			if (!res.ok) {
+				throw new Error(`HTTP error! Status: ${res.status}`);
+			}
+
+			const data = await res.json();
+			alert("✅ Character updated successfully!");
+			console.log("✅ Character updated:", data);
+
+			// Update state after successful update
+			setTemplates(updatedTemplates);
+			setNewTemplateName(""); // Reset template name input
+			setNewTemplateContent(""); // Reset template content input
+		} catch (error: any) {
+			console.error("❌ Error updating character:", error);
+			alert(`Error: ${error.message}`);
+		}
+	};
 
 	const fetchCharacters = async () => {
 		try {
@@ -123,6 +178,14 @@ export const use = () => {
 	};
 
 	return {
+		lore,
+		setLore,
+		bio,
+		setBio,
+		knowledge,
+		setKnowledge,
+		updateCharacterData,
+
 		fetchCharacters,
 		fetchTemplates,
 		addTemplate,

@@ -76,17 +76,22 @@ export const getUniqueRoomIdByAgent = async (req: Request, res: Response) => {
 		}
 
 		const result = await pool.query(
-			'SELECT DISTINCT "room_id" FROM traces WHERE "agent_id" = $1 AND "room_id" IS NOT NULL',
+			`SELECT DISTINCT ON ("room_id") "room_id", "start_time" 
+			FROM traces 
+			WHERE "agent_id" = $1 AND "room_id" IS NOT NULL
+			ORDER BY "room_id", "start_time" DESC`,
 			[agent_id],
 		);
 
 		res.status(200).json({
 			agent_id: agent_id,
-			unique_room_ids: result.rows.map((row) => row.room_id),
+			rooms: result.rows.map((row) => ({
+				room_id: row.room_id,
+				start_time: row.start_time,
+			})),
 		});
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	} catch (error: any) {
-		console.error("❌ Error fetching unique runs by Agent ID:", error);
+		console.error("❌ Error fetching unique rooms by Agent ID:", error);
 		res.status(500).json({ message: "Server Error", error: error.message });
 	}
 };
@@ -141,7 +146,7 @@ export const getTracesByRoom = async (req: Request, res: Response) => {
 		}
 
 		// Order results by `start_time`
-		query += " ORDER BY start_time DESC";
+		query += " ORDER BY start_time ASC";
 
 		const result = await pool.query(query, queryParams);
 
