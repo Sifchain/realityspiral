@@ -120,7 +120,7 @@ export const reactToPRAction: Action = {
 		const githubService = new GitHubService({
 			owner: content.owner,
 			repo: content.repo,
-			auth: runtime.getSetting("GITHUB_API_TOKEN"),
+			auth: runtime.getSetting("GITHUB_API_TOKEN") || "",
 		});
 
 		elizaLogger.info("Adding reaction to pull request comment...");
@@ -287,7 +287,7 @@ export const addCommentToPRAction: Action = {
 		const githubService = new GitHubService({
 			owner: content.owner,
 			repo: content.repo,
-			auth: runtime.getSetting("GITHUB_API_TOKEN"),
+			auth: runtime.getSetting("GITHUB_API_TOKEN") || "",
 		});
 
 		elizaLogger.info("Adding comment to pull request in the repository...");
@@ -352,16 +352,19 @@ export const addCommentToPRAction: Action = {
 			comment,
 			lineLevelComments: comment.lineLevelComments,
 		});
-		const sanitizedLineLevelComments = await Promise.all(
-			comment.lineLevelComments.map(async (lineLevelComment) => {
-				return await githubService.addLineLevelComment(
-					diffText,
-					lineLevelComment.path,
-					lineLevelComment.line,
-					lineLevelComment.body,
-				);
-			}),
-		);
+
+		const sanitizedLineLevelComments = comment.lineLevelComments
+			? await Promise.all(
+					comment.lineLevelComments.map(async (lineLevelComment) => {
+						return await githubService.addLineLevelComment(
+							diffText,
+							lineLevelComment.path,
+							lineLevelComment.line || 0,
+							lineLevelComment.body,
+						);
+					}),
+				)
+			: [];
 
 		try {
 			const addedComment = await githubService.addPRCommentAndReview(
@@ -582,7 +585,7 @@ export const closePRAction: Action = {
 		const githubService = new GitHubService({
 			owner: content.owner,
 			repo: content.repo,
-			auth: runtime.getSetting("GITHUB_API_TOKEN"),
+			auth: runtime.getSetting("GITHUB_API_TOKEN") || "",
 		});
 
 		elizaLogger.info("Closing pull request...");
@@ -697,7 +700,7 @@ export const mergePRAction: Action = {
 		const githubService = new GitHubService({
 			owner: content.owner,
 			repo: content.repo,
-			auth: runtime.getSetting("GITHUB_API_TOKEN"),
+			auth: runtime.getSetting("GITHUB_API_TOKEN") || "",
 		});
 
 		elizaLogger.info("Merging pull request...");
@@ -853,7 +856,7 @@ export const replyToPRCommentAction: Action = {
 		const githubService = new GitHubService({
 			owner: content.owner,
 			repo: content.repo,
-			auth: runtime.getSetting("GITHUB_API_TOKEN"),
+			auth: runtime.getSetting("GITHUB_API_TOKEN") || "",
 		});
 
 		// reply to all comments in the pull request
@@ -1041,7 +1044,7 @@ export const implementFeatureAction: Action = {
 		const githubService = new GitHubService({
 			owner: content.owner,
 			repo: content.repo,
-			auth: runtime.getSetting("GITHUB_API_TOKEN"),
+			auth: runtime.getSetting("GITHUB_API_TOKEN") || "",
 		});
 
 		try {
@@ -1062,6 +1065,7 @@ export const implementFeatureAction: Action = {
 					message,
 					state,
 					options,
+					callback,
 				);
 
 				elizaLogger.info("Created issue successfully!");
@@ -1100,10 +1104,10 @@ export const implementFeatureAction: Action = {
 
 			// Initialize repository
 			await initRepo(
-				runtime.getSetting("GITHUB_API_TOKEN"),
+				runtime.getSetting("GITHUB_API_TOKEN")!,
 				content.owner,
 				content.repo,
-				content.base,
+				content.base || "main",
 			);
 
 			message.content.text = `Commit changes to the repository ${content.owner}/${content.repo} on branch '${content.branch}' with the commit message: ${content.feature}`;

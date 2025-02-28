@@ -28,7 +28,7 @@ function Logs() {
 	// State for filters (start_date is set to 7 days ago, end_date is today)
 	const [filters, setFilters] = useState({
 		name: "",
-		start_date: getFormattedDate(7), // 7 days ago
+		start_date: getFormattedDate(30), // 7 days ago
 		end_date: getFormattedDate(0), // Today
 	});
 
@@ -163,20 +163,23 @@ function Logs() {
 					)}
 
 					<div className="mt-4 grid grid-cols-1 gap-4 text-xs">
-						{uniqueRooms.map((room, index) => (
-							// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+						{uniqueRooms.map((room) => (
 							<div
-								// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-								key={index}
+								key={room.room_id} // Use a stable key (room_id instead of index)
 								onClick={() => {
-									setSelectedRoom(room);
-									fetchTraceData(room, filters);
+									setSelectedRoom(room.room_id);
+									fetchTraceData(room.room_id, filters);
 								}}
 								className={`p-4 bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition duration-300 cursor-pointer ${
-									selectedRoom === room ? "border-2 border-blue-500" : ""
+									selectedRoom === room.room_id
+										? "border-2 border-blue-500"
+										: ""
 								}`}
 							>
-								<p className="text-white font-medium">{room}</p>
+								<p className="text-white font-medium">{room.room_id}</p>
+								<p className="text-gray-400 text-xs">
+									{new Date(room.start_time).toLocaleString()}
+								</p>
 							</div>
 						))}
 					</div>

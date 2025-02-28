@@ -24,9 +24,12 @@ import type { DirectClient } from ".";
 import {
 	addTemplate,
 	batchUpdateCharacterData,
+	deleteCharacterArrayElement,
 	deleteTemplate,
+	getCharacterData,
 	getCharacters,
 	getTemplates,
+	updateCharacterArrayElement,
 	updateTemplate,
 } from "./controllers/templateController";
 import {
@@ -1271,6 +1274,153 @@ export function createApiRouter(
 	router.post("/templates/:characterName/batch-update", async (req, res) => {
 		batchUpdateCharacterData(req, res);
 	});
+
+	/**
+	 * @swagger
+	 * /templates/{characterName}/batch-get:
+	 *   get:
+	 *     summary: Get all prompt templates for a character
+	 *     description: Retrieves all saved prompt templates for the specified character.
+	 *     parameters:
+	 *       - in: path
+	 *         name: characterName
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: The name of the character.
+	 *     responses:
+	 *       200:
+	 *         description: Returns a list of all templates.
+	 *       404:
+	 *         description: Character not found.
+	 */
+	router.get("/templates/:characterName/batch-get", async (req, res) => {
+		getCharacterData(req, res);
+	});
+
+	/**
+	 * @swagger
+	 * /templates/{characterName}/array-update/{arrayName}/{index}:
+	 *   put:
+	 *     summary: Update an element in a specific character array field.
+	 *     description: Replace an element in one of the character's array fields (e.g., lore, bio, knowledge) with new text at the specified index.
+	 *     tags:
+	 *       - Character Data
+	 *     parameters:
+	 *       - in: path
+	 *         name: characterName
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: The name of the character.
+	 *       - in: path
+	 *         name: arrayName
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: The name of the array field to update (e.g., "lore", "bio", "knowledge").
+	 *       - in: path
+	 *         name: index
+	 *         required: true
+	 *         schema:
+	 *           type: integer
+	 *           format: int32
+	 *         description: The index of the element in the array to update.
+	 *     requestBody:
+	 *       required: true
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               newText:
+	 *                 type: string
+	 *                 description: The new text to replace the existing element.
+	 *             required:
+	 *               - newText
+	 *     responses:
+	 *       200:
+	 *         description: Array element updated successfully.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 message:
+	 *                   type: string
+	 *                 updatedArray:
+	 *                   type: array
+	 *                   items:
+	 *                     type: string
+	 *       400:
+	 *         description: Invalid request parameters or input.
+	 *       404:
+	 *         description: Character not found or specified array field not found.
+	 */
+	router.put(
+		"/templates/:characterName/array-update/:arrayName/:index",
+		async (req, res) => {
+			updateCharacterArrayElement(req, res);
+		},
+	);
+
+	/**
+	 * @swagger
+	 * /templates/{characterName}/array-delete/{arrayName}/{index}:
+	 *   delete:
+	 *     summary: Delete an element from a specific character array field.
+	 *     description: Remove an element from one of the character's array fields (e.g., "lore", "bio", or "knowledge") at the specified index.
+	 *     tags:
+	 *       - Character Data
+	 *     parameters:
+	 *       - in: path
+	 *         name: characterName
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: The name of the character.
+	 *       - in: path
+	 *         name: arrayName
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: The name of the array field from which to delete the element (e.g., "lore", "bio", "knowledge").
+	 *       - in: path
+	 *         name: index
+	 *         required: true
+	 *         schema:
+	 *           type: integer
+	 *           format: int32
+	 *         description: The index of the element in the array to delete.
+	 *     responses:
+	 *       200:
+	 *         description: Array element deleted successfully.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 message:
+	 *                   type: string
+	 *                 updatedArray:
+	 *                   type: array
+	 *                   items:
+	 *                     type: string
+	 *                 removedElement:
+	 *                   type: array
+	 *                   items:
+	 *                     type: string
+	 *       400:
+	 *         description: Invalid request parameters or input.
+	 *       404:
+	 *         description: Character not found or specified array field not found.
+	 */
+	router.delete(
+		"/templates/:characterName/array-delete/:arrayName/:index",
+		async (req, res) => {
+			deleteCharacterArrayElement(req, res);
+		},
+	);
 
 	return router;
 }
