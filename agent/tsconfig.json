@@ -5,7 +5,8 @@
 		"rootDir": ".",
 		"module": "ESNext",
 		"moduleResolution": "Bundler",
-		"types": ["node", "jest"]
+		"types": ["node", "jest"],
+		"composite": true
 	},
 	"ts-node": {
 		"experimentalSpecifierResolution": "node",

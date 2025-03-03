@@ -8,7 +8,7 @@ import pg from "pg";
 // Get PostgreSQL connection string
 const postgresUrl =
 	process.env.POSTGRES_URL ||
-	"postgresql://softwareengineer-frontend:mysecretpassword@localhost:5432/tracing_database";
+	"postgresql://user@localhost:5432/tracing_database";
 
 // PostgreSQL database connection
 let pgClient: pg.Client | null = null;

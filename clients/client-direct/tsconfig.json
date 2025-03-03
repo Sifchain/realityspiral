@@ -5,13 +5,16 @@
 		"composite": true,
 		"declaration": true,
 		"declarationMap": true,
+		"rootDir": "src",
+		"baseUrl": "../../",
 		"paths": {
-			"@realityspiral/agent/*": ["../../agent/src/*"]
+			"@realityspiral/agent/*": ["agent/src/*"]
 		}
 	},
 	"include": [
-		"src/**/*.ts",
-		"../../agent/src/instrumentation.ts",
-		"../../agent/src/runtime-instrumentation.ts"
+		"src/**/*.ts"
+	],
+	"references": [
+		{ "path": "../../agent" }
 	]
 }
