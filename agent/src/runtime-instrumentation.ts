@@ -1,20 +1,30 @@
-import { Instrumentation } from './instrumentation';
-import { elizaLogger } from '@elizaos/core';
-import { v4 as uuidv4 } from 'uuid';
+import { elizaLogger } from "@elizaos/core";
+import { v4 as uuidv4 } from "uuid";
+import { Instrumentation } from "./instrumentation";
 
 // Define our own simplified interface for AgentRuntime
 interface RuntimeLike {
-  agentId: string;
-  character?: { name?: string };
-  actions: any[];
-  
-  initialize: (...args: any[]) => Promise<any>;
-  evaluate: (message: any, state: any, didRespond?: boolean, callback?: any) => Promise<any>;
-  processActions: (message: any, responses: any[], state?: any, callback?: any) => Promise<any>;
-  stop: () => Promise<any>;
-  
-  // We'll add a session ID if not present
-  sessionId?: string;
+	agentId: string;
+	character?: { name?: string };
+	actions: any[];
+
+	initialize: (...args: any[]) => Promise<any>;
+	evaluate: (
+		message: any,
+		state: any,
+		didRespond?: boolean,
+		callback?: any,
+	) => Promise<any>;
+	processActions: (
+		message: any,
+		responses: any[],
+		state?: any,
+		callback?: any,
+	) => Promise<any>;
+	stop: () => Promise<any>;
+
+	// We'll add a session ID if not present
+	sessionId?: string;
 }
 
 /**
@@ -22,263 +32,283 @@ interface RuntimeLike {
  * to capture real-time data about agent operations.
  */
 export class RuntimeInstrumentation {
-  private static instance: RuntimeInstrumentation;
-  private instrumentation: Instrumentation;
-  private trackedRuntimes: Map<string, RuntimeLike> = new Map();
+	private static instance: RuntimeInstrumentation;
+	private instrumentation: Instrumentation;
+	private trackedRuntimes: Map<string, RuntimeLike> = new Map();
 
-  private constructor() {
-    this.instrumentation = Instrumentation.getInstance();
-    elizaLogger.info('🔄 Runtime instrumentation initialized');
-  }
+	private constructor() {
+		this.instrumentation = Instrumentation.getInstance();
+		elizaLogger.info("🔄 Runtime instrumentation initialized");
+	}
 
-  /**
-   * Get the singleton instance of RuntimeInstrumentation
-   */
-  public static getInstance(): RuntimeInstrumentation {
-    if (!RuntimeInstrumentation.instance) {
-      RuntimeInstrumentation.instance = new RuntimeInstrumentation();
-    }
-    return RuntimeInstrumentation.instance;
-  }
+	/**
+	 * Get the singleton instance of RuntimeInstrumentation
+	 */
+	public static getInstance(): RuntimeInstrumentation {
+		if (!RuntimeInstrumentation.instance) {
+			RuntimeInstrumentation.instance = new RuntimeInstrumentation();
+		}
+		return RuntimeInstrumentation.instance;
+	}
 
-  /**
-   * Attach instrumentation to an AgentRuntime instance to track its events
-   * @param runtime The AgentRuntime instance to track
-   */
-  public attachToRuntime(runtime: RuntimeLike): void {
-    const agentId = runtime.agentId;
-    
-    // Ensure there's a session ID
-    if (!runtime.sessionId) {
-      runtime.sessionId = uuidv4();
-    }
-    const sessionId = runtime.sessionId;
-    
-    if (this.trackedRuntimes.has(agentId)) {
-      elizaLogger.info(`Runtime for agent ${agentId} is already being tracked`);
-      return;
-    }
+	/**
+	 * Attach instrumentation to an AgentRuntime instance to track its events
+	 * @param runtime The AgentRuntime instance to track
+	 */
+	public attachToRuntime(runtime: RuntimeLike): void {
+		const agentId = runtime.agentId;
 
-    // Store the runtime for later reference
-    this.trackedRuntimes.set(agentId, runtime);
+		// Ensure there's a session ID
+		if (!runtime.sessionId) {
+			runtime.sessionId = uuidv4();
+		}
+		const sessionId = runtime.sessionId;
 
-    // Log the runtime initialization
-    this.instrumentation.sessionStart({
-      sessionId,
-      agentId,
-      roomId: 'unknown', // We might need to extract this from runtime context
-      characterName: runtime.character?.name || 'Unknown Character',
-      environment: process.env.NODE_ENV || 'development',
-      platform: 'agent-runtime',
-    });
+		if (this.trackedRuntimes.has(agentId)) {
+			elizaLogger.info(`Runtime for agent ${agentId} is already being tracked`);
+			return;
+		}
 
-    elizaLogger.info(`🔄 Instrumentation attached to runtime for agent ${agentId}`);
+		// Store the runtime for later reference
+		this.trackedRuntimes.set(agentId, runtime);
 
-    // Wrap runtime methods to track events
-    this.wrapRuntimeMethods(runtime);
-  }
+		// Log the runtime initialization
+		this.instrumentation.sessionStart({
+			sessionId,
+			agentId,
+			roomId: "unknown", // We might need to extract this from runtime context
+			characterName: runtime.character?.name || "Unknown Character",
+			environment: process.env.NODE_ENV || "development",
+			platform: "agent-runtime",
+		});
 
-  /**
-   * Wrap key methods of the AgentRuntime to capture events
-   * @param runtime The AgentRuntime instance to wrap
-   */
-  private wrapRuntimeMethods(runtime: RuntimeLike): void {
-    const originalInitialize = runtime.initialize.bind(runtime);
-    runtime.initialize = async (...args: any[]) => {
-      const startTime = Date.now();
-      try {
-        // Call the original method
-        const result = await originalInitialize(...args);
+		elizaLogger.info(
+			`🔄 Instrumentation attached to runtime for agent ${agentId}`,
+		);
 
-        // Log the successful initialization
-        this.instrumentation.logEvent({
-          stage: 'Initialization',
-          subStage: 'Runtime',
-          event: 'runtime_initialized',
-          data: {
-            agentId: runtime.agentId,
-            sessionId: runtime.sessionId,
-            duration: Date.now() - startTime,
-            success: true,
-          },
-        });
+		// Wrap runtime methods to track events
+		this.wrapRuntimeMethods(runtime);
+	}
 
-        return result;
-      } catch (error) {
-        // Log the failed initialization
-        this.instrumentation.logEvent({
-          stage: 'Initialization',
-          subStage: 'Runtime',
-          event: 'runtime_initialization_failed',
-          data: {
-            agentId: runtime.agentId,
-            sessionId: runtime.sessionId,
-            duration: Date.now() - startTime,
-            error: (error as Error).message,
-          },
-        });
-        throw error;
-      }
-    };
+	/**
+	 * Wrap key methods of the AgentRuntime to capture events
+	 * @param runtime The AgentRuntime instance to wrap
+	 */
+	private wrapRuntimeMethods(runtime: RuntimeLike): void {
+		const originalInitialize = runtime.initialize.bind(runtime);
+		runtime.initialize = async (...args: any[]) => {
+			const startTime = Date.now();
+			try {
+				// Call the original method
+				const result = await originalInitialize(...args);
 
-    // Wrap the evaluate method to track message processing
-    const originalEvaluate = runtime.evaluate.bind(runtime);
-    runtime.evaluate = async (message, state, didRespond, callback) => {
-      const messageId = message.id || `msg-${Date.now()}`;
-      const startTime = Date.now();
+				// Log the successful initialization
+				this.instrumentation.logEvent({
+					stage: "Initialization",
+					subStage: "Runtime",
+					event: "runtime_initialized",
+					data: {
+						agentId: runtime.agentId,
+						sessionId: runtime.sessionId,
+						duration: Date.now() - startTime,
+						success: true,
+					},
+				});
 
-      // Log message received
-      this.instrumentation.messageReceived({
-        message: typeof message.content === 'string' ? message.content : JSON.stringify(message.content),
-        sessionId: runtime.sessionId!,
-        agentId: runtime.agentId,
-        roomId: message.roomId || 'unknown',
-      });
+				return result;
+			} catch (error) {
+				// Log the failed initialization
+				this.instrumentation.logEvent({
+					stage: "Initialization",
+					subStage: "Runtime",
+					event: "runtime_initialization_failed",
+					data: {
+						agentId: runtime.agentId,
+						sessionId: runtime.sessionId,
+						duration: Date.now() - startTime,
+						error: (error as Error).message,
+					},
+				});
+				throw error;
+			}
+		};
 
-      try {
-        // Call the original method
-        const result = await originalEvaluate(message, state, didRespond, callback);
+		// Wrap the evaluate method to track message processing
+		const originalEvaluate = runtime.evaluate.bind(runtime);
+		runtime.evaluate = async (message, state, didRespond, callback) => {
+			const messageId = message.id || `msg-${Date.now()}`;
+			const startTime = Date.now();
 
-        // Log message processed
-        this.instrumentation.messageProcessed({
-          messageId,
-          sessionId: runtime.sessionId!,
-          agentId: runtime.agentId,
-          processingTime: Date.now() - startTime,
-        });
+			// Log message received
+			this.instrumentation.messageReceived({
+				message:
+					typeof message.content === "string"
+						? message.content
+						: JSON.stringify(message.content),
+				sessionId: runtime.sessionId!,
+				agentId: runtime.agentId,
+				roomId: message.roomId || "unknown",
+			});
 
-        return result;
-      } catch (error) {
-        // Log processing error
-        this.instrumentation.logEvent({
-          stage: 'Process',
-          subStage: 'Error',
-          event: 'message_processing_error',
-          data: {
-            messageId,
-            sessionId: runtime.sessionId,
-            agentId: runtime.agentId,
-            error: (error as Error).message,
-            processingTime: Date.now() - startTime,
-          },
-        });
-        throw error;
-      }
-    };
+			try {
+				// Call the original method
+				const result = await originalEvaluate(
+					message,
+					state,
+					didRespond,
+					callback,
+				);
 
-    // Wrap processActions to track action execution
-    const originalProcessActions = runtime.processActions.bind(runtime);
-    runtime.processActions = async (message, responses, state, callback) => {
-      const startTime = Date.now();
-      const actionStartEvent = {
-        stage: 'Action',
-        subStage: 'Execution',
-        event: 'actions_processing_started',
-        data: {
-          messageId: message.id || uuidv4(),
-          sessionId: runtime.sessionId,
-          agentId: runtime.agentId,
-          actionsCount: runtime.actions.length,
-        },
-      };
+				// Log message processed
+				this.instrumentation.messageProcessed({
+					messageId,
+					sessionId: runtime.sessionId!,
+					agentId: runtime.agentId,
+					processingTime: Date.now() - startTime,
+				});
 
-      this.instrumentation.logEvent(actionStartEvent);
+				return result;
+			} catch (error) {
+				// Log processing error
+				this.instrumentation.logEvent({
+					stage: "Process",
+					subStage: "Error",
+					event: "message_processing_error",
+					data: {
+						messageId,
+						sessionId: runtime.sessionId,
+						agentId: runtime.agentId,
+						error: (error as Error).message,
+						processingTime: Date.now() - startTime,
+					},
+				});
+				throw error;
+			}
+		};
 
-      try {
-        // Call the original method
-        const result = await originalProcessActions(message, responses, state, callback);
+		// Wrap processActions to track action execution
+		const originalProcessActions = runtime.processActions.bind(runtime);
+		runtime.processActions = async (message, responses, state, callback) => {
+			const startTime = Date.now();
+			const actionStartEvent = {
+				stage: "Action",
+				subStage: "Execution",
+				event: "actions_processing_started",
+				data: {
+					messageId: message.id || uuidv4(),
+					sessionId: runtime.sessionId,
+					agentId: runtime.agentId,
+					actionsCount: runtime.actions.length,
+				},
+			};
 
-        // Log successful action processing
-        this.instrumentation.logEvent({
-          stage: 'Action',
-          subStage: 'Execution',
-          event: 'actions_processing_completed',
-          data: {
-            messageId: message.id || uuidv4(),
-            sessionId: runtime.sessionId,
-            agentId: runtime.agentId,
-            processingTime: Date.now() - startTime,
-            responseCount: responses.length,
-          },
-        });
+			this.instrumentation.logEvent(actionStartEvent);
 
-        return result;
-      } catch (error) {
-        // Log action processing error
-        this.instrumentation.logEvent({
-          stage: 'Action',
-          subStage: 'Error',
-          event: 'actions_processing_error',
-          data: {
-            messageId: message.id || uuidv4(),
-            sessionId: runtime.sessionId,
-            agentId: runtime.agentId,
-            error: (error as Error).message,
-            processingTime: Date.now() - startTime,
-          },
-        });
-        throw error;
-      }
-    };
+			try {
+				// Call the original method
+				const result = await originalProcessActions(
+					message,
+					responses,
+					state,
+					callback,
+				);
 
-    // Track when runtime is stopped
-    const originalStop = runtime.stop.bind(runtime);
-    runtime.stop = async () => {
-      try {
-        // Call the original method
-        const result = await originalStop();
+				// Log successful action processing
+				this.instrumentation.logEvent({
+					stage: "Action",
+					subStage: "Execution",
+					event: "actions_processing_completed",
+					data: {
+						messageId: message.id || uuidv4(),
+						sessionId: runtime.sessionId,
+						agentId: runtime.agentId,
+						processingTime: Date.now() - startTime,
+						responseCount: responses.length,
+					},
+				});
 
-        // Log runtime stopped
-        this.instrumentation.logEvent({
-          stage: 'Shutdown',
-          subStage: 'Runtime',
-          event: 'runtime_stopped',
-          data: {
-            agentId: runtime.agentId,
-            sessionId: runtime.sessionId,
-          },
-        });
+				return result;
+			} catch (error) {
+				// Log action processing error
+				this.instrumentation.logEvent({
+					stage: "Action",
+					subStage: "Error",
+					event: "actions_processing_error",
+					data: {
+						messageId: message.id || uuidv4(),
+						sessionId: runtime.sessionId,
+						agentId: runtime.agentId,
+						error: (error as Error).message,
+						processingTime: Date.now() - startTime,
+					},
+				});
+				throw error;
+			}
+		};
 
-        // Remove from tracked runtimes
-        this.trackedRuntimes.delete(runtime.agentId);
+		// Track when runtime is stopped
+		const originalStop = runtime.stop.bind(runtime);
+		runtime.stop = async () => {
+			try {
+				// Call the original method
+				const result = await originalStop();
 
-        return result;
-      } catch (error) {
-        // Log stop error
-        this.instrumentation.logEvent({
-          stage: 'Shutdown',
-          subStage: 'Error',
-          event: 'runtime_stop_error',
-          data: {
-            agentId: runtime.agentId,
-            sessionId: runtime.sessionId,
-            error: (error as Error).message,
-          },
-        });
-        throw error;
-      }
-    };
-  }
+				// Log runtime stopped
+				this.instrumentation.logEvent({
+					stage: "Shutdown",
+					subStage: "Runtime",
+					event: "runtime_stopped",
+					data: {
+						agentId: runtime.agentId,
+						sessionId: runtime.sessionId,
+					},
+				});
 
-  /**
-   * Detach instrumentation from an AgentRuntime instance
-   * @param agentId The ID of the agent to detach
-   */
-  public detachFromRuntime(agentId: string): void {
-    const runtime = this.trackedRuntimes.get(agentId);
-    if (!runtime) {
-      elizaLogger.warn(`Attempted to detach instrumentation from untracked runtime: ${agentId}`);
-      return;
-    }
+				// Remove from tracked runtimes
+				this.trackedRuntimes.delete(runtime.agentId);
 
-    // TODO: Restore original methods if needed
+				return result;
+			} catch (error) {
+				// Log stop error
+				this.instrumentation.logEvent({
+					stage: "Shutdown",
+					subStage: "Error",
+					event: "runtime_stop_error",
+					data: {
+						agentId: runtime.agentId,
+						sessionId: runtime.sessionId,
+						error: (error as Error).message,
+					},
+				});
+				throw error;
+			}
+		};
+	}
 
-    // Remove from tracked runtimes
-    this.trackedRuntimes.delete(agentId);
-    
-    elizaLogger.info(`🔄 Instrumentation detached from runtime for agent ${agentId}`);
-  }
+	/**
+	 * Detach instrumentation from an AgentRuntime instance
+	 * @param agentId The ID of the agent to detach
+	 */
+	public detachFromRuntime(agentId: string): void {
+		const runtime = this.trackedRuntimes.get(agentId);
+		if (!runtime) {
+			elizaLogger.warn(
+				`Attempted to detach instrumentation from untracked runtime: ${agentId}`,
+			);
+			return;
+		}
+
+		// TODO: Restore original methods if needed
+
+		// Remove from tracked runtimes
+		this.trackedRuntimes.delete(agentId);
+
+		elizaLogger.info(
+			`🔄 Instrumentation detached from runtime for agent ${agentId}`,
+		);
+	}
 }
 
 // Export a singleton instance getter
-export const getRuntimeInstrumentation = () => RuntimeInstrumentation.getInstance(); 
+export const getRuntimeInstrumentation = () =>
+	RuntimeInstrumentation.getInstance();

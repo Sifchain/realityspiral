@@ -9,5 +9,9 @@
 			"@realityspiral/agent/*": ["../../agent/src/*"]
 		}
 	},
-	"include": ["src/**/*.ts", "../../agent/src/instrumentation.ts", "../../agent/src/runtime-instrumentation.ts"]
+	"include": [
+		"src/**/*.ts",
+		"../../agent/src/instrumentation.ts",
+		"../../agent/src/runtime-instrumentation.ts"
+	]
 }

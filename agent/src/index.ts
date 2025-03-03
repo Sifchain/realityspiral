@@ -52,7 +52,7 @@ import {
 import Database from "better-sqlite3";
 import yargs from "yargs";
 import { z } from "zod";
-import { getRuntimeInstrumentation } from './runtime-instrumentation';
+import { getRuntimeInstrumentation } from "./runtime-instrumentation";
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -582,10 +582,12 @@ export async function createAgent(
 
 	// Set up automatic instrumentation for all agents
 	const runtimeInstrumentation = getRuntimeInstrumentation();
-	
+
 	// This will attach to evaluate and other methods to automatically instrument
 	runtimeInstrumentation.attachToRuntime(runtime);
-	elizaLogger.info(`🔄 Instrumentation attached to runtime for agent ${runtime.agentId}`);
+	elizaLogger.info(
+		`🔄 Instrumentation attached to runtime for agent ${runtime.agentId}`,
+	);
 
 	return runtime;
 }
@@ -643,7 +645,7 @@ async function startAgent(
 		elizaLogger.debug(`Started ${character.name} as ${runtime.agentId}`);
 
 		const startTime = Date.now();
-		
+
 		try {
 			// Trigger evaluate immediately after initialization to ensure tracing is working
 			const message = {
@@ -652,23 +654,25 @@ async function startAgent(
 				userId: runtime.agentId,
 				roomId: runtime.agentId,
 				agentId: runtime.agentId,
-				createdAt: Date.now()
+				createdAt: Date.now(),
 			};
-			
+
 			// Create a minimal state
-			const state = { 
+			const state = {
 				agentId: runtime.agentId,
-				agentName: character.name
+				agentName: character.name,
 			};
-			
+
 			// Call evaluate to trigger instrumentation
-			runtime.evaluate(message, state as any).catch(err => {
+			runtime.evaluate(message, state as any).catch((err) => {
 				elizaLogger.error(`Error evaluating agent start: ${err.message}`);
 			});
 		} catch (error) {
-			elizaLogger.error(`Error during agent start instrumentation: ${error.message}`);
+			elizaLogger.error(
+				`Error during agent start instrumentation: ${error.message}`,
+			);
 		}
-		
+
 		return runtime;
 	} catch (error) {
 		elizaLogger.error(
@@ -747,23 +751,27 @@ const startAgents = async () => {
 	// Make sure Runtime Instrumentation is exposed to DirectClient
 	const runtimeInstrumentation = getRuntimeInstrumentation();
 	directClient.instrumentationAttached = false;
-	
+
 	// Add a method to DirectClient to ensure instrumentation is set up properly
 	const originalRegisterAgent = directClient.registerAgent.bind(directClient);
 	directClient.registerAgent = (runtime: AgentRuntime) => {
 		// Call the original method
 		originalRegisterAgent(runtime);
-		
+
 		// Ensure the runtime is instrumented
 		if (!directClient.instrumentationAttached) {
 			try {
 				// Attach the instrumentation wrapper to all POST request handlers
 				// Apply to each route handler that processes messages
-				elizaLogger.info(`🔌 Attaching instrumentation to DirectClient routes for agent ${runtime.agentId}`);
+				elizaLogger.info(
+					`🔌 Attaching instrumentation to DirectClient routes for agent ${runtime.agentId}`,
+				);
 				runtimeInstrumentation.attachToRuntime(runtime);
 				directClient.instrumentationAttached = true;
 			} catch (error) {
-				elizaLogger.error(`❌ Failed to attach instrumentation to DirectClient: ${error}`);
+				elizaLogger.error(
+					`❌ Failed to attach instrumentation to DirectClient: ${error}`,
+				);
 			}
 		}
 	};
