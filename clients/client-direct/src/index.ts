@@ -112,14 +112,11 @@ Response format should be formatted in a JSON block like this:
 export class DirectClient {
 	public app: express.Application;
 	private agents: Map<string, AgentRuntime>; // container management
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	private server: any; // Store server instance
-	// biome-ignore lint/complexity/noBannedTypes: <explanation>
 	public startAgent: Function; // Store startAgent functor
-	// biome-ignore lint/complexity/noBannedTypes: <explanation>
 	public loadCharacterTryPath: Function; // Store loadCharacterTryPath functor
-	// biome-ignore lint/complexity/noBannedTypes: <explanation>
 	public jsonToCharacter: Function; // Store jsonToCharacter functor
+	public instrumentationAttached: boolean = false; // Track if instrumentation is attached
 
 	constructor() {
 		elizaLogger.log("DirectClient constructor");
@@ -274,6 +271,47 @@ export class DirectClient {
 					return;
 				}
 
+				// Import the runtime instrumentation and instrumentation singleton
+				const instrumentationModule = await import('@realityspiral/agent/instrumentation');
+				const runtimeInstrumentationModule = await import('@realityspiral/agent/runtime-instrumentation');
+				const runtimeInstrumentation = runtimeInstrumentationModule.getRuntimeInstrumentation();
+				const instrumentation = instrumentationModule.Instrumentation.getInstance();
+				
+				const text = req.body.text;
+				// if empty text, directly return
+				if (!text) {
+					res.json([]);
+					return;
+				}
+				
+				// Ensure the runtime has instrumentation attached
+				runtimeInstrumentation.attachToRuntime(runtime);
+
+				const startTime = Date.now();
+				const messageId = stringToUuid(Date.now().toString());
+				
+				// Generate a session ID if not available
+				const sessionId = (runtime as any).sessionId || `session-${Date.now()}`;
+				
+				// Log message reception event with detailed context
+				instrumentation.logEvent({
+					stage: 'Chat',
+					subStage: 'Request',
+					event: 'chat_message_received',
+					data: {
+						messageId,
+						sessionId,
+						agentId: runtime.agentId,
+						roomId,
+						userId,
+						messageText: text,
+						characterName: runtime.character?.name || 'Unknown',
+						timestamp: startTime,
+						client: 'direct',
+						hasAttachments: req.file ? true : false
+					},
+				});
+				
 				await runtime.ensureConnection(
 					userId,
 					roomId,
@@ -281,15 +319,6 @@ export class DirectClient {
 					req.body.name,
 					"direct",
 				);
-
-				const text = req.body.text;
-				// if empty text, directly return
-				if (!text) {
-					res.json([]);
-					return;
-				}
-
-				const messageId = stringToUuid(Date.now().toString());
 
 				const attachments: Media[] = [];
 				if (req.file) {
@@ -307,6 +336,23 @@ export class DirectClient {
 						description: `Uploaded file: ${req.file.originalname}`,
 						text: "",
 						contentType: req.file.mimetype,
+					});
+					
+					// Log attachment processing event
+					instrumentation.logEvent({
+						stage: 'Chat',
+						subStage: 'Attachment',
+						event: 'attachment_processed',
+						data: {
+							messageId,
+							sessionId,
+							agentId: runtime.agentId,
+							roomId,
+							userId,
+							attachmentType: req.file.mimetype,
+							attachmentName: req.file.originalname,
+							timestamp: Date.now()
+						},
 					});
 				}
 
@@ -334,25 +380,118 @@ export class DirectClient {
 					createdAt: Date.now(),
 				};
 
+				// Log memory storage event
+				instrumentation.logEvent({
+					stage: 'Chat',
+					subStage: 'Memory',
+					event: 'memory_storage_started',
+					data: {
+						messageId,
+						sessionId,
+						agentId: runtime.agentId,
+						roomId,
+						userId,
+						timestamp: Date.now()
+					},
+				});
+
 				await runtime.messageManager.addEmbeddingToMemory(memory);
 				await runtime.messageManager.createMemory(memory);
+
+				// Log memory storage complete event
+				instrumentation.logEvent({
+					stage: 'Chat',
+					subStage: 'Memory',
+					event: 'memory_storage_completed',
+					data: {
+						messageId,
+						sessionId,
+						agentId: runtime.agentId,
+						roomId,
+						userId,
+						timestamp: Date.now()
+					},
+				});
+
+				// Log state composition started
+				instrumentation.logEvent({
+					stage: 'Chat',
+					subStage: 'State',
+					event: 'state_composition_started',
+					data: {
+						messageId,
+						sessionId,
+						agentId: runtime.agentId,
+						roomId,
+						userId,
+						timestamp: Date.now()
+					},
+				});
 
 				let state = await runtime.composeState(userMessage, {
 					agentName: runtime.character.name,
 				});
 
-				const context = composeContext({
-					state,
-					template: messageHandlerTemplate,
+				// Log response generation started
+				instrumentation.logEvent({
+					stage: 'Chat',
+					subStage: 'Generation',
+					event: 'response_generation_started',
+					data: {
+						messageId,
+						sessionId,
+						agentId: runtime.agentId,
+						roomId,
+						userId,
+						modelClass: ModelClass.LARGE,
+						timestamp: Date.now()
+					},
 				});
 
+				const generationStartTime = Date.now();
 				const response = await generateMessageResponse({
 					runtime: runtime,
-					context,
+					context: composeContext({
+						state,
+						template: messageHandlerTemplate,
+					}),
 					modelClass: ModelClass.LARGE,
+				});
+				const generationEndTime = Date.now();
+
+				// Log response generation completed
+				instrumentation.logEvent({
+					stage: 'Chat',
+					subStage: 'Generation',
+					event: 'response_generation_completed',
+					data: {
+						messageId,
+						sessionId,
+						agentId: runtime.agentId,
+						roomId,
+						userId,
+						generationTime: generationEndTime - generationStartTime,
+						responseLength: response ? response.text.length : 0,
+						timestamp: generationEndTime
+					},
 				});
 
 				if (!response) {
+					// Log error
+					instrumentation.logEvent({
+						stage: 'Chat',
+						subStage: 'Error',
+						event: 'response_generation_failed',
+						data: {
+							messageId,
+							sessionId,
+							agentId: runtime.agentId,
+							roomId,
+							userId,
+							error: "No response from generateMessageResponse",
+							timestamp: Date.now()
+						},
+					});
 					res.status(500).send("No response from generateMessageResponse");
 					return;
 				}
@@ -373,6 +512,23 @@ export class DirectClient {
 
 				let message = null as Content | null;
 
+				// Log action processing started
+				instrumentation.logEvent({
+					stage: 'Chat',
+					subStage: 'Actions',
+					event: 'action_processing_started',
+					data: {
+						messageId,
+						sessionId,
+						agentId: runtime.agentId,
+						roomId,
+						userId,
+						actionCount: runtime.actions.length,
+						timestamp: Date.now()
+					},
+				});
+
+				const actionsStartTime = Date.now();
 				await runtime.processActions(
 					memory,
 					[responseMessage],
@@ -382,12 +538,48 @@ export class DirectClient {
 						return [memory];
 					},
 				);
+				const actionsEndTime = Date.now();
+
+				// Log action processing completed
+				instrumentation.logEvent({
+					stage: 'Chat',
+					subStage: 'Actions',
+					event: 'action_processing_completed',
+					data: {
+						messageId,
+						sessionId,
+						agentId: runtime.agentId,
+						roomId,
+						userId,
+						processingTime: actionsEndTime - actionsStartTime,
+						hasAdditionalMessages: message !== null,
+						timestamp: actionsEndTime
+					},
+				});
 
 				await runtime.evaluate(memory, state);
 
 				// Check if we should suppress the initial message
 				const action = runtime.actions.find((a) => a.name === response.action);
 				const shouldSuppressInitialMessage = action?.suppressInitialMessage;
+
+				// Log response delivery
+				instrumentation.logEvent({
+					stage: 'Chat',
+					subStage: 'Response',
+					event: 'response_delivered',
+					data: {
+						messageId,
+						sessionId,
+						agentId: runtime.agentId,
+						roomId,
+						userId,
+						totalProcessingTime: Date.now() - startTime,
+						suppressedInitialMessage: !!shouldSuppressInitialMessage,
+						hasAdditionalMessages: message !== null,
+						timestamp: Date.now()
+					},
+				});
 
 				if (!shouldSuppressInitialMessage) {
 					if (message) {
@@ -402,7 +594,7 @@ export class DirectClient {
 						res.json([]);
 					}
 				}
-			},
+			}
 		);
 
 		this.app.post(
@@ -1080,6 +1272,29 @@ export class DirectClient {
 		// register any plugin endpoints?
 		// but once and only once
 		this.agents.set(runtime.agentId, runtime);
+    
+		// Log the registration for instrumentation purposes
+		try {
+			const message = {
+				content: { text: `Agent registered: ${runtime.character.name}` },
+				id: runtime.agentId,
+				userId: runtime.agentId,
+				roomId: runtime.agentId,
+				agentId: runtime.agentId,
+				createdAt: Date.now()
+			};
+
+			// If the agent has an evaluate method, try to call it for the registration
+			// This will trigger the instrumentation if it's properly set up
+			if (runtime.evaluate && typeof runtime.evaluate === 'function') {
+				const state = { agentId: runtime.agentId };
+				runtime.evaluate(message, state as any).catch(err => {
+					elizaLogger.error(`Error evaluating agent registration: ${err.message}`);
+				});
+			}
+		} catch (error) {
+			elizaLogger.error(`Error during agent registration instrumentation: ${error.message}`);
+		}
 	}
 
 	public unregisterAgent(runtime: AgentRuntime) {

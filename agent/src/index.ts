@@ -52,6 +52,7 @@ import {
 import Database from "better-sqlite3";
 import yargs from "yargs";
 import { z } from "zod";
+import { getRuntimeInstrumentation } from './runtime-instrumentation';
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -514,7 +515,7 @@ export async function createAgent(
 ): Promise<AgentRuntime> {
 	elizaLogger.log(`Creating runtime for character ${character.name}`);
 
-	return new AgentRuntime({
+	const runtime = new AgentRuntime({
 		databaseAdapter: db,
 		token,
 		modelProvider: character.modelProvider,
@@ -578,6 +579,15 @@ export async function createAgent(
 		cacheManager: cache,
 		fetch: logFetch,
 	});
+
+	// Set up automatic instrumentation for all agents
+	const runtimeInstrumentation = getRuntimeInstrumentation();
+	
+	// This will attach to evaluate and other methods to automatically instrument
+	runtimeInstrumentation.attachToRuntime(runtime);
+	elizaLogger.info(`🔄 Instrumentation attached to runtime for agent ${runtime.agentId}`);
+
+	return runtime;
 }
 
 function initializeDbCache(character: Character, db: IDatabaseCacheAdapter) {
@@ -632,6 +642,33 @@ async function startAgent(
 		// report to console
 		elizaLogger.debug(`Started ${character.name} as ${runtime.agentId}`);
 
+		const startTime = Date.now();
+		
+		try {
+			// Trigger evaluate immediately after initialization to ensure tracing is working
+			const message = {
+				content: { text: `Agent started: ${character.name}` },
+				id: runtime.agentId,
+				userId: runtime.agentId,
+				roomId: runtime.agentId,
+				agentId: runtime.agentId,
+				createdAt: Date.now()
+			};
+			
+			// Create a minimal state
+			const state = { 
+				agentId: runtime.agentId,
+				agentName: character.name
+			};
+			
+			// Call evaluate to trigger instrumentation
+			runtime.evaluate(message, state as any).catch(err => {
+				elizaLogger.error(`Error evaluating agent start: ${err.message}`);
+			});
+		} catch (error) {
+			elizaLogger.error(`Error during agent start instrumentation: ${error.message}`);
+		}
+		
 		return runtime;
 	} catch (error) {
 		elizaLogger.error(
@@ -703,16 +740,33 @@ const startAgents = async () => {
 	}
 
 	// upload some agent functionality into directClient
-	directClient.startAgent = async (character) => {
-		// Handle plugins
-		character.plugins = await handlePluginImporting(character.plugins);
-
-		// wrap it so we don't have to inject directClient later
-		return startAgent(character, directClient);
-	};
-
+	directClient.startAgent = startAgent;
 	directClient.loadCharacterTryPath = loadCharacterTryPath;
 	directClient.jsonToCharacter = jsonToCharacter;
+
+	// Make sure Runtime Instrumentation is exposed to DirectClient
+	const runtimeInstrumentation = getRuntimeInstrumentation();
+	directClient.instrumentationAttached = false;
+	
+	// Add a method to DirectClient to ensure instrumentation is set up properly
+	const originalRegisterAgent = directClient.registerAgent.bind(directClient);
+	directClient.registerAgent = (runtime: AgentRuntime) => {
+		// Call the original method
+		originalRegisterAgent(runtime);
+		
+		// Ensure the runtime is instrumented
+		if (!directClient.instrumentationAttached) {
+			try {
+				// Attach the instrumentation wrapper to all POST request handlers
+				// Apply to each route handler that processes messages
+				elizaLogger.info(`🔌 Attaching instrumentation to DirectClient routes for agent ${runtime.agentId}`);
+				runtimeInstrumentation.attachToRuntime(runtime);
+				directClient.instrumentationAttached = true;
+			} catch (error) {
+				elizaLogger.error(`❌ Failed to attach instrumentation to DirectClient: ${error}`);
+			}
+		}
+	};
 
 	directClient.start(serverPort);
 
@@ -745,3 +799,9 @@ if (
 		console.error("unhandledRejection", err);
 	});
 }
+
+// Initialize the runtime instrumentation at the module level
+const runtimeInstrumentation = getRuntimeInstrumentation();
+
+// Export the instrumentation for direct access if needed
+export { runtimeInstrumentation };
