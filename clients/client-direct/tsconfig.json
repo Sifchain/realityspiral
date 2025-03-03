@@ -11,10 +11,6 @@
 			"@realityspiral/agent/*": ["agent/src/*"]
 		}
 	},
-	"include": [
-		"src/**/*.ts"
-	],
-	"references": [
-		{ "path": "../../agent" }
-	]
+	"include": ["src/**/*.ts"],
+	"references": [{ "path": "../../agent" }]
 }

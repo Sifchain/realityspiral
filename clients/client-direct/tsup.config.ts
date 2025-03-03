@@ -30,7 +30,7 @@ export default defineConfig({
 		"@opentelemetry/semantic-conventions",
 		"@opentelemetry/context-async-hooks",
 		"@opentelemetry/exporter-trace-otlp-http",
-		
+
 		// Other modules to externalize
 		"@reflink/reflink",
 		"@node-llama-cpp",
