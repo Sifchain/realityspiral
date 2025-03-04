@@ -886,10 +886,9 @@ const stakingLiquidityPoolingProvider = {
 	},
 };
 
-
 const whatIsNextProvider: Provider = {
 	get: async (runtime: IAgentRuntime, _message: Memory) => {
-	  return `Here's what's next:
+		return `Here's what's next:
 	  1. New Trading Capabilities:
 	  - Margin trading
 	  - Short selling
@@ -900,8 +899,7 @@ const whatIsNextProvider: Provider = {
 	  
 	  Stay tuned for more updates and features!`;
 	},
-  };
-
+};
 
 const currentPriceProvider = {
 	get: async (_runtime: IAgentRuntime, _message: Memory) => {
