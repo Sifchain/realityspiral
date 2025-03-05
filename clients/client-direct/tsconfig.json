@@ -2,7 +2,15 @@
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"outDir": "dist",
-		"rootDir": "src"
+		"composite": true,
+		"declaration": true,
+		"declarationMap": true,
+		"rootDir": "src",
+		"baseUrl": "../../",
+		"paths": {
+			"@realityspiral/agent/*": ["agent/src/*"]
+		}
 	},
-	"include": ["src/**/*.ts"]
+	"include": ["src/**/*.ts"],
+	"references": [{ "path": "../../agent" }]
 }

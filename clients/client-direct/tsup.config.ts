@@ -6,16 +6,35 @@ export default defineConfig({
 	sourcemap: true,
 	clean: true,
 	format: ["esm"], // Ensure you're targeting CommonJS
+	dts: false, // Skip TypeScript declaration generation
+	noExternal: [],
 	external: [
-		"dotenv", // Externalize dotenv to prevent bundling
-		"fs", // Externalize fs to use Node.js built-in module
-		"path", // Externalize other built-ins if necessary
+		// Node.js built-ins
+		"dotenv",
+		"fs",
+		"path",
+		"node:fs",
+		"node:path",
+		"async_hooks",
+		"node:async_hooks",
+		"http",
+		"https",
+		"util",
+		"node:util",
+
+		// OpenTelemetry modules
+		"@opentelemetry/api",
+		"@opentelemetry/sdk-trace-base",
+		"@opentelemetry/sdk-trace-node",
+		"@opentelemetry/resources",
+		"@opentelemetry/semantic-conventions",
+		"@opentelemetry/context-async-hooks",
+		"@opentelemetry/exporter-trace-otlp-http",
+
+		// Other modules to externalize
 		"@reflink/reflink",
 		"@node-llama-cpp",
-		"https",
-		"http",
 		"agentkeepalive",
 		"safe-buffer",
-		// Add other modules you want to externalize
 	],
 });

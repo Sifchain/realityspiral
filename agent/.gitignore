@@ -1,4 +1,4 @@
-*.ts
+# *.ts
 !config.ts
 !index.ts
 !character.ts
