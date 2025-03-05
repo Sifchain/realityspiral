@@ -1,11 +1,15 @@
 import { useState } from "react";
 
 export const use = () => {
+	type Room = {
+		room_id: string;
+		start_time: string;
+	};
+
 	const API_BASE_URL = `${import.meta.env.VITE_SERVER_URL}/traces`;
 
 	const [uniqueAgents, setUniqueAgents] = useState<string[]>([]);
-	const [uniqueRooms, setUniqueRooms] = useState<string[]>([]);
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	const [uniqueRooms, setUniqueRooms] = useState<Room[]>([]); // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	const [traceData, setTraceData] = useState<any[]>([]);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
@@ -41,7 +45,7 @@ export const use = () => {
 			if (!response.ok)
 				throw new Error(`HTTP error! Status: ${response.status}`);
 			const data = await response.json();
-			setUniqueRooms(data.unique_room_ids || []);
+			setUniqueRooms(data.rooms || []);
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (err: any) {
 			setError(err.message);
