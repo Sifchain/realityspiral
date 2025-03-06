@@ -1,0 +1,29 @@
+{
+	"name": "@realityspiral/plugin-github",
+	"version": "0.1.0",
+	"main": "dist/index.js",
+	"type": "module",
+	"types": "dist/index.d.ts",
+	"dependencies": {
+		"@elizaos/core": "^0.1.9",
+		"@derivation-tech/context": "^0.1.0",
+		"@derivation-tech/tx-plugin": "^0.1.0",
+		"@synfutures/sdks-perp": "^0.0.6",
+		"zod": "3.23.8",
+		"ethers": "^6.13.5"
+	},
+	"devDependencies": {
+		"@types/glob": "8.1.0",
+		"@types/node": "^20.0.0",
+		"eslint": "9.13.0",
+		"eslint-config-prettier": "9.1.0",
+		"eslint-plugin-prettier": "5.2.1",
+		"eslint-plugin-vitest": "0.5.4",
+		"tsup": "8.3.5"
+	},
+	"scripts": {
+		"build": "tsup --format esm --dts",
+		"dev": "tsup --format esm --dts --watch",
+		"lint": "eslint . --fix"
+	}
+}
