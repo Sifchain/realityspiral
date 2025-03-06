@@ -10,51 +10,51 @@ import {
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import type { Side } from "@synfutures/sdks-perp";
+import { Wallet } from "ethers";
 import {
-	initContext,
+	closePositionTemplate,
+	depositToGateTemplate,
+	getPortfolioTemplate,
+	placeMarketOrderTemplate,
+	withdrawFromGateTemplate,
+} from "../templates";
+import {
+	ClosePositionContent,
+	ClosePositionSchema,
+	DepositToGateContent,
+	DepositToGateSchema,
+	GetPortfolioContent,
+	GetPortfolioSchema,
+	PlaceMarketOrderContent,
+	PlaceMarketOrderSchema,
+	WithdrawFromGateContent,
+	WithdrawFromGateSchema,
+	isClosePositionContent,
+	isDepositToGateContent,
+	isGetPortfolioContent,
+	isPlaceMarketOrderContent,
+	isWithdrawFromGateContent,
+} from "../types";
+import {
+	addLiquidity,
+	adjustPositionLeverage,
+	adjustPositionMargin,
+	cancelAllLimitOrders,
+	cancelLimitOrder,
+	closePosition,
+	depositToGate,
 	getAllInstruments,
 	getInstrumentBySymbol,
 	getPortfolio,
-	depositToGate,
-	withdrawFromGate,
-	placeMarketOrder,
-	closePosition,
-	placeLimitOrder,
-	cancelLimitOrder,
+	initContext,
 	placeBatchScaledLimitOrders,
-	cancelAllLimitOrders,
-	adjustPositionLeverage,
-	adjustPositionMargin,
-	addLiquidity,
-	removeLiquidity,
 	placeCrossMarketOrder,
+	placeLimitOrder,
+	placeMarketOrder,
+	removeLiquidity,
+	withdrawFromGate,
 } from "../utils/perpUtils";
-import { Wallet } from "ethers";
-import type { Side } from "@synfutures/sdks-perp";
-import {
-	DepositToGateContent,
-	PlaceMarketOrderContent,
-	ClosePositionContent,
-	WithdrawFromGateContent,
-	GetPortfolioContent,
-	isDepositToGateContent,
-	isPlaceMarketOrderContent,
-	isClosePositionContent,
-	isWithdrawFromGateContent,
-	isGetPortfolioContent,
-	DepositToGateSchema,
-	PlaceMarketOrderSchema,
-	ClosePositionSchema,
-	WithdrawFromGateSchema,
-	GetPortfolioSchema,
-} from "../types";
-import {
-	depositToGateTemplate,
-	placeMarketOrderTemplate,
-	closePositionTemplate,
-	withdrawFromGateTemplate,
-	getPortfolioTemplate,
-} from "../templates";
 
 // Define actions for each utility function
 
