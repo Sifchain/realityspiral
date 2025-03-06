@@ -126,12 +126,21 @@ export const createMemoriesFromFilesAction: Action = {
 			template: createMemoriesFromFilesTemplate,
 		});
 
+		// write context to a file
+		await fs.writeFile("/tmp/create-memories-from-files-context.txt", context);
+
 		const details = await generateObject({
 			runtime,
 			context,
 			modelClass: ModelClass.SMALL,
 			schema: CreateMemoriesFromFilesSchema,
 		});
+
+		// write details to a file
+		await fs.writeFile(
+			"/tmp/create-memories-from-files-details.txt",
+			JSON.stringify(details, null, 2),
+		);
 
 		if (!isCreateMemoriesFromFilesContent(details.object)) {
 			throw new Error("Invalid content");

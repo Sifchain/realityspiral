@@ -45,6 +45,8 @@ export async function initRepo(
 	branch: string,
 ) {
 	const repoPath = getRepoPath(owner, repo);
+	elizaLogger.info(`Repository path: ${repoPath}`);
+
 	await createReposDirectory(owner);
 	await cloneOrPullRepository(token, owner, repo, repoPath, branch);
 	await checkoutBranch(repoPath, branch);
@@ -65,20 +67,21 @@ export async function cloneOrPullRepository(
 			`URL: https://github.com/${owner}/${repo}.git @ branch: ${branch}`,
 		);
 
-		// Clone or pull repository
-		if (!existsSync(repoPath)) {
-			const git = simpleGit();
-			await git.clone(
-				`https://${token}@github.com/${owner}/${repo}.git`,
-				repoPath,
-				{
-					"--branch": branch,
-				},
-			);
-		} else {
-			const git = simpleGit(repoPath);
-			await git.pull("origin", branch);
+		if (existsSync(repoPath)) {
+			// Remove existing repository if it exists
+			elizaLogger.info(`Removing existing repository at ${repoPath}`);
+			await fs.rm(repoPath, { recursive: true, force: true });
 		}
+
+		// Clone repository
+		const git = simpleGit();
+		await git.clone(
+			`https://${token}@github.com/${owner}/${repo}.git`,
+			repoPath,
+			{
+				"--branch": branch,
+			},
+		);
 	} catch (error) {
 		elizaLogger.error(
 			`Error cloning or pulling repository ${owner}/${repo}:`,
@@ -114,15 +117,41 @@ export async function writeFiles(
 	}
 }
 
+export async function getGitHubUserInfo(token: string) {
+	try {
+		const octokit = new Octokit({
+			auth: token,
+		});
+
+		const { data: user } = await octokit.users.getAuthenticated();
+		return {
+			name: user.name || user.login,
+			email: `${user.id}+${user.login}@users.noreply.github.com`,
+		};
+	} catch (error) {
+		elizaLogger.error("Error getting GitHub user info:", error);
+		throw new Error(`Error getting GitHub user info: ${error}`);
+	}
+}
+
 export async function commitAndPushChanges(
+	token: string,
 	repoPath: string,
 	message: string,
 	branch?: string,
 ): Promise<CommitResult> {
 	try {
 		const git = simpleGit(repoPath);
+
+		// Get GitHub user info
+		const userInfo = await getGitHubUserInfo(token);
+
+		await git.addConfig("user.name", userInfo.name);
+		await git.addConfig("user.email", userInfo.email);
+
 		await git.add(".");
 		const commit = await git.commit(message);
+
 		// biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
 		let pushResult;
 		if (branch) {
@@ -254,7 +283,7 @@ export async function retrieveFiles(repoPath: string, gitPath: string) {
 		ignorePatterns.push(...gitignoreLines);
 	}
 
-	elizaLogger.info(`Ignore patterns:\n${ignorePatterns.join("\n")}`);
+	elizaLogger.debug(`Ignore patterns:\n${ignorePatterns.join("\n")}`);
 
 	const files = await glob(searchPath, {
 		nodir: true,

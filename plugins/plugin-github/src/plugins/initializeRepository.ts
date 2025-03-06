@@ -21,6 +21,7 @@ import {
 	cloneOrPullRepository,
 	createReposDirectory,
 	getRepoPath,
+	initRepo,
 } from "../utils";
 
 export const initializeRepositoryAction: Action = {
@@ -87,25 +88,13 @@ export const initializeRepositoryAction: Action = {
 			`Initializing repository ${content.owner}/${content.repo} on branch ${content.branch}...`,
 		);
 
-		const repoPath = getRepoPath(content.owner, content.repo);
-
-		elizaLogger.info(`Repository path: ${repoPath}`);
-
 		try {
 			const token = runtime.getSetting("GITHUB_API_TOKEN");
 			if (!token) {
 				throw new Error("GITHUB_API_TOKEN is not set");
 			}
 
-			await createReposDirectory(content.owner);
-			await cloneOrPullRepository(
-				token,
-				content.owner,
-				content.repo,
-				repoPath,
-				content.branch,
-			);
-			await checkoutBranch(repoPath, content.branch);
+			await initRepo(token, content.owner, content.repo, content.branch);
 
 			elizaLogger.info(
 				`Repository initialized successfully! URL: https://github.com/${content.owner}/${content.repo} @ branch: ${content.branch}`,
