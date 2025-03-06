@@ -3,13 +3,13 @@ export * from "./utils/perpUtils";
 
 import type { Plugin } from "@elizaos/core";
 import {
-	initContextAction,
-	getAllInstrumentsAction,
-	depositToGateAction,
-	placeMarketOrderAction,
 	closePositionAction,
-	withdrawFromGateAction,
+	depositToGateAction,
+	getAllInstrumentsAction,
 	getPortfolioAction,
+	initContextAction,
+	placeMarketOrderAction,
+	withdrawFromGateAction,
 } from "./plugins/perps";
 
 export const synfuturesPlugin: Plugin = {
