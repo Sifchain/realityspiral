@@ -98,7 +98,7 @@ export async function depositToGate(
 	signer: ethers.Wallet,
 ) {
 	const token = await ctx.getTokenInfo(tokenSymbol);
-	await ctx.perp.gate.deposit(
+	return await ctx.perp.gate.deposit(
 		token.address,
 		parseAmount(amount, token.decimals),
 		{ signer: signer as any },
@@ -118,7 +118,7 @@ export async function withdrawFromGate(
 	signer: ethers.Wallet,
 ) {
 	const token = await ctx.getTokenInfo(tokenSymbol);
-	await ctx.perp.gate.withdraw(
+	return await ctx.perp.gate.withdraw(
 		token.address,
 		parseAmount(amount, token.decimals),
 		{ signer: signer as any },
@@ -162,7 +162,7 @@ export async function placeMarketOrder(
 		leverage: parseAmount(leverage),
 	});
 
-	await ctx.perp.instrument.placeMarketOrder(
+	return await ctx.perp.instrument.placeMarketOrder(
 		{
 			instrumentAddr: instrument.instrumentAddr,
 			expiry,
@@ -211,7 +211,7 @@ export async function closePosition(
 		slippage,
 	});
 
-	await ctx.perp.instrument.placeMarketOrder(
+	return await ctx.perp.instrument.placeMarketOrder(
 		{
 			instrumentAddr: instrument.instrumentAddr,
 			expiry,
@@ -274,7 +274,7 @@ export async function placeLimitOrder(
 		leverage: parseAmount(leverage),
 	});
 
-	await ctx.perp.instrument.placeLimitOrder(
+	return await ctx.perp.instrument.placeLimitOrder(
 		{
 			instrumentAddr: instrument.instrumentAddr,
 			expiry,
@@ -303,7 +303,7 @@ export async function cancelLimitOrder(
 	const instrument = await getInstrumentBySymbol(instrumentSymbol);
 	const expiry = 4294967295; // PERP_EXPIRY (type(uint32).max)
 
-	await ctx.perp.instrument.cancelLimitOrder(
+	return await ctx.perp.instrument.cancelLimitOrder(
 		{
 			instrumentAddr: instrument.instrumentAddr,
 			expiry,
@@ -385,7 +385,7 @@ export async function placeBatchScaledLimitOrders(
 	});
 
 	// Place the batch order
-	await ctx.perp.instrument.batchPlaceLimitOrder(
+	return await ctx.perp.instrument.batchPlaceLimitOrder(
 		{
 			instrumentAddr: instrument.instrumentAddr,
 			expiry,
@@ -429,7 +429,7 @@ export async function cancelAllLimitOrders(
 	const ticks = orders.map((order) => order.tick);
 
 	// Cancel all orders in a batch
-	await ctx.perp.instrument.batchCancelLimitOrder(
+	return await ctx.perp.instrument.batchCancelLimitOrder(
 		{
 			instrumentAddr: instrument.instrumentAddr,
 			expiry,
@@ -478,7 +478,7 @@ export async function adjustPositionLeverage(
 	});
 
 	// Adjust the margin to achieve the desired leverage
-	await ctx.perp.instrument.adjustMargin(
+	return await ctx.perp.instrument.adjustMargin(
 		{
 			instrumentAddr: instrument.instrumentAddr,
 			expiry,
@@ -533,7 +533,7 @@ export async function adjustPositionMargin(
 	});
 
 	// Adjust the margin
-	await ctx.perp.instrument.adjustMargin(
+	return await ctx.perp.instrument.adjustMargin(
 		{
 			instrumentAddr: instrument.instrumentAddr,
 			expiry,
@@ -588,7 +588,7 @@ export async function addLiquidity(
 	});
 
 	// Add liquidity
-	await ctx.perp.instrument.addLiquidity(
+	return await ctx.perp.instrument.addLiquidity(
 		{
 			instrumentAddr: instrument.instrumentAddr,
 			expiry,
@@ -639,7 +639,7 @@ export async function removeLiquidity(
 	});
 
 	// Remove liquidity
-	await ctx.perp.instrument.removeLiquidity(
+	return await ctx.perp.instrument.removeLiquidity(
 		{
 			instrumentAddr: instrument.instrumentAddr,
 			expiry,
@@ -719,7 +719,7 @@ export async function placeCrossMarketOrder(
 	});
 
 	// Place the cross market order
-	await ctx.perp.instrument.placeCrossMarketOrder(
+	return await ctx.perp.instrument.placeCrossMarketOrder(
 		{
 			instrumentAddr: instrument.instrumentAddr,
 			expiry,
