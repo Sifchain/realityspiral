@@ -2,15 +2,13 @@ export const depositToGateTemplate = `
 Extract the following details for depositing to the gate:
 - **tokenSymbol** (string): The symbol of the token to deposit (e.g., USDC).
 - **amount** (string): The amount to deposit as a string.
-- **privateKey** (string): The private key for the wallet to sign the transaction.
 
 Provide the details in the following JSON format:
 
 \`\`\`json
 {
     "tokenSymbol": "<token_symbol>",
-    "amount": "<amount>",
-    "privateKey": "<private_key>"
+    "amount": "<amount>"
 }
 \`\`\`
 
@@ -24,7 +22,6 @@ Extract the following details for placing a market order:
 - **side** (string): The side of the order (LONG or SHORT).
 - **quoteAmount** (string): The amount in quote asset to use for the order.
 - **leverage** (string): The desired leverage as a string.
-- **privateKey** (string): The private key for the wallet to sign the transaction.
 
 Provide the details in the following JSON format:
 
@@ -33,8 +30,7 @@ Provide the details in the following JSON format:
     "instrumentSymbol": "<instrument_symbol>",
     "side": "<side>",
     "quoteAmount": "<quote_amount>",
-    "leverage": "<leverage>",
-    "privateKey": "<private_key>"
+    "leverage": "<leverage>"
 }
 \`\`\`
 
@@ -45,14 +41,12 @@ Here are the recent user messages for context:
 export const closePositionTemplate = `
 Extract the following details for closing a position:
 - **instrumentSymbol** (string): The symbol of the instrument (e.g., BTC-USDC-LINK).
-- **privateKey** (string): The private key for the wallet to sign the transaction.
 
 Provide the details in the following JSON format:
 
 \`\`\`json
 {
-    "instrumentSymbol": "<instrument_symbol>",
-    "privateKey": "<private_key>"
+    "instrumentSymbol": "<instrument_symbol>"
 }
 \`\`\`
 
@@ -64,15 +58,13 @@ export const withdrawFromGateTemplate = `
 Extract the following details for withdrawing from the gate:
 - **tokenSymbol** (string): The symbol of the token to withdraw (e.g., USDC).
 - **amount** (string): The amount to withdraw as a string.
-- **privateKey** (string): The private key for the wallet to sign the transaction.
 
 Provide the details in the following JSON format:
 
 \`\`\`json
 {
     "tokenSymbol": "<token_symbol>",
-    "amount": "<amount>",
-    "privateKey": "<private_key>"
+    "amount": "<amount>"
 }
 \`\`\`
 

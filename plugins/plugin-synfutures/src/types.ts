@@ -3,7 +3,6 @@ import { z } from "zod";
 export const DepositToGateSchema = z.object({
 	tokenSymbol: z.string(),
 	amount: z.string(),
-	privateKey: z.string(),
 });
 
 export const PlaceMarketOrderSchema = z.object({
@@ -11,18 +10,15 @@ export const PlaceMarketOrderSchema = z.object({
 	side: z.enum(["LONG", "SHORT"]),
 	quoteAmount: z.string(),
 	leverage: z.string(),
-	privateKey: z.string(),
 });
 
 export const ClosePositionSchema = z.object({
 	instrumentSymbol: z.string(),
-	privateKey: z.string(),
 });
 
 export const WithdrawFromGateSchema = z.object({
 	tokenSymbol: z.string(),
 	amount: z.string(),
-	privateKey: z.string(),
 });
 
 export const GetPortfolioSchema = z.object({

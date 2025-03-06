@@ -12,6 +12,7 @@ import {
 } from "@elizaos/core";
 import type { Side } from "@synfutures/sdks-perp";
 import { Wallet } from "ethers";
+import * as ethers from "ethers";
 import {
 	closePositionTemplate,
 	depositToGateTemplate,
@@ -56,6 +57,21 @@ import {
 	withdrawFromGate,
 } from "../utils/perpUtils";
 
+// Add a flag to track context initialization
+let isContextInitialized = false;
+
+// Create a singleton for provider and signer
+let provider: ethers.JsonRpcProvider | null = null;
+let signer: ethers.Wallet | null = null;
+
+function getProviderAndSigner() {
+	if (!provider || !signer) {
+		provider = new ethers.JsonRpcProvider(process.env.BASE_RPC_URL);
+		signer = new ethers.Wallet(process.env.WALLET_PRIVATE_KEY, provider);
+	}
+	return { provider, signer };
+}
+
 // Define actions for each utility function
 
 export const initContextAction: Action = {
@@ -88,8 +104,11 @@ export const initContextAction: Action = {
 	) => {
 		elizaLogger.info("Initializing SynFutures Perp context...");
 		try {
-			await initContext();
-			elizaLogger.info("Context initialized successfully.");
+			if (!isContextInitialized) {
+				await initContext();
+				isContextInitialized = true;
+				elizaLogger.info("Context initialized successfully.");
+			}
 			callback({ text: "Context initialized successfully." }, []);
 		} catch (error) {
 			elizaLogger.error("Error initializing context: ", error.message);
@@ -128,6 +147,11 @@ export const getAllInstrumentsAction: Action = {
 	) => {
 		elizaLogger.info("Fetching all instruments...");
 		try {
+			if (!isContextInitialized) {
+				await initContext();
+				isContextInitialized = true;
+				elizaLogger.info("Context initialized successfully.");
+			}
 			const instruments = await getAllInstruments();
 			elizaLogger.info("Instruments retrieved successfully.", instruments);
 			callback({ text: `Retrieved ${instruments.length} instruments.` }, []);
@@ -168,6 +192,14 @@ export const depositToGateAction: Action = {
 	) => {
 		elizaLogger.info("Depositing to gate...");
 		try {
+			if (!isContextInitialized) {
+				await initContext();
+				isContextInitialized = true;
+				elizaLogger.info("Context initialized successfully.");
+			}
+
+			const { signer } = getProviderAndSigner();
+
 			if (!state) {
 				state = (await runtime.composeState(message, {})) as State;
 			} else {
@@ -191,8 +223,7 @@ export const depositToGateAction: Action = {
 				throw new Error("Invalid content");
 			}
 
-			const { tokenSymbol, amount, privateKey } = details.object;
-			const signer = new Wallet(privateKey);
+			const { tokenSymbol, amount } = details.object;
 			await depositToGate(tokenSymbol, amount, signer);
 			elizaLogger.info("Deposit successful.");
 			callback({ text: "Deposited successfully." }, []);
@@ -233,6 +264,14 @@ export const placeMarketOrderAction: Action = {
 	) => {
 		elizaLogger.info("Placing market order...");
 		try {
+			if (!isContextInitialized) {
+				await initContext();
+				isContextInitialized = true;
+				elizaLogger.info("Context initialized successfully.");
+			}
+
+			const { signer } = getProviderAndSigner();
+
 			if (!state) {
 				state = (await runtime.composeState(message, {})) as State;
 			} else {
@@ -256,9 +295,7 @@ export const placeMarketOrderAction: Action = {
 				throw new Error("Invalid content");
 			}
 
-			const { instrumentSymbol, side, quoteAmount, leverage, privateKey } =
-				details.object;
-			const signer = new Wallet(privateKey);
+			const { instrumentSymbol, side, quoteAmount, leverage } = details.object;
 			await placeMarketOrder(
 				instrumentSymbol,
 				side as unknown as Side,
@@ -328,8 +365,8 @@ export const closePositionAction: Action = {
 				throw new Error("Invalid content");
 			}
 
-			const { instrumentSymbol, privateKey } = details.object;
-			const signer = new Wallet(privateKey);
+			const { instrumentSymbol } = details.object;
+			const { signer } = getProviderAndSigner();
 			await closePosition(instrumentSymbol, signer);
 			elizaLogger.info("Position closed successfully.");
 			callback({ text: "Position closed successfully." }, []);
@@ -393,8 +430,8 @@ export const withdrawFromGateAction: Action = {
 				throw new Error("Invalid content");
 			}
 
-			const { tokenSymbol, amount, privateKey } = details.object;
-			const signer = new Wallet(privateKey);
+			const { tokenSymbol, amount } = details.object;
+			const { signer } = getProviderAndSigner();
 			await withdrawFromGate(tokenSymbol, amount, signer);
 			elizaLogger.info("Withdrawal successful.");
 			callback({ text: "Withdrawal successful." }, []);
