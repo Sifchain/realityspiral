@@ -6,6 +6,7 @@
  * to interact with the SynFutures Perpetual contracts.
  */
 
+import { elizaLogger } from "@elizaos/core";
 import { Side } from "@synfutures/sdks-perp";
 import dotenv from "dotenv";
 import { ethers } from "ethers";
@@ -21,33 +22,6 @@ import {
 	withdrawFromGate,
 } from "./perpUtils";
 
-// Create a simple logger for demonstration purposes
-class Logger {
-	ERROR = "ERROR";
-	WARN = "WARN";
-	INFO = "INFO";
-	DEBUG = "DEBUG";
-
-	error(message: string, ...args: any[]) {
-		console.error(`[${this.ERROR}] ${message}`, ...args);
-	}
-
-	warn(message: string, ...args: any[]) {
-		console.warn(`[${this.WARN}] ${message}`, ...args);
-	}
-
-	info(message: string, ...args: any[]) {
-		console.info(`[${this.INFO}] ${message}`, ...args);
-	}
-
-	debug(message: string, ...args: any[]) {
-		console.debug(`[${this.DEBUG}] ${message}`, ...args);
-	}
-}
-
-// Export singleton logger instance
-export const elizaLogger = new Logger();
-
 dotenv.config();
 
 async function main() {
@@ -57,13 +31,13 @@ async function main() {
 		throw new Error("BASE_RPC_URL environment variable is required");
 	}
 
-	if (!process.env.PRIVATE_KEY) {
-		throw new Error("PRIVATE_KEY environment variable is required");
+	if (!process.env.WALLET_PRIVATE_KEY) {
+		throw new Error("WALLET_PRIVATE_KEY environment variable is required");
 	}
 
 	// Create a provider directly
 	const provider = new ethers.JsonRpcProvider(process.env.BASE_RPC_URL);
-	const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+	const signer = new ethers.Wallet(process.env.WALLET_PRIVATE_KEY, provider);
 
 	// Initialize the context
 	await initContext();
