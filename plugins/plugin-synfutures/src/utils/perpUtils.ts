@@ -735,3 +735,5 @@ export async function placeCrossMarketOrder(
 		{ signer: signer as any },
 	);
 }
+
+export type { Side };
