@@ -44,9 +44,9 @@ async function main() {
 	elizaLogger.info("Context initialized successfully");
 
 	// Example 1: Deposit tokens to Gate for trading
-	elizaLogger.info("EXAMPLE 1: Depositing 100 USDC to Gate...");
+	elizaLogger.info("EXAMPLE 1: Depositing 1 USDC to Gate...");
 	try {
-		await depositToGate("USDC", "100", signer);
+		await depositToGate("USDC", "1", signer);
 		elizaLogger.info(
 			"Deposit completed successfully - funds are now available for trading",
 		);
@@ -59,7 +59,7 @@ async function main() {
 		"EXAMPLE 2: Placing a LONG market order on BTC-USDC-LINK with 10x leverage...",
 	);
 	try {
-		await placeMarketOrder("BTC-USDC-LINK", Side.LONG, "50", "10", signer);
+		await placeMarketOrder("BTC-USDC-LINK", Side.LONG, "1", "10", signer);
 		elizaLogger.info(
 			"Market order placed successfully - you now have a LONG position",
 		);
@@ -73,7 +73,7 @@ async function main() {
 	);
 	try {
 		// 100 tick offset means roughly 1% higher than current price
-		await placeLimitOrder("ETH-USDC-LINK", Side.SHORT, "50", "5", 100, signer);
+		await placeLimitOrder("ETH-USDC-LINK", Side.SHORT, "1", "5", 100, signer);
 		elizaLogger.info(
 			"Limit order placed successfully - it will execute when price reaches the target level",
 		);
@@ -91,9 +91,9 @@ async function main() {
 	}
 
 	// Example 5: Withdraw funds from Gate
-	elizaLogger.info("EXAMPLE 5: Withdrawing 50 USDC from Gate...");
+	elizaLogger.info("EXAMPLE 5: Withdrawing 1 USDC from Gate...");
 	try {
-		await withdrawFromGate("USDC", "50", signer);
+		await withdrawFromGate("USDC", "1", signer);
 		elizaLogger.info("Withdrawal completed successfully");
 	} catch (error) {
 		elizaLogger.error("Withdrawal failed:", error);
@@ -129,8 +129,7 @@ async function main() {
 	}
 }
 
-// This would typically be called to execute the demo
-// main().catch(console.error);
+main().catch(console.error);
 
 // Export the main function for external use
 export default main;
