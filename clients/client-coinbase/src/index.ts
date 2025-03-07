@@ -578,9 +578,7 @@ export const calculateSellTradePNL = async (
 	elizaLogger.info(
 		`amountSellInCurrencyInBaseUnits ${amountSellInCurrencyInBaseUnits}`,
 	);
-	elizaLogger.info(`pnlCurrencyInBaseUnits ${pnlCurrencyInBaseUnits}`);
-	elizaLogger.info(`pnlUSD ${pnlUSD}`);
-	const pnlUSD = calculateSellTradePNLRaw(
+	const pnlUSD = await calculateSellTradePNLRaw(
 		initialBuyAmountInCurrency,
 		amountSellInCurrencyInBaseUnits,
 		price,
