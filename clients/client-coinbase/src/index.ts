@@ -361,7 +361,7 @@ Generate only the tweet text, no commentary or markdown.`;
 			return;
 		}
 		elizaLogger.info(`txHash ${txHash}`);
-		let amountInUSD;
+		let amountInUSD: number;
 		if (buy) {
 			amountInUSD = amount;
 		} else {
@@ -567,7 +567,7 @@ export const calculateOverallPNL = async (
 };
 
 export const calculateSellTradePNL = async (
-	runtime: IAgentRuntime,
+	_runtime: IAgentRuntime,
 	initialBuyAmountInCurrency: number,
 	amountSellInCurrencyInBaseUnits: number,
 	price: number,
@@ -887,7 +887,7 @@ const stakingLiquidityPoolingProvider = {
 };
 
 const whatIsNextProvider: Provider = {
-	get: async (runtime: IAgentRuntime, _message: Memory) => {
+	get: async (_runtime: IAgentRuntime, _message: Memory) => {
 		return `Here's what's next:
 	  1. New Trading Capabilities:
 	  - Margin trading

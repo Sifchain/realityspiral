@@ -1104,7 +1104,7 @@ export const implementFeatureAction: Action = {
 
 			// Initialize repository
 			await initRepo(
-				runtime.getSetting("GITHUB_API_TOKEN")!,
+				runtime.getSetting("GITHUB_API_TOKEN") || "",
 				content.owner,
 				content.repo,
 				content.base || "main",

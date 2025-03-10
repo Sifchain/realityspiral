@@ -1,7 +1,9 @@
 import * as fs from "node:fs";
+import type http from "node:http";
 import * as path from "node:path";
 import {
 	type AgentRuntime,
+	type Character,
 	type Client,
 	type Content,
 	type IAgentRuntime,
@@ -19,6 +21,7 @@ import {
 	settings,
 	stringToUuid,
 } from "@elizaos/core";
+import type { RuntimeLike } from "@realityspiral/agent/runtime-instrumentation";
 import bodyParser from "body-parser";
 import cors from "cors";
 import express, { type Request as ExpressRequest } from "express";
@@ -112,10 +115,16 @@ Response format should be formatted in a JSON block like this:
 export class DirectClient {
 	public app: express.Application;
 	private agents: Map<string, AgentRuntime>; // container management
-	private server: any; // Store server instance
-	public startAgent: Function; // Store startAgent functor
-	public loadCharacterTryPath: Function; // Store loadCharacterTryPath functor
-	public jsonToCharacter: Function; // Store jsonToCharacter functor
+	private server: http.Server; // Store server instance
+	public startAgent: (
+		character: Character,
+		directClient: DirectClient,
+	) => Promise<AgentRuntime>; // Store startAgent functor
+	public loadCharacterTryPath: (characterPath: string) => Promise<Character>; // Store loadCharacterTryPath functor
+	public jsonToCharacter: (
+		filePath: string,
+		character: Record<string, unknown>,
+	) => Promise<Character>; // Store jsonToCharacter functor
 	public instrumentationAttached = false; // Track if instrumentation is attached
 
 	constructor() {
@@ -291,13 +300,17 @@ export class DirectClient {
 				}
 
 				// Ensure the runtime has instrumentation attached
-				runtimeInstrumentation.attachToRuntime(runtime);
+				runtimeInstrumentation.attachToRuntime(
+					runtime as unknown as RuntimeLike,
+				);
 
 				const startTime = Date.now();
 				const messageId = stringToUuid(Date.now().toString());
 
 				// Generate a session ID if not available
-				const sessionId = (runtime as any).sessionId || `session-${Date.now()}`;
+				const sessionId =
+					(runtime as unknown as RuntimeLike).sessionId ||
+					`session-${Date.now()}`;
 
 				// Log message reception event with detailed context
 				instrumentation.logEvent({
@@ -314,7 +327,7 @@ export class DirectClient {
 						characterName: runtime.character?.name || "Unknown",
 						timestamp: startTime,
 						client: "direct",
-						hasAttachments: req.file ? true : false,
+						hasAttachments: !!req.file,
 					},
 				});
 
@@ -580,6 +593,7 @@ export class DirectClient {
 						agentId: runtime.agentId,
 						roomId,
 						userId,
+						agentResponse: response.text,
 						totalProcessingTime: Date.now() - startTime,
 						suppressedInitialMessage: !!shouldSuppressInitialMessage,
 						hasAdditionalMessages: message !== null,
@@ -1294,11 +1308,13 @@ export class DirectClient {
 			// This will trigger the instrumentation if it's properly set up
 			if (runtime.evaluate && typeof runtime.evaluate === "function") {
 				const state = { agentId: runtime.agentId };
-				runtime.evaluate(message, state as any).catch((err) => {
-					elizaLogger.error(
-						`Error evaluating agent registration: ${err.message}`,
-					);
-				});
+				runtime
+					.evaluate(message, state as Record<string, unknown>)
+					.catch((err) => {
+						elizaLogger.error(
+							`Error evaluating agent registration: ${err.message}`,
+						);
+					});
 			}
 		} catch (error) {
 			elizaLogger.error(
