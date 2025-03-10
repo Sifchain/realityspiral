@@ -327,16 +327,20 @@ Generate only the tweet text, no commentary or markdown.`;
 			1000,
 		);
 		const sellTradePNL = await calculateSellTradePNL(
-			this.initialBuyAmountInCurrency !== null ? this.initialBuyAmountInCurrency : amountSellInCurrencyInBaseUnits,
+			this.initialBuyAmountInCurrency !== null
+				? this.initialBuyAmountInCurrency
+				: amountSellInCurrencyInBaseUnits,
 			amountSellInCurrencyInBaseUnits,
 			Number(price),
-			tokenDecimals
+			tokenDecimals,
 		);
 		const rawSellTradePNL = await calculateSellTradePNLRaw(
-			this.initialBuyAmountInCurrency !== null ? this.initialBuyAmountInCurrency : amountSellInCurrencyInBaseUnits,
+			this.initialBuyAmountInCurrency !== null
+				? this.initialBuyAmountInCurrency
+				: amountSellInCurrencyInBaseUnits,
 			amountSellInCurrencyInBaseUnits,
 			Number(price),
-			tokenDecimals
+			tokenDecimals,
 		);
 
 		if (rawSellTradePNL > 0) {
@@ -568,7 +572,6 @@ export const calculateOverallPNL = async (
 };
 
 export const calculateSellTradePNL = async (
-
 	initialBuyAmountInCurrency: number,
 	amountSellInCurrencyInBaseUnits: number,
 	price: number,
@@ -583,8 +586,8 @@ export const calculateSellTradePNL = async (
 		initialBuyAmountInCurrency,
 		amountSellInCurrencyInBaseUnits,
 		price,
-		tokenDecimals
-	)
+		tokenDecimals,
+	);
 	const absoluteValuePNL = Math.abs(pnlUSD);
 	elizaLogger.info(`Sell Trade absoluteValuePNL ${absoluteValuePNL}`);
 	const formattedPNL = new Intl.NumberFormat("en-US", {
@@ -603,10 +606,11 @@ export const calculateSellTradePNLRaw = async (
 	initialBuyAmountInCurrency: number,
 	amountSellInCurrencyInBaseUnits: number,
 	price: number,
-	tokenDecimals: number
+	tokenDecimals: number,
 ): Promise<number> => {
 	// Calculate pnl in raw USD value
-	const pnlCurrencyInBaseUnits = initialBuyAmountInCurrency - amountSellInCurrencyInBaseUnits;
+	const pnlCurrencyInBaseUnits =
+		initialBuyAmountInCurrency - amountSellInCurrencyInBaseUnits;
 	const pnlUSD = (pnlCurrencyInBaseUnits / 10 ** tokenDecimals) * price;
 	elizaLogger.info(`Sell Trade pnlUSD ${pnlUSD}`);
 
