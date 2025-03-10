@@ -63,7 +63,7 @@ function MemoryManager() {
 	// Fetch characters on change
 	useEffect(() => {
 		fetchCharacters();
-	}, [character]);
+	}, [fetchCharacters]);
 
 	return (
 		<div className="min-h-screen from-gray-900 to-black p-10 text-white">
@@ -80,11 +80,15 @@ function MemoryManager() {
 				<div className="md:w-1/3 space-y-6">
 					{/* Character Selector */}
 					<motion.div className="bg-[#1d1d1d] p-6 rounded-lg shadow-xl relative ">
-						<label className="block text-lg font-semibold text-gray-300 mb-2">
+						<label
+							className="block text-lg font-semibold text-gray-300 mb-2"
+							htmlFor="characterSelect"
+						>
 							Select Character
 						</label>
 						<div className="relative">
 							<select
+								id="characterSelect"
 								value={character}
 								onChange={(e) => setCharacter(e.target.value)}
 								className="w-full p-3 rounded-lg text-white border border-gray-600 transition hover:bg-sidebar-accent appearance-none cursor-pointer"
@@ -148,6 +152,7 @@ function MemoryManager() {
 							rows={3}
 						/>
 						<button
+							type="button"
 							onClick={updateCharacterData}
 							className="w-full py-3 bg-green-600 text-white rounded-lg shadow-md transition hover:bg-green-500 font-semibold"
 						>
@@ -161,6 +166,7 @@ function MemoryManager() {
 					{/* Tab Navigation */}
 					<div className="flex space-x-4 mb-4">
 						<button
+							type="button"
 							onClick={() => setActiveTab("templates")}
 							className={`px-4 py-2 rounded-lg transition ${
 								activeTab === "templates"
@@ -171,6 +177,7 @@ function MemoryManager() {
 							Templates
 						</button>
 						<button
+							type="button"
 							onClick={() => setActiveTab("lore")}
 							className={`px-4 py-2 rounded-lg transition ${
 								activeTab === "lore"
@@ -181,6 +188,7 @@ function MemoryManager() {
 							Lore
 						</button>
 						<button
+							type="button"
 							onClick={() => setActiveTab("bio")}
 							className={`px-4 py-2 rounded-lg transition ${
 								activeTab === "bio"
@@ -191,6 +199,7 @@ function MemoryManager() {
 							Bio
 						</button>
 						<button
+							type="button"
 							onClick={() => setActiveTab("knowledge")}
 							className={`px-4 py-2 rounded-lg transition ${
 								activeTab === "knowledge"
@@ -229,6 +238,7 @@ function MemoryManager() {
 											</div>
 											<div className="space-x-3">
 												<button
+													type="button"
 													onClick={() => {
 														setSelectedTemplate(name);
 														setUpdatedTemplateContent(content);
@@ -239,6 +249,7 @@ function MemoryManager() {
 													<SquarePen className="w-5 h-5" />
 												</button>
 												<button
+													type="button"
 													onClick={() => deleteTemplate(name)}
 													className="p-2 text-red-400 border border-red-400 rounded hover:text-red-600 transition"
 													title="Delete Template"
@@ -268,7 +279,10 @@ function MemoryManager() {
 								{lore.length > 0 ? (
 									<ul className="space-y-4">
 										{lore.map((content, index) => (
-											<li key={index} className="group relative">
+											<li
+												key={`lore-${index}-${content.substring(0, 10)}`}
+												className="group relative"
+											>
 												{editingLoreIndex === index ? (
 													<textarea
 														value={editedLore}
@@ -286,6 +300,7 @@ function MemoryManager() {
 													{editingLoreIndex === index ? (
 														<>
 															<button
+																type="button"
 																onClick={() => {
 																	updateArrayElement("lore", index, editedLore);
 																	const updatedLore = [...lore];
@@ -299,6 +314,7 @@ function MemoryManager() {
 																<Save className="w-5 h-5" />
 															</button>
 															<button
+																type="button"
 																onClick={() => setEditingLoreIndex(null)}
 																className="text-red-400 hover:text-red-600 mb-24"
 																title="Cancel"
@@ -309,6 +325,7 @@ function MemoryManager() {
 													) : (
 														<>
 															<button
+																type="button"
 																onClick={() => {
 																	setEditingLoreIndex(index);
 																	setEditedLore(content);
@@ -319,6 +336,7 @@ function MemoryManager() {
 																<SquarePen className="w-5 h-5" />
 															</button>
 															<button
+																type="button"
 																onClick={() =>
 																	deleteArrayElement("lore", index)
 																}
@@ -353,7 +371,10 @@ function MemoryManager() {
 								{bio.length > 0 ? (
 									<ul className="space-y-4">
 										{bio.map((content, index) => (
-											<li key={index} className="group relative">
+											<li
+												key={`bio-${index}-${content.substring(0, 10)}`}
+												className="group relative"
+											>
 												{editingBioIndex === index ? (
 													<textarea
 														value={editedBio}
@@ -371,6 +392,7 @@ function MemoryManager() {
 													{editingBioIndex === index ? (
 														<>
 															<button
+																type="button"
 																onClick={() => {
 																	updateArrayElement("bio", index, editedBio);
 																	const updatedBio = [...bio];
@@ -384,6 +406,7 @@ function MemoryManager() {
 																<Save className="w-5 h-5" />
 															</button>
 															<button
+																type="button"
 																onClick={() => setEditingBioIndex(null)}
 																className="text-red-400 hover:text-red-600 mb-24"
 																title="Cancel"
@@ -394,6 +417,7 @@ function MemoryManager() {
 													) : (
 														<>
 															<button
+																type="button"
 																onClick={() => {
 																	setEditingBioIndex(index);
 																	setEditedBio(content);
@@ -404,6 +428,7 @@ function MemoryManager() {
 																<SquarePen className="w-5 h-5" />
 															</button>
 															<button
+																type="button"
 																onClick={() => deleteArrayElement("bio", index)}
 																className=" text-red-400 hover:text-red-600 mt-5"
 																title="Delete Bio"
@@ -436,7 +461,10 @@ function MemoryManager() {
 								{knowledge.length > 0 ? (
 									<ul className="space-y-4">
 										{knowledge.map((content, index) => (
-											<li key={index} className="group relative">
+											<li
+												key={`knowledge-${index}-${content.substring(0, 10)}`}
+												className="group relative"
+											>
 												{editingKnowledgeIndex === index ? (
 													<textarea
 														value={editedKnowledge}
@@ -454,6 +482,7 @@ function MemoryManager() {
 													{editingKnowledgeIndex === index ? (
 														<>
 															<button
+																type="button"
 																onClick={() => {
 																	updateArrayElement(
 																		"knowledge",
@@ -471,6 +500,7 @@ function MemoryManager() {
 																<Save className="w-5 h-5" />
 															</button>
 															<button
+																type="button"
 																onClick={() => setEditingKnowledgeIndex(null)}
 																className="text-red-400 hover:text-red-600 mb-24"
 																title="Cancel"
@@ -481,6 +511,7 @@ function MemoryManager() {
 													) : (
 														<>
 															<button
+																type="button"
 																onClick={() => {
 																	setEditingKnowledgeIndex(index);
 																	setEditedKnowledge(content);
@@ -491,6 +522,7 @@ function MemoryManager() {
 																<SquarePen className="w-5 h-5" />
 															</button>
 															<button
+																type="button"
 																onClick={() =>
 																	deleteArrayElement("knowledge", index)
 																}

@@ -13,22 +13,22 @@ const postgresUrl =
 // PostgreSQL database connection
 let pgClient: pg.Client | null = null;
 
-// Initialize the PostgreSQL connection
-try {
-	pgClient = new pg.Client({
-		connectionString: postgresUrl,
-	});
-	pgClient.connect();
-	elizaLogger.info(`✅ Connected to PostgreSQL database at ${postgresUrl}`);
-} catch (error) {
-	elizaLogger.error(`❌ Failed to connect to PostgreSQL database: ${error}`);
-	throw error;
+async function connectToDB() {
+	try {
+		pgClient = new pg.Client({ connectionString: postgresUrl });
+		await pgClient.connect();
+		elizaLogger.info(`✅ Connected to PostgreSQL database at ${postgresUrl}`);
+		await createTracesTable(); // Ensure table exists before inserting spans
+	} catch (error) {
+		elizaLogger.error(`❌ Failed to connect to PostgreSQL database: ${error}`);
+		throw error;
+	}
 }
 
 // Create the traces table if it doesn't exist
 async function createTracesTable(): Promise<void> {
-	if (pgClient) {
-		const createTableQuery = `
+	if (!pgClient) return;
+	const createTableQuery = `
       CREATE TABLE IF NOT EXISTS traces (
         id SERIAL PRIMARY KEY,
         trace_id TEXT NOT NULL,
@@ -55,20 +55,45 @@ async function createTracesTable(): Promise<void> {
       );
     `;
 
-		try {
-			await pgClient.query(createTableQuery);
-			elizaLogger.info("✅ PostgreSQL traces table created or already exists");
-		} catch (error) {
-			elizaLogger.error("❌ Error creating traces table in PostgreSQL:", error);
-			throw error;
-		}
+	try {
+		await pgClient.query(createTableQuery);
+		elizaLogger.info("✅ PostgreSQL traces table created or already exists");
+	} catch (error) {
+		elizaLogger.error("❌ Error creating traces table in PostgreSQL:", error);
+		throw error;
 	}
 }
 
+interface SpanData {
+	trace_id: string;
+	span_id: string;
+	parent_span_id?: string | null;
+	trace_state?: string | null;
+	span_name: string;
+	span_kind: number;
+	start_time: string;
+	end_time: string;
+	duration_ms: number;
+	status_code: number;
+	status_message?: string | null;
+	attributes?: Record<string, unknown>;
+	events?: unknown[];
+	links?: unknown[];
+	resource?: Record<string, unknown>;
+	agent_id?: string | null;
+	session_id?: string | null;
+	environment?: string | null;
+	room_id?: string | null;
+}
+
 // Inserts a span record into the database
-async function insertTrace(spanData: any): Promise<void> {
-	if (pgClient) {
-		const query = `
+async function insertTrace(spanData: SpanData): Promise<void> {
+	if (!pgClient) {
+		elizaLogger.error("❌ Database connection is not initialized.");
+		return;
+	}
+
+	const query = `
       INSERT INTO traces (
         trace_id,
         span_id,
@@ -94,59 +119,53 @@ async function insertTrace(spanData: any): Promise<void> {
       ON CONFLICT (trace_id, span_id) DO NOTHING;
     `;
 
-		try {
-			await pgClient.query(query, [
-				spanData.trace_id,
-				spanData.span_id,
-				spanData.parent_span_id,
-				spanData.trace_state,
-				spanData.span_name,
-				spanData.span_kind,
-				spanData.start_time,
-				spanData.end_time,
-				spanData.duration_ms,
-				spanData.status_code,
-				spanData.status_message,
-				JSON.stringify(spanData.attributes || {}),
-				JSON.stringify(spanData.events || []),
-				JSON.stringify(spanData.links || []),
-				JSON.stringify(spanData.resource || {}),
-				spanData.agent_id,
-				spanData.session_id,
-				spanData.environment,
-				spanData.room_id,
-			]);
+	try {
+		await pgClient.query(query, [
+			spanData.trace_id,
+			spanData.span_id,
+			spanData.parent_span_id ?? null,
+			spanData.trace_state ?? null,
+			spanData.span_name,
+			spanData.span_kind,
+			spanData.start_time,
+			spanData.end_time,
+			spanData.duration_ms,
+			spanData.status_code,
+			spanData.status_message ?? null,
+			JSON.stringify(spanData.attributes || {}),
+			JSON.stringify(spanData.events || []),
+			JSON.stringify(spanData.links || []),
+			JSON.stringify(spanData.resource || {}),
+			spanData.agent_id ?? null,
+			spanData.session_id ?? null,
+			spanData.environment ?? null,
+			spanData.room_id ?? null,
+		]);
 
-			elizaLogger.info(
-				"✅ Span inserted successfully into PostgreSQL:",
-				spanData.span_name,
-			);
-		} catch (error) {
-			elizaLogger.error("❌ Error inserting span into PostgreSQL DB:", error);
-		}
+		elizaLogger.info(
+			"✅ Span inserted successfully into PostgreSQL:",
+			spanData.span_name,
+		);
+	} catch (error) {
+		elizaLogger.error("❌ Error inserting span into PostgreSQL DB:", error);
 	}
 }
 
 export class DBSpanProcessor implements SpanProcessor {
 	constructor() {
-		// Create the table when the processor is initialized
-		createTracesTable();
+		connectToDB();
 	}
 
 	onStart(span: ReadableSpan): void {
-		// Optional: Log span start for debugging
 		elizaLogger.debug("🟢 Span started:", span.name);
 	}
 
 	onEnd(span: ReadableSpan): void {
 		const spanContext = span.spanContext();
-
-		// Convert [seconds, nanoseconds] to milliseconds
 		const startTimeMs = span.startTime[0] * 1000 + span.startTime[1] / 1e6;
 		const endTimeMs = span.endTime[0] * 1000 + span.endTime[1] / 1e6;
 		const durationMs = Math.floor(endTimeMs - startTimeMs);
 
-		// Extract fields from attributes
 		const attributes = span.attributes || {};
 		const resource = span.resource?.attributes || {};
 
@@ -156,7 +175,7 @@ export class DBSpanProcessor implements SpanProcessor {
 			return trimmed.length > 0 ? trimmed : null;
 		};
 
-		const spanData = {
+		const spanData: SpanData = {
 			trace_id: spanContext.traceId,
 			span_id: spanContext.spanId,
 			parent_span_id: span.parentSpanId || null,
@@ -183,7 +202,6 @@ export class DBSpanProcessor implements SpanProcessor {
 			room_id: safeTrim(attributes["room.id"]) || safeTrim(attributes.roomId),
 		};
 
-		// Add validation to skip spans without context IDs
 		if (!spanData.agent_id && !spanData.session_id && !spanData.room_id) {
 			elizaLogger.debug("⚠️ Skipping span with no context IDs:", span.name);
 			return;
@@ -193,13 +211,11 @@ export class DBSpanProcessor implements SpanProcessor {
 		insertTrace(spanData);
 	}
 
-	shutdown(): Promise<void> {
-		// Close the database connection
+	async shutdown(): Promise<void> {
 		if (pgClient) {
-			pgClient.end();
-			elizaLogger.info("PostgreSQL database connection closed");
+			await pgClient.end();
+			elizaLogger.info("✅ PostgreSQL database connection closed");
 		}
-		return Promise.resolve();
 	}
 
 	forceFlush(): Promise<void> {

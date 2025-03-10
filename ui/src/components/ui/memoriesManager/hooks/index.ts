@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export const use = () => {
 	const API_BASE_URL = `${import.meta.env.VITE_SERVER_URL}/templates`;
@@ -31,7 +31,9 @@ export const use = () => {
 	const [editedKnowledge, setEditedKnowledge] = useState<string>("");
 
 	// 1️⃣ Fetch Character Data
-	const fetchCharacterData = async () => {
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	const fetchCharacterData = useCallback(async () => {
 		if (!character.trim()) return;
 
 		try {
@@ -42,10 +44,10 @@ export const use = () => {
 			setBio(data.data.bio || []);
 			setKnowledge(data.data.knowledge || []);
 			setTemplates(data.data.templates || {});
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("❌ Error fetching character data:", error);
 		}
-	};
+	}, []);
 
 	// 2️⃣ Batch Update Character Data
 	const updateCharacterData = async () => {
@@ -88,9 +90,9 @@ export const use = () => {
 			setTemplates(updatedTemplates);
 			fetchCharacterData();
 			resetFormFields();
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("❌ Error updating character:", error);
-			alert(`Error: ${error.message}`);
+			alert(`Error: ${error instanceof Error ? error.message : String(error)}`);
 		}
 	};
 
@@ -180,9 +182,9 @@ export const use = () => {
 			alert("Array element updated successfully!");
 			// Refresh data
 			fetchCharacterData();
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("❌ Error updating array element:", error);
-			alert(`Error: ${error.message}`);
+			alert(`Error: ${error instanceof Error ? error.message : String(error)}`);
 		}
 	};
 
@@ -205,7 +207,7 @@ export const use = () => {
 	// 7️⃣ Auto-fetch character data when `character` changes
 	useEffect(() => {
 		fetchCharacterData();
-	}, [character]);
+	}, [fetchCharacterData]);
 
 	return {
 		// Arrays

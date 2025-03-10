@@ -13,24 +13,12 @@ export const getAllTraces = async (_req: Request, res: Response) => {
 	try {
 		const { rows } = await pool.query("SELECT * FROM traces");
 		res.status(200).json(rows);
-	} catch (error) {
+	} catch (error: unknown) {
 		console.error("Error fetching traces:", error);
 		res.status(500).json({ error: "Failed to fetch traces" });
 	}
 };
 
-/**
- * @swagger
- * /traces/unique-agent-ids:
- *   get:
- *     summary: Get unique agent IDs
- *     description: Retrieves a list of unique agent IDs from traces.
- *     responses:
- *       200:
- *         description: Successfully retrieved unique agent IDs
- *       500:
- *         description: Server error
- */
 export const getUniqueAgentId = async (_req: Request, res: Response) => {
 	console.log("getUniqueAgentId called");
 	try {
@@ -40,34 +28,14 @@ export const getUniqueAgentId = async (_req: Request, res: Response) => {
 		res.status(200).json({
 			unique_agent_ids: result.rows.map((row) => row.agent_id),
 		});
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("❌ Error fetching unique agent IDs:", error);
-		res.status(500).json({ message: "Server Error", error: error.message });
+		res
+			.status(500)
+			.json({ message: "Server Error", error: (error as Error).message });
 	}
 };
 
-/**
- * @swagger
- * /traces/unique-room_id/by-agent/{agent_id}:
- *   get:
- *     summary: Get unique room IDs by Agent ID
- *     description: Retrieves unique room IDs associated with a specific agent ID.
- *     parameters:
- *       - in: path
- *         name: agent_id
- *         required: true
- *         schema:
- *           type: string
- *         description: The ID of the agent
- *     responses:
- *       200:
- *         description: Successfully retrieved unique room IDs
- *       400:
- *         description: Missing or invalid Agent ID
- *       500:
- *         description: Server error
- */
 export const getUniqueRoomIdByAgent = async (req: Request, res: Response) => {
 	try {
 		const { agent_id } = req.params;
@@ -77,46 +45,27 @@ export const getUniqueRoomIdByAgent = async (req: Request, res: Response) => {
 
 		const result = await pool.query(
 			`SELECT DISTINCT ON ("room_id") "room_id", "start_time" 
-			FROM traces 
-			WHERE "agent_id" = $1 AND "room_id" IS NOT NULL
-			ORDER BY "room_id", "start_time" DESC`,
+      FROM traces 
+      WHERE "agent_id" = $1 AND "room_id" IS NOT NULL AND "room_id" != 'unknown'
+      ORDER BY "room_id", "start_time" DESC`,
 			[agent_id],
 		);
 
 		res.status(200).json({
-			agent_id: agent_id,
+			agent_id,
 			rooms: result.rows.map((row) => ({
 				room_id: row.room_id,
 				start_time: row.start_time,
 			})),
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("❌ Error fetching unique rooms by Agent ID:", error);
-		res.status(500).json({ message: "Server Error", error: error.message });
+		res
+			.status(500)
+			.json({ message: "Server Error", error: (error as Error).message });
 	}
 };
 
-/**
- * @swagger
- * /traces/by-room/{roomId}:
- *   get:
- *     summary: Get traces by Room ID
- *     description: Retrieves all traces associated with a given Room ID.
- *     parameters:
- *       - in: path
- *         name: roomId
- *         required: true
- *         schema:
- *           type: string
- *         description: The Room ID
- *     responses:
- *       200:
- *         description: Successfully retrieved traces
- *       400:
- *         description: Missing or invalid ROOM ID
- *       500:
- *         description: Server error
- */
 export const getTracesByRoom = async (req: Request, res: Response) => {
 	try {
 		const { roomId } = req.params;
@@ -127,19 +76,18 @@ export const getTracesByRoom = async (req: Request, res: Response) => {
 		const { name, start_date, end_date } = req.query;
 
 		let query = "SELECT * FROM traces WHERE room_id = $1";
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		const queryParams: any[] = [roomId];
+		const queryParams: unknown[] = [roomId];
 
 		let paramIndex = 2; // Next index for query placeholders ($2, $3, ...)
 
 		// Optional Filters
-		if (name) {
+		if (typeof name === "string") {
 			query += ` AND name ILIKE $${paramIndex}`;
 			queryParams.push(`%${name}%`);
 			paramIndex++;
 		}
 
-		if (start_date && end_date) {
+		if (typeof start_date === "string" && typeof end_date === "string") {
 			query += ` AND DATE(start_time) >= $${paramIndex} AND DATE(end_time) <= $${paramIndex + 1}`;
 			queryParams.push(start_date, end_date);
 			paramIndex += 2;
@@ -155,76 +103,28 @@ export const getTracesByRoom = async (req: Request, res: Response) => {
 			total_records: result.rowCount ?? 0,
 			data: result.rows,
 		});
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("❌ Error fetching traces by ROOM:", error);
-		res.status(500).json({ message: "Server Error", error: error.message });
+		res
+			.status(500)
+			.json({ message: "Server Error", error: (error as Error).message });
 	}
 };
 
-/**
- * @swagger
- * /traces/unique-runs:
- *   get:
- *     summary: Get unique run values
- *     description: Retrieves all unique run values from traces.
- *     responses:
- *       200:
- *         description: Successfully retrieved unique run values
- *       500:
- *         description: Server error
- */
 export const getUniqueRuns = async (_req: Request, res: Response) => {
 	try {
-		const result = await pool.query("SELECT DISTINCT RUN FROM traces");
+		const result = await pool.query("SELECT DISTINCT run FROM traces");
 		res.status(200).json({
 			unique_runs: result.rows.map((row) => row.run),
 		});
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("❌ Error fetching unique RUN values:", error);
-		res.status(500).json({ message: "Server Error", error: error.message });
+		res
+			.status(500)
+			.json({ message: "Server Error", error: (error as Error).message });
 	}
 };
 
-/**
- * @swagger
- * /traces/by-agent/{agentId}:
- *   get:
- *     summary: Get traces by Agent ID
- *     description: Retrieves traces associated with a given Agent ID.
- *     parameters:
- *       - in: path
- *         name: agentId
- *         required: true
- *         schema:
- *           type: string
- *         description: The ID of the agent
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: Optional filter by trace name
- *       - in: query
- *         name: start_date
- *         schema:
- *           type: string
- *           format: date
- *         description: Start date filter
- *       - in: query
- *         name: end_date
- *         schema:
- *           type: string
- *           format: date
- *         description: End date filter
- *     responses:
- *       200:
- *         description: Successfully retrieved traces
- *       400:
- *         description: Missing or invalid Agent ID
- *       500:
- *         description: Server error
- */
 export const getTracesByAgentId = async (req: Request, res: Response) => {
 	try {
 		const { agentId } = req.params;
@@ -233,7 +133,7 @@ export const getTracesByAgentId = async (req: Request, res: Response) => {
 		}
 
 		const result = await pool.query(
-			'SELECT * FROM traces WHERE "agentId" = $1',
+			"SELECT * FROM traces WHERE agent_id = $1",
 			[agentId],
 		);
 
@@ -242,9 +142,10 @@ export const getTracesByAgentId = async (req: Request, res: Response) => {
 			total_records: result.rowCount ?? 0,
 			data: result.rows,
 		});
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("❌ Error fetching traces by Agent ID:", error);
-		res.status(500).json({ message: "Server Error", error: error.message });
+		res
+			.status(500)
+			.json({ message: "Server Error", error: (error as Error).message });
 	}
 };

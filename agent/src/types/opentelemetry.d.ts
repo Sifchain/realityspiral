@@ -1,11 +1,11 @@
 declare module "@opentelemetry/resources" {
 	export class Resource {
-		constructor(attributes?: Record<string, any>);
+		constructor(attributes?: Record<string, unknown>);
 		static default(): Resource;
 		static empty(): Resource;
-		static create(attributes: Record<string, any>): Resource;
+		static create(attributes: Record<string, unknown>): Resource;
 		merge(other: Resource): Resource;
-		getAttributes(): Record<string, any>;
+		getAttributes(): Record<string, unknown>;
 	}
 }
 

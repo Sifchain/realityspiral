@@ -164,23 +164,31 @@ function Logs() {
 
 					<div className="mt-4 grid grid-cols-1 gap-4 text-xs">
 						{uniqueRooms.map((room) => (
-							<div
+							<button
+								type="button"
 								key={room.room_id} // Use a stable key (room_id instead of index)
 								onClick={() => {
 									setSelectedRoom(room.room_id);
 									fetchTraceData(room.room_id, filters);
 								}}
-								className={`p-4 bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition duration-300 cursor-pointer ${
+								onKeyDown={(e) => {
+									if (e.key === "Enter" || e.key === " ") {
+										setSelectedRoom(room.room_id);
+										fetchTraceData(room.room_id, filters);
+									}
+								}}
+								tabIndex={0}
+								className={`p-3 rounded-lg cursor-pointer ${
 									selectedRoom === room.room_id
-										? "border-2 border-blue-500"
-										: ""
+										? "bg-blue-900 border border-blue-500"
+										: "bg-gray-800 border border-gray-700 hover:bg-gray-700"
 								}`}
 							>
 								<p className="text-white font-medium">{room.room_id}</p>
 								<p className="text-gray-400 text-xs">
 									{new Date(room.start_time).toLocaleString()}
 								</p>
-							</div>
+							</button>
 						))}
 					</div>
 				</div>

@@ -60,9 +60,14 @@ export const use = () => {
 			setTemplates(updatedTemplates);
 			setNewTemplateName(""); // Reset template name input
 			setNewTemplateContent(""); // Reset template content input
-		} catch (error: any) {
-			console.error("❌ Error updating character:", error);
-			alert(`Error: ${error.message}`);
+		} catch (error) {
+			if (error instanceof Error) {
+				console.error("❌ Error updating character:", error);
+				alert(`Error: ${error.message}`);
+			} else {
+				console.error("❌ Error updating character:", error);
+				alert("An unknown error occurred.");
+			}
 		}
 	};
 

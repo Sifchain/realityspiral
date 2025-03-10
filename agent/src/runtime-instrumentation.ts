@@ -6,26 +6,31 @@ import { Instrumentation } from "./instrumentation";
 interface RuntimeLike {
 	agentId: string;
 	character?: { name?: string };
-	actions: any[];
+	actions:
+		| Array<Record<string, unknown>>
+		| Array<{ name: string; [key: string]: unknown }>;
 
-	initialize: (...args: any[]) => Promise<any>;
+	initialize: (...args: unknown[]) => Promise<unknown>;
 	evaluate: (
-		message: any,
-		state: any,
+		message: Record<string, unknown>,
+		state: Record<string, unknown>,
 		didRespond?: boolean,
-		callback?: any,
-	) => Promise<any>;
+		callback?: (response: unknown) => void,
+	) => Promise<unknown>;
 	processActions: (
-		message: any,
-		responses: any[],
-		state?: any,
-		callback?: any,
-	) => Promise<any>;
-	stop: () => Promise<any>;
+		message: Record<string, unknown>,
+		responses: Array<Record<string, unknown>>,
+		state?: Record<string, unknown>,
+		callback?: (response: unknown) => void,
+	) => Promise<unknown>;
+	stop: () => Promise<unknown>;
 
 	// We'll add a session ID if not present
 	sessionId?: string;
 }
+
+// Export the RuntimeLike interface for use in other files
+export type { RuntimeLike };
 
 /**
  * RuntimeInstrumentation wraps the AgentRuntime events with our instrumentation system
@@ -96,7 +101,7 @@ export class RuntimeInstrumentation {
 	 */
 	private wrapRuntimeMethods(runtime: RuntimeLike): void {
 		const originalInitialize = runtime.initialize.bind(runtime);
-		runtime.initialize = async (...args: any[]) => {
+		runtime.initialize = async (...args: unknown[]) => {
 			const startTime = Date.now();
 			try {
 				// Call the original method
@@ -109,7 +114,7 @@ export class RuntimeInstrumentation {
 					event: "runtime_initialized",
 					data: {
 						agentId: runtime.agentId,
-						sessionId: runtime.sessionId,
+						sessionId: runtime.sessionId ?? "",
 						duration: Date.now() - startTime,
 						success: true,
 					},
@@ -124,7 +129,7 @@ export class RuntimeInstrumentation {
 					event: "runtime_initialization_failed",
 					data: {
 						agentId: runtime.agentId,
-						sessionId: runtime.sessionId,
+						sessionId: runtime.sessionId ?? "",
 						duration: Date.now() - startTime,
 						error: (error as Error).message,
 					},
@@ -145,24 +150,24 @@ export class RuntimeInstrumentation {
 					typeof message.content === "string"
 						? message.content
 						: JSON.stringify(message.content),
-				sessionId: runtime.sessionId!,
+				sessionId: runtime.sessionId ?? "",
 				agentId: runtime.agentId,
-				roomId: message.roomId || "unknown",
+				roomId: (message.roomId as string) || "unknown",
 			});
 
 			try {
 				// Call the original method
 				const result = await originalEvaluate(
 					message,
-					state,
+					state as Record<string, unknown>,
 					didRespond,
 					callback,
 				);
 
 				// Log message processed
 				this.instrumentation.messageProcessed({
-					messageId,
-					sessionId: runtime.sessionId!,
+					messageId: messageId as string,
+					sessionId: runtime.sessionId ?? "",
 					agentId: runtime.agentId,
 					processingTime: Date.now() - startTime,
 				});
@@ -176,7 +181,7 @@ export class RuntimeInstrumentation {
 					event: "message_processing_error",
 					data: {
 						messageId,
-						sessionId: runtime.sessionId,
+						sessionId: runtime.sessionId ?? "",
 						agentId: runtime.agentId,
 						error: (error as Error).message,
 						processingTime: Date.now() - startTime,
@@ -196,7 +201,7 @@ export class RuntimeInstrumentation {
 				event: "actions_processing_started",
 				data: {
 					messageId: message.id || uuidv4(),
-					sessionId: runtime.sessionId,
+					sessionId: runtime.sessionId ?? "",
 					agentId: runtime.agentId,
 					actionsCount: runtime.actions.length,
 				},
@@ -209,7 +214,7 @@ export class RuntimeInstrumentation {
 				const result = await originalProcessActions(
 					message,
 					responses,
-					state,
+					state as Record<string, unknown>,
 					callback,
 				);
 
@@ -220,7 +225,7 @@ export class RuntimeInstrumentation {
 					event: "actions_processing_completed",
 					data: {
 						messageId: message.id || uuidv4(),
-						sessionId: runtime.sessionId,
+						sessionId: runtime.sessionId ?? "",
 						agentId: runtime.agentId,
 						processingTime: Date.now() - startTime,
 						responseCount: responses.length,
@@ -236,7 +241,7 @@ export class RuntimeInstrumentation {
 					event: "actions_processing_error",
 					data: {
 						messageId: message.id || uuidv4(),
-						sessionId: runtime.sessionId,
+						sessionId: runtime.sessionId ?? "",
 						agentId: runtime.agentId,
 						error: (error as Error).message,
 						processingTime: Date.now() - startTime,
@@ -260,7 +265,7 @@ export class RuntimeInstrumentation {
 					event: "runtime_stopped",
 					data: {
 						agentId: runtime.agentId,
-						sessionId: runtime.sessionId,
+						sessionId: runtime.sessionId ?? "",
 					},
 				});
 
@@ -276,7 +281,7 @@ export class RuntimeInstrumentation {
 					event: "runtime_stop_error",
 					data: {
 						agentId: runtime.agentId,
-						sessionId: runtime.sessionId,
+						sessionId: runtime.sessionId ?? "",
 						error: (error as Error).message,
 					},
 				});

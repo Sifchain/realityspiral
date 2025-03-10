@@ -22,10 +22,9 @@ function TemplateManager() {
 		setNewTemplateContent,
 	} = use();
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		fetchCharacters();
-	}, [character]);
+	}, [fetchCharacters]);
 
 	return (
 		<div className="p-10 to-black min-h-screen text-white flex flex-col items-center w-full">
@@ -44,12 +43,15 @@ function TemplateManager() {
 					animate={{ opacity: 1, scale: 1 }}
 					className="mb-6 bg-gray-800 p-4 rounded-lg shadow-lg relative"
 				>
-					{/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
-					<label className="block text-sm font-semibold mb-2 text-gray-300">
+					<label
+						className="block text-sm font-semibold mb-2 text-gray-300"
+						htmlFor="characterSelect"
+					>
 						Select Character
 					</label>
 					<div className="relative">
 						<select
+							id="characterSelect"
 							value={character}
 							onChange={(e) => setCharacter(e.target.value)}
 							className="p-3 rounded-lg text-white border border-gray-600 w-full shadow-md transition hover:bg-gray-600 focus:ring focus:ring-blue-500 appearance-none cursor-pointer"
@@ -100,8 +102,8 @@ function TemplateManager() {
 						className="w-full p-3 mb-3 rounded-lg text-white border border-gray-600 shadow-sm focus:ring focus:ring-blue-500"
 						rows={3}
 					/>
-					{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 					<button
+						type="button"
 						onClick={addTemplate}
 						className="w-full py-3 border border-green-600 text-green-600 rounded-lg shadow-md transition font-semibold"
 					>
@@ -132,9 +134,8 @@ function TemplateManager() {
 										</p>
 									</div>
 									<div className="space-x-2">
-										{/* Edit button sets selected template & content */}
-										{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 										<button
+											type="button"
 											onClick={() => {
 												setSelectedTemplate(name);
 												setUpdatedTemplateContent(content);
@@ -143,8 +144,8 @@ function TemplateManager() {
 										>
 											Edit
 										</button>
-										{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 										<button
+											type="button"
 											onClick={() => deleteTemplate(name)}
 											className="px-4 py-2 text-red-500 border border-red-600 rounded-md text-xs font-semibold"
 										>
@@ -176,8 +177,8 @@ function TemplateManager() {
 							rows={3}
 						/>
 						<div className="flex justify-end space-x-2">
-							{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 							<button
+								type="button"
 								onClick={() => {
 									// Call your update logic
 									updateTemplate(selectedTemplate, updatedTemplateContent);
@@ -188,8 +189,8 @@ function TemplateManager() {
 							>
 								Save
 							</button>
-							{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 							<button
+								type="button"
 								onClick={() => {
 									// Cancel editing
 									setSelectedTemplate(null);
