@@ -1,2 +1,4 @@
 
+#!/usr/bin/env sh
+
 pnpm format || (echo "❌ Format check failed. Please run 'pnpm format' to fix the issues." && exit 1) 

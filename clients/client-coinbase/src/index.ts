@@ -327,18 +327,19 @@ Generate only the tweet text, no commentary or markdown.`;
 			1000,
 		);
 		const sellTradePNL = await calculateSellTradePNL(
-			this.runtime,
-			this.initialBuyAmountInCurrency !== null
-				? this.initialBuyAmountInCurrency
-				: amountSellInCurrencyInBaseUnits,
+			this.initialBuyAmountInCurrency !== null ? this.initialBuyAmountInCurrency : amountSellInCurrencyInBaseUnits,
 			amountSellInCurrencyInBaseUnits,
 			Number(price),
-			tokenDecimals,
+			tokenDecimals
 		);
-		elizaLogger.info(`pnl ${pnl}`);
+		const rawSellTradePNL = await calculateSellTradePNLRaw(
+			this.initialBuyAmountInCurrency !== null ? this.initialBuyAmountInCurrency : amountSellInCurrencyInBaseUnits,
+			amountSellInCurrencyInBaseUnits,
+			Number(price),
+			tokenDecimals
+		);
 
-		// Check if the PNL is positive or negative
-		if (Number.parseFloat(sellTradePNL) > 0) {
+		if (rawSellTradePNL > 0) {
 			this.winningStreak++;
 		} else {
 			this.winningStreak = 0;
@@ -567,7 +568,7 @@ export const calculateOverallPNL = async (
 };
 
 export const calculateSellTradePNL = async (
-	_runtime: IAgentRuntime,
+
 	initialBuyAmountInCurrency: number,
 	amountSellInCurrencyInBaseUnits: number,
 	price: number,
@@ -578,13 +579,12 @@ export const calculateSellTradePNL = async (
 	elizaLogger.info(
 		`amountSellInCurrencyInBaseUnits ${amountSellInCurrencyInBaseUnits}`,
 	);
-	// its in base units
-	const pnlCurrencyInBaseUnits =
-		initialBuyAmountInCurrency - amountSellInCurrencyInBaseUnits;
-	elizaLogger.info(`pnlCurrencyInBaseUnits ${pnlCurrencyInBaseUnits}`);
-	const pnlUSD = (pnlCurrencyInBaseUnits / 10 ** tokenDecimals) * price;
-	elizaLogger.info(`pnlUSD ${pnlUSD}`);
-	elizaLogger.info(`Sell Trade pnlUSD ${pnlUSD}`);
+	const pnlUSD = await calculateSellTradePNLRaw(
+		initialBuyAmountInCurrency,
+		amountSellInCurrencyInBaseUnits,
+		price,
+		tokenDecimals
+	)
 	const absoluteValuePNL = Math.abs(pnlUSD);
 	elizaLogger.info(`Sell Trade absoluteValuePNL ${absoluteValuePNL}`);
 	const formattedPNL = new Intl.NumberFormat("en-US", {
@@ -597,6 +597,20 @@ export const calculateSellTradePNL = async (
 	const formattedPNLUSD = `${pnlUSD <= -0.005 ? "-" : ""}${formattedPNL}`;
 	elizaLogger.info(`Sell Trade formattedPNLUSD ${formattedPNLUSD}`);
 	return formattedPNLUSD;
+};
+
+export const calculateSellTradePNLRaw = async (
+	initialBuyAmountInCurrency: number,
+	amountSellInCurrencyInBaseUnits: number,
+	price: number,
+	tokenDecimals: number
+): Promise<number> => {
+	// Calculate pnl in raw USD value
+	const pnlCurrencyInBaseUnits = initialBuyAmountInCurrency - amountSellInCurrencyInBaseUnits;
+	const pnlUSD = (pnlCurrencyInBaseUnits / 10 ** tokenDecimals) * price;
+	elizaLogger.info(`Sell Trade pnlUSD ${pnlUSD}`);
+
+	return pnlUSD;
 };
 
 export async function getTotalBalanceUSD(
