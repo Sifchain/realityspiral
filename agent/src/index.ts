@@ -644,7 +644,7 @@ async function startAgent(
 		// report to console
 		elizaLogger.debug(`Started ${character.name} as ${runtime.agentId}`);
 
-		const startTime = Date.now();
+		const _startTime = Date.now();
 
 		try {
 			// Trigger evaluate immediately after initialization to ensure tracing is working
@@ -664,9 +664,11 @@ async function startAgent(
 			};
 
 			// Call evaluate to trigger instrumentation
-			runtime.evaluate(message, state as any).catch((err) => {
-				elizaLogger.error(`Error evaluating agent start: ${err.message}`);
-			});
+			runtime
+				.evaluate(message, state as Record<string, unknown>)
+				.catch((err) => {
+					elizaLogger.error(`Error evaluating agent start: ${err.message}`);
+				});
 		} catch (error) {
 			elizaLogger.error(
 				`Error during agent start instrumentation: ${error.message}`,
