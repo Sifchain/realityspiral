@@ -16,8 +16,8 @@ import {
 	TOKENS,
 	getPriceInquiry,
 	getQuoteObj,
+	getTokenMetadata,
 	tokenSwap,
-	getTokenMetadata
 } from "@realityspiral/plugin-0x";
 import {
 	type CoinbaseWallet,
