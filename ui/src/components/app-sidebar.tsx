@@ -14,7 +14,14 @@ import {
 import { apiClient } from "@/lib/api";
 import type { UUID } from "@elizaos/core";
 import { useQuery } from "@tanstack/react-query";
-import { Book, Cog, Info, User } from "lucide-react";
+import {
+	Book,
+	Cog,
+	Info,
+	LayoutTemplate,
+	ScrollText,
+	User,
+} from "lucide-react";
 import { NavLink, useLocation } from "react-router";
 import ConnectionStatus from "./connection-status";
 
@@ -95,6 +102,31 @@ export function AppSidebar() {
 			<SidebarFooter>
 				<SidebarMenu>
 					<SidebarMenuItem>
+						<NavLink to="/settings">
+							<SidebarMenuButton>
+								<Cog /> Settings
+							</SidebarMenuButton>
+						</NavLink>
+					</SidebarMenuItem>
+					{import.meta.env.INSTRUMENTATION_ENABLED === "true" && (
+						<>
+							<SidebarMenuItem>
+								<NavLink to="/logs">
+									<SidebarMenuButton>
+										<ScrollText /> Logs
+									</SidebarMenuButton>
+								</NavLink>
+							</SidebarMenuItem>
+							<SidebarMenuItem>
+								<NavLink to="/templates">
+									<SidebarMenuButton>
+										<LayoutTemplate /> Templates
+									</SidebarMenuButton>
+								</NavLink>
+							</SidebarMenuItem>
+						</>
+					)}
+					<SidebarMenuItem>
 						<NavLink
 							to="https://github.com/Sifchain/realityspiral/blob/main/docs/AI_Agents_UI_Interface_Documentation.md"
 							target="_blank"
@@ -104,24 +136,6 @@ export function AppSidebar() {
 							</SidebarMenuButton>
 						</NavLink>
 					</SidebarMenuItem>
-					{import.meta.env.INSTRUMENTATION_ENABLED === "true" && (
-						<>
-							<SidebarMenuItem>
-								<NavLink to="/logs">
-									<SidebarMenuButton>
-										<Cog /> Settings
-									</SidebarMenuButton>
-								</NavLink>
-							</SidebarMenuItem>
-							<SidebarMenuItem>
-								<NavLink to="/templates">
-									<SidebarMenuButton>
-										<Book /> Templates
-									</SidebarMenuButton>
-								</NavLink>
-							</SidebarMenuItem>
-						</>
-					)}
 					<SidebarMenuItem>
 						<NavLink to={url ?? ""} target="_blank">
 							<SidebarMenuButton disabled>
