@@ -7,6 +7,7 @@ import {
 	depositToGateAction,
 	getAllInstrumentsAction,
 	getPortfolioAction,
+	getProviderAndSigner,
 	initContextAction,
 	placeMarketOrderAction,
 	withdrawFromGateAction,
@@ -27,5 +28,7 @@ export const synfuturesPlugin: Plugin = {
 	evaluators: [],
 	providers: [],
 };
+
+export { getProviderAndSigner, placeMarketOrder } from "./plugins/perps";
 
 export default synfuturesPlugin;

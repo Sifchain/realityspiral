@@ -525,3 +525,5 @@ export const synfuturesPerpPlugin: Plugin = {
 		getPortfolioAction,
 	],
 };
+
+export { placeMarketOrder };

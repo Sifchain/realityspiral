@@ -17,18 +17,22 @@ import {
 	getPriceInquiry,
 	getQuoteObj,
 	tokenSwap,
+	getTokenMetadata
 } from "@realityspiral/plugin-0x";
 import {
 	type CoinbaseWallet,
 	initializeWallet,
 	readContractWrapper,
 } from "@realityspiral/plugin-coinbase";
+import {
+	getProviderAndSigner,
+	placeMarketOrder,
+} from "@realityspiral/plugin-synfutures";
 import { postTweet } from "@realityspiral/plugin-twitter";
 import express from "express";
 import { http, createWalletClient, erc20Abi, publicActions } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
-import { getTokenMetadata } from "@realityspiral/plugin-0x";
 import {
 	type WebhookEvent,
 	blockExplorerBaseAddressUrl,
@@ -36,8 +40,6 @@ import {
 	supportedTickers,
 } from "./types";
 import { calculateAPR, fetchTokenPrice } from "./utils";
-import { getProviderAndSigner } from "@realityspiral/plugin-synfutures";
-import { placeMarketOrder } from "@realityspiral/plugin-synfutures";
 
 export type { WebhookEvent };
 
@@ -436,8 +438,8 @@ Generate only the tweet text, no commentary or markdown.`;
 		buy: boolean,
 	): Promise<string | null> {
 		if (
-			process.env.ENABLE_MARGIN_SHORT &&
-			process.env.ENABLE_MARGIN_SHORT.toLowerCase() === "true"
+			process.env.MARGIN_SHORT_TRADING_ENABLED &&
+			process.env.MARGIN_SHORT_TRADING_ENABLED.toLowerCase() === "true"
 		) {
 			const defaultLeverage = Number(process.env.DEFAULT_LEVERAGE) || 5;
 			// Map BUY to LONG and SELL to SHORT for margin trading
@@ -448,11 +450,11 @@ Generate only the tweet text, no commentary or markdown.`;
 				const txHash = await placeMarketOrder(
 					instrumentSymbol,
 					side as any,
-					amount,
-					defaultLeverage,
+					String(amount),
+					String(defaultLeverage),
 					signer,
 				);
-				return txHash;
+				return txHash.transactionHash;
 			} catch (error: any) {
 				elizaLogger.error("Margin/short trade failed:", error.message);
 				return null;
