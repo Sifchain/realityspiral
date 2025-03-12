@@ -1,0 +1,84 @@
+-- Drop tables if they already exist (drop events first since it depends on traces)
+DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS traces;
+
+-- Create the traces table
+CREATE TABLE IF NOT EXISTS traces (
+    trace_id VARCHAR(256) NOT NULL,
+    span_id VARCHAR(256) NOT NULL,
+    parent_span_id VARCHAR(256),
+    trace_state VARCHAR(256),
+    span_name VARCHAR(256) NOT NULL,
+    span_kind VARCHAR(64) NOT NULL, -- e.g., "INTERNAL", "SERVER", "CLIENT"
+    start_time TIMESTAMPTZ NOT NULL,
+    end_time TIMESTAMPTZ NOT NULL,
+    duration_ms INTEGER,
+    status_code VARCHAR(64), -- e.g., "OK", "ERROR"
+    status_message TEXT,
+    attributes JSONB,
+    events JSONB,
+    links JSONB,
+    resource JSONB,
+    agent_id VARCHAR(256),
+    session_id VARCHAR(256),
+    environment VARCHAR(64),
+    room_id VARCHAR(256),
+    raw_context TEXT NOT NULL DEFAULT '',
+    raw_response TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY (trace_id, span_id)
+);
+
+-- Create indexes for traces table
+CREATE INDEX idx_traces_trace_id ON traces (trace_id);
+CREATE INDEX idx_traces_span_name ON traces (span_name);
+CREATE INDEX idx_traces_start_time ON traces (start_time);
+CREATE INDEX idx_traces_room ON traces (room_id);
+
+-- Create the events table with a composite foreign key referencing traces
+CREATE TABLE IF NOT EXISTS events (
+    event_id UUID DEFAULT gen_random_uuid(),
+    trace_id VARCHAR(256) NOT NULL,
+    span_id VARCHAR(256) NOT NULL,
+    agent_id VARCHAR(256) NOT NULL,
+    event_type VARCHAR(64) NOT NULL,
+    event_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    event_data JSONB NOT NULL,
+    room_id VARCHAR(256) NOT NULL,
+    PRIMARY KEY (event_id),
+    FOREIGN KEY (trace_id, span_id) REFERENCES traces(trace_id, span_id)
+);
+
+-- Create indexes for events table
+CREATE INDEX idx_events_agent ON events (agent_id);
+CREATE INDEX idx_events_type ON events (event_type);
+CREATE INDEX idx_events_time ON events (event_time);
+CREATE INDEX idx_events_room ON events (room_id);
+
+-- Remove strict constraints temporarily
+ALTER TABLE traces 
+DROP CONSTRAINT IF EXISTS raw_context_not_empty,
+DROP CONSTRAINT IF EXISTS raw_response_not_empty;
+
+-- Keep NOT NULL but allow empty strings
+ALTER TABLE traces 
+ALTER COLUMN raw_context DROP DEFAULT,
+ALTER COLUMN raw_response DROP DEFAULT;
+
+-- Add smarter constraints that allow placeholders
+ALTER TABLE traces 
+DROP CONSTRAINT valid_raw_context,
+DROP CONSTRAINT valid_raw_response;
+
+ALTER TABLE traces 
+ADD CONSTRAINT valid_raw_context 
+CHECK (
+    (span_name = 'llm_context_pre' AND raw_context <> '')
+    OR (span_name <> 'llm_context_pre')
+);
+
+ALTER TABLE traces 
+ADD CONSTRAINT valid_raw_response 
+CHECK (
+    (span_name = 'llm_response_post' AND raw_response <> '')
+    OR (span_name <> 'llm_response_post')
+);
