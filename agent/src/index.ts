@@ -521,6 +521,9 @@ export async function createAgent(
 	elizaLogger.log(`Creating runtime for character ${character.name}`);
 
 	const runtime = new AgentRuntime({
+		...(process.env.FULL_CONTEXT_MODE === "true" && {
+			conversationLength: 999999,
+		}),
 		databaseAdapter: db,
 		token,
 		modelProvider: character.modelProvider,
