@@ -124,7 +124,7 @@ async function runIntegrationExample() {
 
 	// Create an agent
 	const agent = new Agent();
-	console.log(`Created agent with IDs:`, agent.getIds());
+	console.log("Created agent with IDs:", agent.getIds());
 
 	// Process some messages
 	const messages = [

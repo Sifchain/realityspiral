@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Instrumentation, instrument } from "./instrumentation";
 
 // Initialize logging
-elizaLogger.info(`Testing instrumentation system with PostgreSQL...`);
+elizaLogger.info("Testing instrumentation system with PostgreSQL...");
 
 // Generate unique IDs for testing
 const sessionId = uuidv4();

@@ -10,6 +10,15 @@ declare -A containers=(
     ["prosper-dev"]="dev,5060,3060"
 )
 
+# PostgreSQL configuration
+PG_CONTAINER_NAME="agents-db"
+PG_PORT="5432"
+PG_USER="postgres"
+PG_PASSWORD="postgres"
+PG_DB="postgres"  # Default PostgreSQL database
+PG_VOLUME="agents-db-data"
+DOCKER_NETWORK="agents-network"
+
 # navigate to the directory containing this script
 cd $(dirname $0)
 
@@ -24,6 +33,102 @@ log_message "Starting deployment script..."
 command -v docker >/dev/null 2>&1 || { log_message "Error: docker is required but not installed. Aborting." >&2; exit 1; }
 
 log_message "All required commands are available"
+
+# Function to ensure the Docker network exists
+ensure_network() {
+    log_message "Checking Docker network..."
+    if ! docker network ls --format '{{.Name}}' | grep -q "^${DOCKER_NETWORK}$"; then
+        log_message "Creating Docker network ${DOCKER_NETWORK}..."
+        docker network create ${DOCKER_NETWORK}
+    else
+        log_message "Docker network ${DOCKER_NETWORK} already exists."
+    fi
+}
+
+# Function to setup PostgreSQL container if it doesn't exist
+setup_postgres() {
+    log_message "Checking PostgreSQL container..."
+    
+    # Check if PostgreSQL container exists and is running
+    if docker ps --format '{{.Names}}' | grep -q "^${PG_CONTAINER_NAME}$"; then
+        log_message "PostgreSQL container is already running."
+        
+        # Ensure the container is in the right network
+        if ! docker network inspect ${DOCKER_NETWORK} | grep -q "\"${PG_CONTAINER_NAME}\""; then
+            log_message "Connecting PostgreSQL container to ${DOCKER_NETWORK} network..."
+            docker network connect ${DOCKER_NETWORK} ${PG_CONTAINER_NAME}
+        fi
+        
+        return 0
+    fi
+    
+    # Check if container exists but is not running
+    if docker ps -a --format '{{.Names}}' | grep -q "^${PG_CONTAINER_NAME}$"; then
+        log_message "PostgreSQL container exists but is not running. Starting it..."
+        docker start ${PG_CONTAINER_NAME}
+        
+        # Ensure the container is in the right network
+        if ! docker network inspect ${DOCKER_NETWORK} | grep -q "\"${PG_CONTAINER_NAME}\""; then
+            log_message "Connecting PostgreSQL container to ${DOCKER_NETWORK} network..."
+            docker network connect ${DOCKER_NETWORK} ${PG_CONTAINER_NAME}
+        fi
+        
+        return 0
+    fi
+    
+    # Check if volume exists, if not create it
+    if ! docker volume ls --format '{{.Name}}' | grep -q "^${PG_VOLUME}$"; then
+        log_message "Creating PostgreSQL volume ${PG_VOLUME}..."
+        docker volume create ${PG_VOLUME}
+    fi
+    
+    # Create PostgreSQL container
+    log_message "Creating and starting PostgreSQL container..."
+    docker run -d \
+        --name ${PG_CONTAINER_NAME} \
+        -e POSTGRES_USER=${PG_USER} \
+        -e POSTGRES_PASSWORD=${PG_PASSWORD} \
+        -e POSTGRES_DB=${PG_DB} \
+        -v ${PG_VOLUME}:/var/lib/postgresql/data \
+        --network=${DOCKER_NETWORK} \
+        --restart unless-stopped \
+        postgres
+    
+    # Wait for PostgreSQL to be ready
+    log_message "Waiting for PostgreSQL to be ready..."
+    sleep 10
+    
+    # Check if PostgreSQL is running
+    if ! docker ps --format '{{.Names}}' | grep -q "^${PG_CONTAINER_NAME}$"; then
+        log_message "Error: Failed to start PostgreSQL container. Aborting." >&2
+        return 1
+    fi
+    
+    log_message "PostgreSQL container is ready."
+    return 0
+}
+
+# Function to ensure database for a container if it doesn't exist
+ensure_container_database() {
+    local container_name=$1
+    # Replace hyphens with underscores in database name to avoid SQL syntax errors
+    local container_db="db_${container_name//-/_}"
+    
+    log_message "Ensuring database exists for ${container_name}..." >&2
+    
+    # Check if database exists
+    local db_exists=$(docker exec -i ${PG_CONTAINER_NAME} psql -U ${PG_USER} -t -c "SELECT 1 FROM pg_database WHERE datname='${container_db}'")
+    
+    # Create database if it doesn't exist
+    if [ -z "$db_exists" ] || [ "$db_exists" != " 1" ]; then
+        log_message "Creating database '${container_db}' for ${container_name}..." >&2
+        docker exec -i ${PG_CONTAINER_NAME} psql -U ${PG_USER} -c "CREATE DATABASE ${container_db}"
+    else
+        log_message "Database '${container_db}' already exists for ${container_name}." >&2
+    fi
+    
+    echo "${container_db}"
+}
 
 # Function to get the specific version tag from an image
 get_version_tag() {
@@ -95,6 +200,9 @@ deploy_containers() {
             continue
         fi
         
+        # Ensure container database exists and get its name
+        local container_db=$(ensure_container_database "${container}")
+        
         # Stop and remove existing container if it exists
         if docker ps -a --format '{{.Names}}' | grep -q "^${container}$"; then
             log_message "Stopping and removing existing ${container} container..."
@@ -110,10 +218,25 @@ deploy_containers() {
             -p ${port2}:${port2} \
             -v $(pwd)/${container}.env:/app/.env \
             -e VERSION="${version_tag}" \
+            -e POSTGRES_HOST="${PG_CONTAINER_NAME}" \
+            -e POSTGRES_PORT="${PG_PORT}" \
+            -e POSTGRES_USER="${PG_USER}" \
+            -e POSTGRES_PASSWORD="${PG_PASSWORD}" \
+            -e POSTGRES_DB="${container_db}" \
+            --network=${DOCKER_NETWORK} \
             --restart unless-stopped \
             ghcr.io/sifchain/realityspiral:${image_tag}
     done
 }
+
+# Ensure Docker network exists
+ensure_network
+
+# Setup PostgreSQL container
+if ! setup_postgres; then
+    log_message "Failed to setup PostgreSQL container. Aborting deployment."
+    exit 1
+fi
 
 # Deploy production containers with specific version tag
 log_message "Deploying production containers..."

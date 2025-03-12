@@ -11,6 +11,7 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import Chat from "./routes/chat";
 import Home from "./routes/home";
 import Overview from "./routes/overview";
+import Settings from "./routes/settings";
 const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
@@ -38,6 +39,7 @@ function App() {
 										<Route path="/" element={<Home />} />
 										<Route path="chat/:agentId" element={<Chat />} />
 										<Route path="settings/:agentId" element={<Overview />} />
+										<Route path="settings" element={<Settings />} />
 										<Route path="logs" element={<Logs />} />
 										<Route path="templates" element={<MemoryManager />} />
 									</Routes>

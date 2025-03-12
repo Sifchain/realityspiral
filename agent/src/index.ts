@@ -20,6 +20,7 @@ import {
 	type IDatabaseAdapter,
 	type IDatabaseCacheAdapter,
 	ModelProviderName,
+	type State,
 	defaultCharacter,
 	elizaLogger,
 	parseBooleanFromText,
@@ -48,11 +49,15 @@ import {
 	githubInteractWithIssuePlugin,
 	githubInteractWithPRPlugin,
 	githubModifyIssuePlugin,
+	githubOrchestratePlugin,
 } from "@realityspiral/plugin-github";
 import Database from "better-sqlite3";
 import yargs from "yargs";
 import { z } from "zod";
-import { getRuntimeInstrumentation } from "./runtime-instrumentation";
+import {
+	type RuntimeInstrumentation,
+	getRuntimeInstrumentation,
+} from "./runtime-instrumentation";
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -516,6 +521,9 @@ export async function createAgent(
 	elizaLogger.log(`Creating runtime for character ${character.name}`);
 
 	const runtime = new AgentRuntime({
+		...(process.env.FULL_CONTEXT_MODE === "true" && {
+			conversationLength: 999999,
+		}),
 		databaseAdapter: db,
 		token,
 		modelProvider: character.modelProvider,
@@ -569,6 +577,7 @@ export async function createAgent(
 						githubIdeationPlugin,
 						githubInteractWithIssuePlugin,
 						githubInteractWithPRPlugin,
+						githubOrchestratePlugin,
 					]
 				: []),
 		]
@@ -580,14 +589,17 @@ export async function createAgent(
 		fetch: logFetch,
 	});
 
-	// Set up automatic instrumentation for all agents
-	const runtimeInstrumentation = getRuntimeInstrumentation();
+	if (process.env.INSTRUMENTATION_ENABLED === "true") {
+		// Set up automatic instrumentation for all agents
+		const runtimeInstrumentation = getRuntimeInstrumentation();
 
-	// This will attach to evaluate and other methods to automatically instrument
-	runtimeInstrumentation.attachToRuntime(runtime);
-	elizaLogger.info(
-		`🔄 Instrumentation attached to runtime for agent ${runtime.agentId}`,
-	);
+		// This will attach to evaluate and other methods to automatically instrument
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		runtimeInstrumentation.attachToRuntime(runtime as any);
+		elizaLogger.info(
+			`🔄 Instrumentation attached to runtime for agent ${runtime.agentId}`,
+		);
+	}
 
 	return runtime;
 }
@@ -644,7 +656,7 @@ async function startAgent(
 		// report to console
 		elizaLogger.debug(`Started ${character.name} as ${runtime.agentId}`);
 
-		const startTime = Date.now();
+		const _startTime = Date.now();
 
 		try {
 			// Trigger evaluate immediately after initialization to ensure tracing is working
@@ -664,7 +676,7 @@ async function startAgent(
 			};
 
 			// Call evaluate to trigger instrumentation
-			runtime.evaluate(message, state as any).catch((err) => {
+			runtime.evaluate(message, state as State).catch((err) => {
 				elizaLogger.error(`Error evaluating agent start: ${err.message}`);
 			});
 		} catch (error) {
@@ -748,9 +760,12 @@ const startAgents = async () => {
 	directClient.loadCharacterTryPath = loadCharacterTryPath;
 	directClient.jsonToCharacter = jsonToCharacter;
 
-	// Make sure Runtime Instrumentation is exposed to DirectClient
-	const runtimeInstrumentation = getRuntimeInstrumentation();
-	directClient.instrumentationAttached = false;
+	let runtimeInstrumentation: RuntimeInstrumentation;
+	if (process.env.INSTRUMENTATION_ENABLED === "true") {
+		// Make sure Runtime Instrumentation is exposed to DirectClient
+		runtimeInstrumentation = getRuntimeInstrumentation();
+		directClient.instrumentationAttached = false;
+	}
 
 	// Add a method to DirectClient to ensure instrumentation is set up properly
 	const originalRegisterAgent = directClient.registerAgent.bind(directClient);
@@ -759,14 +774,18 @@ const startAgents = async () => {
 		originalRegisterAgent(runtime);
 
 		// Ensure the runtime is instrumented
-		if (!directClient.instrumentationAttached) {
+		if (
+			process.env.INSTRUMENTATION_ENABLED === "true" &&
+			!directClient.instrumentationAttached
+		) {
 			try {
 				// Attach the instrumentation wrapper to all POST request handlers
 				// Apply to each route handler that processes messages
 				elizaLogger.info(
 					`🔌 Attaching instrumentation to DirectClient routes for agent ${runtime.agentId}`,
 				);
-				runtimeInstrumentation.attachToRuntime(runtime);
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				runtimeInstrumentation.attachToRuntime(runtime as any);
 				directClient.instrumentationAttached = true;
 			} catch (error) {
 				elizaLogger.error(
@@ -809,7 +828,10 @@ if (
 }
 
 // Initialize the runtime instrumentation at the module level
-const runtimeInstrumentation = getRuntimeInstrumentation();
+let runtimeInstrumentation: RuntimeInstrumentation;
+if (process.env.INSTRUMENTATION_ENABLED === "true") {
+	runtimeInstrumentation = getRuntimeInstrumentation();
+}
 
 // Export the instrumentation for direct access if needed
 export { runtimeInstrumentation };

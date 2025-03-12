@@ -22,6 +22,9 @@ export default defineConfig(({ mode }) => {
 			"import.meta.env.VITE_SERVER_URL": JSON.stringify(
 				env.UI_SERVER_URL || "http://localhost:3000",
 			),
+			"import.meta.env.INSTRUMENTATION_ENABLED": JSON.stringify(
+				env.INSTRUMENTATION_ENABLED || "false",
+			),
 		},
 		build: {
 			outDir: "dist",

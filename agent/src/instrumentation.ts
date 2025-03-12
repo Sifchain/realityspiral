@@ -1,5 +1,11 @@
 import { elizaLogger } from "@elizaos/core";
-import { Span, SpanStatusCode, trace } from "@opentelemetry/api";
+import {
+	type AttributeValue,
+	Attributes,
+	Span,
+	SpanStatusCode,
+	trace,
+} from "@opentelemetry/api";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { Resource } from "@opentelemetry/resources";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
@@ -10,9 +16,38 @@ import { DBSpanProcessor } from "./dbSpanProcessor";
 
 // Simplify the logger type definition
 interface Logger {
-	logMessageReceived: (data: Record<string, any>) => void;
-	logMessageProcessed: (data: Record<string, any>) => void;
-	logAgentCreated: (data: Record<string, any>) => void;
+	/**
+	 * Logs when a message is received by the agent.
+	 * @param data - The details of the received message.
+	 */
+	logMessageReceived: (data: {
+		message: string;
+		sessionId: string;
+		agentId: string;
+		roomId: string;
+	}) => void;
+
+	/**
+	 * Logs when a message has been processed by the agent.
+	 * @param data - The details of the processed message.
+	 */
+	logMessageProcessed: (data: {
+		messageId: string;
+		sessionId: string;
+		agentId: string;
+		processingTime: number;
+	}) => void;
+
+	/**
+	 * Logs when a new agent is created.
+	 * @param data - The details of the agent creation.
+	 */
+	logAgentCreated: (data: {
+		agentId: string;
+		sessionId: string;
+		roomId: string;
+		model?: string;
+	}) => void;
 }
 
 /**
@@ -93,16 +128,16 @@ export class AgentInstrumentation {
 }
 
 // Singleton instance
-const agentInstrumentation = AgentInstrumentation.getInstance();
+const _agentInstrumentation = AgentInstrumentation.getInstance();
 
 /**
  * Helper function to get or create a logger for an agent
  */
 export function getAgentLogger(
-	agentId: string,
-	sessionId?: string,
-	roomId?: string,
-	model = "gpt-4",
+	_agentId: string,
+	_sessionId?: string,
+	_roomId?: string,
+	_model = "gpt-4",
 ): Logger {
 	return {
 		logMessageReceived: (data) => console.log("Message received:", data),
@@ -115,13 +150,15 @@ export interface InstrumentationEvent {
 	stage: string;
 	subStage: string;
 	event: string;
-	data: Record<string, any>;
+	data: Record<string, unknown>;
 	timestamp?: number;
 }
 
 export class Instrumentation {
 	private static instance: Instrumentation;
 	private tracer: ReturnType<typeof trace.getTracer>;
+	private enabled = true; // Enable instrumentation by default
+	private provider: NodeTracerProvider;
 
 	private constructor() {
 		const provider = new NodeTracerProvider({
@@ -158,33 +195,37 @@ export class Instrumentation {
 	}
 
 	public logEvent(event: InstrumentationEvent): void {
-		const { sessionId, agentId, roomId } = event.data;
-		const hasRequiredIds = sessionId || agentId || roomId;
-
-		if (!hasRequiredIds) {
-			console.warn("⚠️ Skipping event without context IDs:", event.event);
-			return;
+		if (!this.enabled) {
+			return; // Skip logging if instrumentation is disabled
 		}
 
-		const span = this.tracer.startSpan(event.event, {
-			attributes: {
-				...(sessionId && { "session.id": sessionId }),
-				...(agentId && { "agent.id": agentId }),
-				...(roomId && { "room.id": roomId }),
-				"event.stage": event.stage,
-				"event.sub_stage": event.subStage,
-				"event.timestamp": event.timestamp || Date.now(),
-				environment: process.env.NODE_ENV || "development",
-				...event.data,
-			},
-		});
+		const span = this.tracer.startSpan(
+			`${event.stage}/${event.subStage}/${event.event}`,
+		);
 
-		try {
-			console.log(JSON.stringify(event));
-			span.setStatus({ code: SpanStatusCode.OK });
-		} finally {
-			span.end();
+		// Convert to proper attribute format
+		const attributes: Record<string, AttributeValue> = {
+			stage: event.stage,
+			subStage: event.subStage,
+			event: event.event,
+		};
+
+		// Add data properties as attributes
+		for (const [key, value] of Object.entries(event.data)) {
+			// Only add values that can be converted to AttributeValue
+			if (
+				typeof value === "string" ||
+				typeof value === "number" ||
+				typeof value === "boolean" ||
+				Array.isArray(value)
+			) {
+				attributes[key] = value as AttributeValue;
+			}
 		}
+
+		span.setAttributes(attributes);
+		span.setStatus({ code: SpanStatusCode.OK });
+		span.end();
 	}
 
 	public sessionStart(data: {
@@ -251,4 +292,10 @@ export class Instrumentation {
 	}
 }
 
-export const instrument = Instrumentation.getInstance();
+let instrument: Instrumentation;
+
+if (process.env.INSTRUMENTATION_ENABLED === "true") {
+	instrument = Instrumentation.getInstance();
+}
+
+export { instrument };

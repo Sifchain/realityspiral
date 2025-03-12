@@ -1,13 +1,16 @@
 import * as fs from "node:fs";
+import type http from "node:http";
 import * as path from "node:path";
 import {
 	type AgentRuntime,
+	type Character,
 	type Client,
 	type Content,
 	type IAgentRuntime,
 	type Media,
 	type Memory,
 	ModelClass,
+	type State,
 	composeContext,
 	elizaLogger,
 	generateCaption,
@@ -19,6 +22,11 @@ import {
 	settings,
 	stringToUuid,
 } from "@elizaos/core";
+import type { Instrumentation } from "@realityspiral/agent/instrumentation";
+import type {
+	RuntimeInstrumentation,
+	RuntimeLike,
+} from "@realityspiral/agent/runtime-instrumentation";
 import bodyParser from "body-parser";
 import cors from "cors";
 import express, { type Request as ExpressRequest } from "express";
@@ -112,10 +120,16 @@ Response format should be formatted in a JSON block like this:
 export class DirectClient {
 	public app: express.Application;
 	private agents: Map<string, AgentRuntime>; // container management
-	private server: any; // Store server instance
-	public startAgent: Function; // Store startAgent functor
-	public loadCharacterTryPath: Function; // Store loadCharacterTryPath functor
-	public jsonToCharacter: Function; // Store jsonToCharacter functor
+	private server: http.Server; // Store server instance
+	public startAgent: (
+		character: Character,
+		directClient: DirectClient,
+	) => Promise<AgentRuntime>; // Store startAgent functor
+	public loadCharacterTryPath: (characterPath: string) => Promise<Character>; // Store loadCharacterTryPath functor
+	public jsonToCharacter: (
+		filePath: string,
+		character: Record<string, unknown>,
+	) => Promise<Character>; // Store jsonToCharacter functor
 	public instrumentationAttached = false; // Track if instrumentation is attached
 
 	constructor() {
@@ -271,17 +285,20 @@ export class DirectClient {
 					return;
 				}
 
-				// Import the runtime instrumentation and instrumentation singleton
-				const instrumentationModule = await import(
-					"@realityspiral/agent/instrumentation"
-				);
-				const runtimeInstrumentationModule = await import(
-					"@realityspiral/agent/runtime-instrumentation"
-				);
-				const runtimeInstrumentation =
-					runtimeInstrumentationModule.getRuntimeInstrumentation();
-				const instrumentation =
-					instrumentationModule.Instrumentation.getInstance();
+				let runtimeInstrumentation: RuntimeInstrumentation;
+				let instrumentation: Instrumentation;
+				if (process.env.INSTRUMENTATION_ENABLED === "true") {
+					// Import the runtime instrumentation and instrumentation singleton
+					const instrumentationModule = await import(
+						"@realityspiral/agent/instrumentation"
+					);
+					const runtimeInstrumentationModule = await import(
+						"@realityspiral/agent/runtime-instrumentation"
+					);
+					runtimeInstrumentation =
+						runtimeInstrumentationModule.getRuntimeInstrumentation();
+					instrumentation = instrumentationModule.Instrumentation.getInstance();
+				}
 
 				const text = req.body.text;
 				// if empty text, directly return
@@ -290,33 +307,41 @@ export class DirectClient {
 					return;
 				}
 
-				// Ensure the runtime has instrumentation attached
-				runtimeInstrumentation.attachToRuntime(runtime);
+				if (process.env.INSTRUMENTATION_ENABLED === "true") {
+					// Ensure the runtime has instrumentation attached
+					runtimeInstrumentation.attachToRuntime(
+						runtime as unknown as RuntimeLike,
+					);
+				}
 
 				const startTime = Date.now();
 				const messageId = stringToUuid(Date.now().toString());
 
 				// Generate a session ID if not available
-				const sessionId = (runtime as any).sessionId || `session-${Date.now()}`;
+				const sessionId =
+					(runtime as unknown as RuntimeLike).sessionId ||
+					`session-${Date.now()}`;
 
-				// Log message reception event with detailed context
-				instrumentation.logEvent({
-					stage: "Chat",
-					subStage: "Request",
-					event: "chat_message_received",
-					data: {
-						messageId,
-						sessionId,
-						agentId: runtime.agentId,
-						roomId,
-						userId,
-						messageText: text,
-						characterName: runtime.character?.name || "Unknown",
-						timestamp: startTime,
-						client: "direct",
-						hasAttachments: req.file ? true : false,
-					},
-				});
+				if (process.env.INSTRUMENTATION_ENABLED === "true") {
+					// Log message reception event with detailed context
+					instrumentation.logEvent({
+						stage: "Chat",
+						subStage: "Request",
+						event: "chat_message_received",
+						data: {
+							messageId,
+							sessionId,
+							agentId: runtime.agentId,
+							roomId,
+							userId,
+							messageText: text,
+							characterName: runtime.character?.name || "Unknown",
+							timestamp: startTime,
+							client: "direct",
+							hasAttachments: !!req.file,
+						},
+					});
+				}
 
 				await runtime.ensureConnection(
 					userId,
@@ -386,73 +411,79 @@ export class DirectClient {
 					createdAt: Date.now(),
 				};
 
-				// Log memory storage event
-				instrumentation.logEvent({
-					stage: "Chat",
-					subStage: "Memory",
-					event: "memory_storage_started",
-					data: {
-						messageId,
-						sessionId,
-						agentId: runtime.agentId,
-						roomId,
-						userId,
-						timestamp: Date.now(),
-					},
-				});
+				if (process.env.INSTRUMENTATION_ENABLED === "true") {
+					// Log memory storage event
+					instrumentation.logEvent({
+						stage: "Chat",
+						subStage: "Memory",
+						event: "memory_storage_started",
+						data: {
+							messageId,
+							sessionId,
+							agentId: runtime.agentId,
+							roomId,
+							userId,
+							timestamp: Date.now(),
+						},
+					});
+				}
 
 				await runtime.messageManager.addEmbeddingToMemory(memory);
 				await runtime.messageManager.createMemory(memory);
 
-				// Log memory storage complete event
-				instrumentation.logEvent({
-					stage: "Chat",
-					subStage: "Memory",
-					event: "memory_storage_completed",
-					data: {
-						messageId,
-						sessionId,
-						agentId: runtime.agentId,
-						roomId,
-						userId,
-						timestamp: Date.now(),
-					},
-				});
+				if (process.env.INSTRUMENTATION_ENABLED === "true") {
+					// Log memory storage complete event
+					instrumentation.logEvent({
+						stage: "Chat",
+						subStage: "Memory",
+						event: "memory_storage_completed",
+						data: {
+							messageId,
+							sessionId,
+							agentId: runtime.agentId,
+							roomId,
+							userId,
+							timestamp: Date.now(),
+						},
+					});
 
-				// Log state composition started
-				instrumentation.logEvent({
-					stage: "Chat",
-					subStage: "State",
-					event: "state_composition_started",
-					data: {
-						messageId,
-						sessionId,
-						agentId: runtime.agentId,
-						roomId,
-						userId,
-						timestamp: Date.now(),
-					},
-				});
+					// Log state composition started
+					instrumentation.logEvent({
+						stage: "Chat",
+						subStage: "State",
+						event: "state_composition_started",
+						data: {
+							messageId,
+							sessionId,
+							agentId: runtime.agentId,
+							roomId,
+							userId,
+							timestamp: Date.now(),
+						},
+					});
+				}
 
 				let state = await runtime.composeState(userMessage, {
 					agentName: runtime.character.name,
 				});
 
-				// Log response generation started
-				instrumentation.logEvent({
-					stage: "Chat",
-					subStage: "Generation",
-					event: "response_generation_started",
-					data: {
-						messageId,
-						sessionId,
-						agentId: runtime.agentId,
-						roomId,
-						userId,
-						modelClass: ModelClass.LARGE,
-						timestamp: Date.now(),
-					},
-				});
+				if (process.env.INSTRUMENTATION_ENABLED === "true") {
+					// Log response generation started
+					instrumentation.logEvent({
+						stage: "Chat",
+						subStage: "Generation",
+						event: "response_generation_started",
+						data: {
+							messageId,
+							sessionId,
+							agentId: runtime.agentId,
+							roomId,
+							userId,
+							modelClass: ModelClass.LARGE,
+							timestamp: Date.now(),
+						},
+					});
+				}
 
 				const generationStartTime = Date.now();
 				const response = await generateMessageResponse({
@@ -465,39 +496,43 @@ export class DirectClient {
 				});
 				const generationEndTime = Date.now();
 
-				// Log response generation completed
-				instrumentation.logEvent({
-					stage: "Chat",
-					subStage: "Generation",
-					event: "response_generation_completed",
-					data: {
-						messageId,
-						sessionId,
-						agentId: runtime.agentId,
-						roomId,
-						userId,
-						generationTime: generationEndTime - generationStartTime,
-						responseLength: response ? response.text.length : 0,
-						timestamp: generationEndTime,
-					},
-				});
-
-				if (!response) {
-					// Log error
+				if (process.env.INSTRUMENTATION_ENABLED === "true") {
+					// Log response generation completed
 					instrumentation.logEvent({
 						stage: "Chat",
-						subStage: "Error",
-						event: "response_generation_failed",
+						subStage: "Generation",
+						event: "response_generation_completed",
 						data: {
 							messageId,
 							sessionId,
 							agentId: runtime.agentId,
 							roomId,
 							userId,
-							error: "No response from generateMessageResponse",
-							timestamp: Date.now(),
+							generationTime: generationEndTime - generationStartTime,
+							responseLength: response ? response.text.length : 0,
+							timestamp: generationEndTime,
 						},
 					});
+				}
+
+				if (!response) {
+					if (process.env.INSTRUMENTATION_ENABLED === "true") {
+						// Log error
+						instrumentation.logEvent({
+							stage: "Chat",
+							subStage: "Error",
+							event: "response_generation_failed",
+							data: {
+								messageId,
+								sessionId,
+								agentId: runtime.agentId,
+								roomId,
+								userId,
+								error: "No response from generateMessageResponse",
+								timestamp: Date.now(),
+							},
+						});
+					}
 					res.status(500).send("No response from generateMessageResponse");
 					return;
 				}
@@ -518,21 +553,23 @@ export class DirectClient {
 
 				let message = null as Content | null;
 
-				// Log action processing started
-				instrumentation.logEvent({
-					stage: "Chat",
-					subStage: "Actions",
-					event: "action_processing_started",
-					data: {
-						messageId,
-						sessionId,
-						agentId: runtime.agentId,
-						roomId,
-						userId,
-						actionCount: runtime.actions.length,
-						timestamp: Date.now(),
-					},
-				});
+				if (process.env.INSTRUMENTATION_ENABLED === "true") {
+					// Log action processing started
+					instrumentation.logEvent({
+						stage: "Chat",
+						subStage: "Actions",
+						event: "action_processing_started",
+						data: {
+							messageId,
+							sessionId,
+							agentId: runtime.agentId,
+							roomId,
+							userId,
+							actionCount: runtime.actions.length,
+							timestamp: Date.now(),
+						},
+					});
+				}
 
 				const actionsStartTime = Date.now();
 				await runtime.processActions(
@@ -546,22 +583,24 @@ export class DirectClient {
 				);
 				const actionsEndTime = Date.now();
 
-				// Log action processing completed
-				instrumentation.logEvent({
-					stage: "Chat",
-					subStage: "Actions",
-					event: "action_processing_completed",
-					data: {
-						messageId,
-						sessionId,
-						agentId: runtime.agentId,
-						roomId,
-						userId,
-						processingTime: actionsEndTime - actionsStartTime,
-						hasAdditionalMessages: message !== null,
-						timestamp: actionsEndTime,
-					},
-				});
+				if (process.env.INSTRUMENTATION_ENABLED === "true") {
+					// Log action processing completed
+					instrumentation.logEvent({
+						stage: "Chat",
+						subStage: "Actions",
+						event: "action_processing_completed",
+						data: {
+							messageId,
+							sessionId,
+							agentId: runtime.agentId,
+							roomId,
+							userId,
+							processingTime: actionsEndTime - actionsStartTime,
+							hasAdditionalMessages: message !== null,
+							timestamp: actionsEndTime,
+						},
+					});
+				}
 
 				await runtime.evaluate(memory, state);
 
@@ -569,23 +608,26 @@ export class DirectClient {
 				const action = runtime.actions.find((a) => a.name === response.action);
 				const shouldSuppressInitialMessage = action?.suppressInitialMessage;
 
-				// Log response delivery
-				instrumentation.logEvent({
-					stage: "Chat",
-					subStage: "Response",
-					event: "response_delivered",
-					data: {
-						messageId,
-						sessionId,
-						agentId: runtime.agentId,
-						roomId,
-						userId,
-						totalProcessingTime: Date.now() - startTime,
-						suppressedInitialMessage: !!shouldSuppressInitialMessage,
-						hasAdditionalMessages: message !== null,
-						timestamp: Date.now(),
-					},
-				});
+				if (process.env.INSTRUMENTATION_ENABLED === "true") {
+					// Log response delivery
+					instrumentation.logEvent({
+						stage: "Chat",
+						subStage: "Response",
+						event: "response_delivered",
+						data: {
+							messageId,
+							sessionId,
+							agentId: runtime.agentId,
+							roomId,
+							userId,
+							agentResponse: response.text,
+							totalProcessingTime: Date.now() - startTime,
+							suppressedInitialMessage: !!shouldSuppressInitialMessage,
+							hasAdditionalMessages: message !== null,
+							timestamp: Date.now(),
+						},
+					});
+				}
 
 				if (!shouldSuppressInitialMessage) {
 					if (message) {
@@ -1294,7 +1336,7 @@ export class DirectClient {
 			// This will trigger the instrumentation if it's properly set up
 			if (runtime.evaluate && typeof runtime.evaluate === "function") {
 				const state = { agentId: runtime.agentId };
-				runtime.evaluate(message, state as any).catch((err) => {
+				runtime.evaluate(message, state as State).catch((err) => {
 					elizaLogger.error(
 						`Error evaluating agent registration: ${err.message}`,
 					);

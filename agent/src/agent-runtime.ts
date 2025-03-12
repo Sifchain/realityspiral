@@ -17,16 +17,6 @@ export class AgentRuntime {
 			message.toLowerCase().includes("hi")
 		) {
 			return "Hello! I'm a simulated agent. How can I assist you today?";
-		} else if (message.toLowerCase().includes("help")) {
-			return "I can help with various tasks. This is a simulated response for demonstration purposes.";
-		} else if (message.toLowerCase().includes("yourself")) {
-			return "I'm a simulated agent created for demonstrating the instrumentation integration. I don't have real capabilities in this example.";
-		} else {
-			return (
-				"I understand you said: " +
-				message +
-				". This is a simulated response for the instrumentation example."
-			);
 		}
 	}
 }

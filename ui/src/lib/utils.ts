@@ -16,12 +16,26 @@ export const formatAgentName = (name: string) => {
 	return name.substring(0, 2);
 };
 
-export const getSessionId = () => {
-	if (!sessionStorage.getItem("sessionId")) {
-		const sessionId = crypto.randomUUID();
-		sessionStorage.setItem("sessionId", sessionId);
+export const getBrowserId = () => {
+	if (!localStorage.getItem("browserId")) {
+		const browserId = crypto.randomUUID();
+		localStorage.setItem("browserId", browserId);
 	}
-	return sessionStorage.getItem("sessionId");
+	return localStorage.getItem("browserId");
+};
+
+export const resetAllData = () => {
+	localStorage.clear();
+};
+
+export const resetSessionId = () => {
+	const browserId = crypto.randomUUID();
+	localStorage.setItem("browserId", browserId);
+	return browserId;
+};
+
+export const getSessionId = () => {
+	return getBrowserId();
 };
 
 export const getUserId = async (sessionId: string) => {
