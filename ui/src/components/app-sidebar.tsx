@@ -104,20 +104,24 @@ export function AppSidebar() {
 							</SidebarMenuButton>
 						</NavLink>
 					</SidebarMenuItem>
-					<SidebarMenuItem>
-						<NavLink to="/logs">
-							<SidebarMenuButton>
-								<Cog /> Settings
-							</SidebarMenuButton>
-						</NavLink>
-					</SidebarMenuItem>
-					<SidebarMenuItem>
-						<NavLink to="/templates">
-							<SidebarMenuButton>
-								<Book /> Templates
-							</SidebarMenuButton>
-						</NavLink>
-					</SidebarMenuItem>
+					{import.meta.env.INSTRUMENTATION_ENABLED === "true" && (
+						<>
+							<SidebarMenuItem>
+								<NavLink to="/logs">
+									<SidebarMenuButton>
+										<Cog /> Settings
+									</SidebarMenuButton>
+								</NavLink>
+							</SidebarMenuItem>
+							<SidebarMenuItem>
+								<NavLink to="/templates">
+									<SidebarMenuButton>
+										<Book /> Templates
+									</SidebarMenuButton>
+								</NavLink>
+							</SidebarMenuItem>
+						</>
+					)}
 					<SidebarMenuItem>
 						<NavLink to={url ?? ""} target="_blank">
 							<SidebarMenuButton disabled>
