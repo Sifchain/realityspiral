@@ -22,6 +22,7 @@ import {
 	settings,
 	stringToUuid,
 } from "@elizaos/core";
+import type { Instrumentation } from "@realityspiral/agent/instrumentation";
 import type {
 	RuntimeInstrumentation,
 	RuntimeLike,
@@ -35,7 +36,6 @@ import { z } from "zod";
 import { createApiRouter } from "./api.ts";
 import { setupSwagger } from "./config/swagger.ts";
 import { createVerifiableLogApiRouter } from "./verifiable-log-api.ts";
-import type { Instrumentation } from "@realityspiral/agent/instrumentation";
 
 const storage = multer.diskStorage({
 	destination: (_req, _file, cb) => {

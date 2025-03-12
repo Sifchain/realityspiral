@@ -53,7 +53,10 @@ import {
 import Database from "better-sqlite3";
 import yargs from "yargs";
 import { z } from "zod";
-import { getRuntimeInstrumentation, type RuntimeInstrumentation } from "./runtime-instrumentation";
+import {
+	type RuntimeInstrumentation,
+	getRuntimeInstrumentation,
+} from "./runtime-instrumentation";
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -668,11 +671,9 @@ async function startAgent(
 			};
 
 			// Call evaluate to trigger instrumentation
-			runtime
-				.evaluate(message, state as State)
-				.catch((err) => {
-					elizaLogger.error(`Error evaluating agent start: ${err.message}`);
-				});
+			runtime.evaluate(message, state as State).catch((err) => {
+				elizaLogger.error(`Error evaluating agent start: ${err.message}`);
+			});
 		} catch (error) {
 			elizaLogger.error(
 				`Error during agent start instrumentation: ${error.message}`,
@@ -768,7 +769,10 @@ const startAgents = async () => {
 		originalRegisterAgent(runtime);
 
 		// Ensure the runtime is instrumented
-		if (process.env.INSTRUMENTATION_ENABLED === "true" && !directClient.instrumentationAttached) {
+		if (
+			process.env.INSTRUMENTATION_ENABLED === "true" &&
+			!directClient.instrumentationAttached
+		) {
 			try {
 				// Attach the instrumentation wrapper to all POST request handlers
 				// Apply to each route handler that processes messages
