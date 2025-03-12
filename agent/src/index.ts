@@ -58,6 +58,7 @@ import {
 	type RuntimeInstrumentation,
 	getRuntimeInstrumentation,
 } from "./runtime-instrumentation";
+import synfuturesPlugin from "@realityspiral/plugin-synfutures";
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -531,6 +532,9 @@ export async function createAgent(
 		character,
 		// character.plugins are handled when clients are added
 		plugins: [
+			getSecret(character, "MARGIN_SHORT_TRADING_ENABLED") === "true"
+				? synfuturesPlugin
+				: null,
 			getSecret(character, "COINBASE_COMMERCE_KEY")
 				? coinbaseCommercePlugin
 				: null,
