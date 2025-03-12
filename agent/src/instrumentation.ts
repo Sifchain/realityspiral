@@ -292,4 +292,10 @@ export class Instrumentation {
 	}
 }
 
-export const instrument = Instrumentation.getInstance();
+let instrument: Instrumentation;
+
+if (process.env.INSTRUMENTATION_ENABLED === "true") {
+	instrument = Instrumentation.getInstance();
+}
+
+export { instrument };

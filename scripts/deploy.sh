@@ -130,28 +130,6 @@ ensure_container_database() {
     echo "${container_db}"
 }
 
-# Function to run SQL script for a container
-run_sql_for_container() {
-    local container_name=$1
-    
-    # Ensure container database exists and get its name
-    local container_db=$(ensure_container_database "${container_name}")
-    
-    log_message "Running tracing-schema.sql for ${container_name} in database ${container_db}..."
-    
-    # Create a temporary file that customizes the SQL for this container
-    local temp_sql_file=$(mktemp)
-    cat tracing-schema.sql | sed "s/{{container_name}}/${container_name}/g" > ${temp_sql_file}
-    
-    # Run the SQL script against the container's database
-    docker exec -i ${PG_CONTAINER_NAME} psql -U ${PG_USER} -d ${container_db} < ${temp_sql_file}
-    
-    # Clean up
-    rm ${temp_sql_file}
-    
-    log_message "SQL script execution completed for ${container_name} in database ${container_db}."
-}
-
 # Function to get the specific version tag from an image
 get_version_tag() {
     local image_name=$1
@@ -248,9 +226,6 @@ deploy_containers() {
             --network=${DOCKER_NETWORK} \
             --restart unless-stopped \
             ghcr.io/sifchain/realityspiral:${image_tag}
-        
-        # Run SQL script for this container
-        run_sql_for_container "${container}"
     done
 }
 
