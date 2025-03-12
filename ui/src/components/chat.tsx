@@ -8,7 +8,7 @@ import { ChatInput } from "@/components/ui/chat/chat-input";
 import { ChatMessageList } from "@/components/ui/chat/chat-message-list";
 import { useToast } from "@/hooks/use-toast";
 import { apiClient } from "@/lib/api";
-import { cn, moment } from "@/lib/utils";
+import { cn, getSessionId, moment } from "@/lib/utils";
 import type { IAttachment } from "@/types";
 import type { Content, UUID } from "@elizaos/core";
 import { type AnimatedProps, animated, useTransition } from "@react-spring/web";
@@ -37,6 +37,36 @@ type AnimatedDivProps = AnimatedProps<{ style: React.CSSProperties }> & {
 	children?: React.ReactNode;
 };
 
+// Helper function to save messages to local storage
+const saveMessagesToLocalStorage = (
+	agentId: UUID,
+	messages: ContentWithUser[],
+) => {
+	try {
+		const sessionId = getSessionId();
+		localStorage.setItem(
+			`chat_messages_${agentId}_${sessionId}`,
+			JSON.stringify(messages),
+		);
+	} catch (error) {
+		console.error("Error saving messages to local storage:", error);
+	}
+};
+
+// Helper function to get messages from local storage
+const getMessagesFromLocalStorage = (agentId: UUID): ContentWithUser[] => {
+	try {
+		const sessionId = getSessionId();
+		const storedMessages = localStorage.getItem(
+			`chat_messages_${agentId}_${sessionId}`,
+		);
+		return storedMessages ? JSON.parse(storedMessages) : [];
+	} catch (error) {
+		console.error("Error retrieving messages from local storage:", error);
+		return [];
+	}
+};
+
 export default function Page({ agentId }: { agentId: UUID }) {
 	const { toast } = useToast();
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -54,6 +84,14 @@ export default function Page({ agentId }: { agentId: UUID }) {
 		useAutoScroll({
 			smooth: true,
 		});
+
+	// Load messages from local storage on initial render
+	useEffect(() => {
+		const storedMessages = getMessagesFromLocalStorage(agentId);
+		if (storedMessages.length > 0) {
+			queryClient.setQueryData(["messages", agentId], storedMessages);
+		}
+	}, [agentId, queryClient]);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
@@ -102,10 +140,16 @@ export default function Page({ agentId }: { agentId: UUID }) {
 			},
 		];
 
-		queryClient.setQueryData(
-			["messages", agentId],
-			(old: ContentWithUser[] = []) => [...old, ...newMessages],
-		);
+		const updatedMessages = [
+			...(queryClient.getQueryData<ContentWithUser[]>(["messages", agentId]) ||
+				[]),
+			...newMessages,
+		];
+
+		queryClient.setQueryData(["messages", agentId], updatedMessages);
+
+		// Save to local storage
+		saveMessagesToLocalStorage(agentId, updatedMessages as ContentWithUser[]);
 
 		sendMessageMutation.mutate({
 			message: input,
@@ -133,16 +177,21 @@ export default function Page({ agentId }: { agentId: UUID }) {
 			selectedFile?: File | null;
 		}) => apiClient.sendMessage(agentId, message, selectedFile),
 		onSuccess: (newMessages: ContentWithUser[]) => {
-			queryClient.setQueryData(
-				["messages", agentId],
-				(old: ContentWithUser[] = []) => [
-					...old.filter((msg) => !msg.isLoading),
-					...newMessages.map((msg) => ({
-						...msg,
-						createdAt: Date.now(),
-					})),
-				],
-			);
+			const currentMessages =
+				queryClient.getQueryData<ContentWithUser[]>(["messages", agentId]) ||
+				[];
+			const updatedMessages = [
+				...currentMessages.filter((msg) => !msg.isLoading),
+				...newMessages.map((msg) => ({
+					...msg,
+					createdAt: Date.now(),
+				})),
+			];
+
+			queryClient.setQueryData(["messages", agentId], updatedMessages);
+
+			// Save to local storage
+			saveMessagesToLocalStorage(agentId, updatedMessages);
 		},
 		onError: (e) => {
 			toast({
@@ -203,6 +252,10 @@ export default function Page({ agentId }: { agentId: UUID }) {
 					})),
 				];
 				queryClient.setQueryData(["messages", agentId], updatedMessages);
+				
+				// Save to local storage
+				saveMessagesToLocalStorage(agentId, updatedMessages);
+				
 				return updatedMessages;
 			}
 
