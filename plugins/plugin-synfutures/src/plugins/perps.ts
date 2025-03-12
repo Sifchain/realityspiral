@@ -64,7 +64,7 @@ let isContextInitialized = false;
 let provider: ethers.JsonRpcProvider | null = null;
 let signer: ethers.Wallet | null = null;
 
-function getProviderAndSigner() {
+export function getProviderAndSigner() {
 	if (!provider || !signer) {
 		provider = new ethers.JsonRpcProvider(process.env.BASE_RPC_URL);
 		signer = new ethers.Wallet(process.env.WALLET_PRIVATE_KEY, provider);

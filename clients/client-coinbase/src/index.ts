@@ -28,7 +28,7 @@ import express from "express";
 import { http, createWalletClient, erc20Abi, publicActions } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
-import { getTokenMetadata } from "../../../plugins/plugin-0x/src/utils";
+import { getTokenMetadata } from "@realityspiral/plugin-0x";
 import {
 	type WebhookEvent,
 	blockExplorerBaseAddressUrl,
@@ -36,6 +36,8 @@ import {
 	supportedTickers,
 } from "./types";
 import { calculateAPR, fetchTokenPrice } from "./utils";
+import { getProviderAndSigner } from "@realityspiral/plugin-synfutures";
+import { placeMarketOrder } from "@realityspiral/plugin-synfutures";
 
 export type { WebhookEvent };
 
@@ -433,15 +435,39 @@ Generate only the tweet text, no commentary or markdown.`;
 		amount: number,
 		buy: boolean,
 	): Promise<string | null> {
-		return await tokenSwap(
-			this.runtime,
-			amount,
-			buy ? "USDC" : event.ticker,
-			buy ? event.ticker : "USDC",
-			this.runtime.getSetting("WALLET_PUBLIC_KEY"),
-			this.runtime.getSetting("WALLET_PRIVATE_KEY"),
-			"base",
-		);
+		if (
+			process.env.ENABLE_MARGIN_SHORT &&
+			process.env.ENABLE_MARGIN_SHORT.toLowerCase() === "true"
+		) {
+			const defaultLeverage = Number(process.env.DEFAULT_LEVERAGE) || 5;
+			// Map BUY to LONG and SELL to SHORT for margin trading
+			const side = buy ? "LONG" : "SHORT";
+			const instrumentSymbol = event.ticker;
+			const { signer } = getProviderAndSigner();
+			try {
+				const txHash = await placeMarketOrder(
+					instrumentSymbol,
+					side as any,
+					amount,
+					defaultLeverage,
+					signer,
+				);
+				return txHash;
+			} catch (error: any) {
+				elizaLogger.error("Margin/short trade failed:", error.message);
+				return null;
+			}
+		} else {
+			return await tokenSwap(
+				this.runtime,
+				amount,
+				buy ? "USDC" : event.ticker,
+				buy ? event.ticker : "USDC",
+				this.runtime.getSetting("WALLET_PUBLIC_KEY"),
+				this.runtime.getSetting("WALLET_PRIVATE_KEY"),
+				"base",
+			);
+		}
 	}
 
 	private async handleMediaPosting(
