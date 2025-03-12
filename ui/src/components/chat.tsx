@@ -252,10 +252,10 @@ export default function Page({ agentId }: { agentId: UUID }) {
 					})),
 				];
 				queryClient.setQueryData(["messages", agentId], updatedMessages);
-				
+
 				// Save to local storage
 				saveMessagesToLocalStorage(agentId, updatedMessages);
-				
+
 				return updatedMessages;
 			}
 

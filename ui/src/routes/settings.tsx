@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -7,9 +6,10 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { AlertCircle, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getSessionId, resetAllData, resetSessionId } from "@/lib/utils";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
 
 // Helper function to count all messages in local storage for the current session
 const getMessageCountForSession = (): number => {
@@ -21,7 +21,7 @@ const getMessageCountForSession = (): number => {
 		// Check all localStorage keys for chat_messages patterns
 		for (let i = 0; i < localStorage.length; i++) {
 			const key = localStorage.key(i);
-			if (key && key.includes(`chat_messages_`) && key.includes(sessionId)) {
+			if (key?.includes("chat_messages_") && key.includes(sessionId)) {
 				const messages = JSON.parse(localStorage.getItem(key) || "[]");
 				totalCount += messages.length;
 			}
