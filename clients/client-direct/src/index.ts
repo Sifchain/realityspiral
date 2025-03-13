@@ -22,9 +22,9 @@ import {
 	stringToUuid,
 } from "@elizaos/core";
 import {
+	Instrumentation,
 	composeContext,
 	getRuntimeInstrumentation,
-	Instrumentation,
 } from "@realityspiral/plugin-instrumentation";
 import type {
 	RuntimeInstrumentation,
