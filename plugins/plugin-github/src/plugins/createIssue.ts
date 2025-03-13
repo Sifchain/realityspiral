@@ -10,6 +10,10 @@ import {
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { GitHubService } from "../services/github";
 import {
 	createIssueTemplate,
@@ -24,10 +28,6 @@ import {
 	isSimilarityIssueCheckContent,
 } from "../types";
 import { saveIssueToMemory } from "../utils";
-import {
-	composeContext,
-	traceResult,
-} from "@realityspiral/plugin-instrumentation";
 
 export const createIssueAction: Action = {
 	name: "CREATE_ISSUE",

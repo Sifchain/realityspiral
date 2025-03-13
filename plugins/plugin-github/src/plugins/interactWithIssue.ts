@@ -160,7 +160,7 @@ export const addCommentToIssueAction: Action = {
 			elizaLogger.info(
 				`Added comment to issue #${content.issue} successfully! See comment at ${comment.html_url}`,
 			);
-			
+
 			if (callback) {
 				callback({
 					text: `Added comment to issue #${content.issue} successfully! See comment at ${comment.html_url}`,

@@ -11,7 +11,6 @@ import {
 	generateText,
 	stringToUuid,
 } from "@elizaos/core";
-import { composeContext } from "@realityspiral/plugin-instrumentation";
 import {
 	TOKENS,
 	getPriceInquiry,
@@ -23,6 +22,7 @@ import {
 	initializeWallet,
 	readContractWrapper,
 } from "@realityspiral/plugin-coinbase";
+import { composeContext } from "@realityspiral/plugin-instrumentation";
 import { postTweet } from "@realityspiral/plugin-twitter";
 import express from "express";
 import { http, createWalletClient, erc20Abi, publicActions } from "viem";

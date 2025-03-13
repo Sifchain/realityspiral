@@ -107,14 +107,14 @@ export const createCommitAction: Action = {
 			elizaLogger.info(
 				`Commited changes to the repository ${content.owner}/${content.repo} successfully to branch '${content.branch}'! commit hash: ${hash}`,
 			);
-			
+
 			if (callback) {
 				callback({
 					text: `Changes commited to repository ${content.owner}/${content.repo} successfully to branch '${content.branch}'! commit hash: ${hash}`,
 					attachments: [],
 				});
 			}
-			
+
 			return traceResult(state, commit);
 		} catch (error) {
 			elizaLogger.error(

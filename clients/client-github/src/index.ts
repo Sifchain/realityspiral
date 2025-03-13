@@ -15,7 +15,6 @@ import {
 	generateObject,
 	stringToUuid,
 } from "@elizaos/core";
-import { composeContext } from "@realityspiral/plugin-instrumentation";
 import {
 	addCommentToIssueAction,
 	closeIssueAction,
@@ -35,6 +34,7 @@ import {
 	saveIssuesToMemory,
 	savePullRequestsToMemory,
 } from "@realityspiral/plugin-github";
+import { composeContext } from "@realityspiral/plugin-instrumentation";
 import { configGithubInfoAction } from "./actions/configGithubInfo";
 import { stopAction } from "./actions/stop";
 import { validateGithubConfig } from "./environment";

@@ -5,10 +5,6 @@ import {
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
-import {
-	composeContext,
-	traceResult,
-} from "@realityspiral/plugin-instrumentation";
 import type {
 	Action,
 	HandlerCallback,
@@ -21,6 +17,10 @@ import {
 	EmailClientInterface,
 	type SendEmailOptions,
 } from "@realityspiral/plugin-email";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import type { EmailClient } from "../../../plugin-email/src/clients/emailClient";
 import { chargeTemplate, getChargeTemplate } from "../templates";
 import { type ChargeContent, ChargeSchema, isChargeContent } from "../types";

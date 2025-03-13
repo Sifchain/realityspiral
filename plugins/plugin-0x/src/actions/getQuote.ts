@@ -8,12 +8,12 @@ import {
 	type State,
 	elizaLogger,
 } from "@elizaos/core";
+import { traceResult } from "@realityspiral/plugin-instrumentation";
 import { formatUnits } from "viem";
 import { CHAIN_NAMES, NATIVE_TOKENS, ZX_MEMORY } from "../constants";
 import type { GetQuoteResponse, PriceInquiry, Quote } from "../types";
 import { formatTokenAmount } from "../utils";
 import { TOKENS } from "../utils";
-import { traceResult } from "@realityspiral/plugin-instrumentation";
 
 export const getQuote: Action = {
 	name: "GET_QUOTE_0X",

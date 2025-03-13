@@ -1,8 +1,8 @@
 import {
-	elizaLogger,
-	type State,
 	type Memory,
+	type State,
 	type TemplateType,
+	elizaLogger,
 	composeContext as originalComposeContext,
 } from "@elizaos/core";
 import { v4 as uuidv4 } from "uuid";

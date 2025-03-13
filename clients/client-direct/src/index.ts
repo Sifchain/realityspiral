@@ -23,9 +23,9 @@ import {
 } from "@elizaos/core";
 import { composeContext } from "@realityspiral/plugin-instrumentation";
 import type {
+	Instrumentation,
 	RuntimeInstrumentation,
 	RuntimeLike,
-	Instrumentation,
 } from "@realityspiral/plugin-instrumentation";
 import bodyParser from "body-parser";
 import cors from "cors";

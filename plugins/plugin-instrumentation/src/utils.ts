@@ -1,5 +1,5 @@
-import { Instrumentation } from "./instrumentation";
 import type { State } from "@elizaos/core";
+import { Instrumentation } from "./instrumentation";
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const traceResult = (state: State, result: any) => {

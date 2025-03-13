@@ -1,7 +1,7 @@
 import {
-	composeContext as originalComposeContext,
 	type State,
 	type TemplateType,
+	composeContext as originalComposeContext,
 } from "@elizaos/core";
 import { Instrumentation } from "./instrumentation";
 

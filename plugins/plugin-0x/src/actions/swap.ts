@@ -7,6 +7,7 @@ import {
 	type State,
 	elizaLogger,
 } from "@elizaos/core";
+import { traceResult } from "@realityspiral/plugin-instrumentation";
 import {
 	type Hex,
 	concat,
@@ -20,7 +21,6 @@ import { getWalletClient } from "../hooks.ts/useGetWalletClient";
 import { Chains, type GetIndicativePriceResponse, type Quote } from "../types";
 import { getPriceInquiry } from "./getIndicativePrice";
 import { getQuoteObj } from "./getQuote";
-import { traceResult } from "@realityspiral/plugin-instrumentation";
 
 export const swap: Action = {
 	name: "EXECUTE_SWAP_0X",
