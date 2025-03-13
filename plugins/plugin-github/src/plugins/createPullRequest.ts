@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -125,14 +126,16 @@ export const createPullRequestAction: Action = {
 				`Pull request created successfully! URL: ${pullRequest.html_url}`,
 			);
 
+			const response: Content = {
+				text: `Pull request created successfully! URL: ${pullRequest.html_url}`,
+				attachments: [],
+			};
+
 			if (callback) {
-				callback({
-					text: `Pull request created successfully! URL: ${pullRequest.html_url}`,
-					attachments: [],
-				});
+				callback(response);
 			}
 
-			return traceResult(state, pullRequest);
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error creating pull request on ${content.owner}/${content.repo} branch ${content.branch}:`,

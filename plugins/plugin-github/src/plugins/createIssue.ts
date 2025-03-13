@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -161,21 +162,25 @@ export const createIssueAction: Action = {
 					await callback(memory.content);
 				}
 
-				return traceResult(state, issue);
+				return traceResult(state, memory.content);
 			}
 
 			elizaLogger.info(
 				`Issue already exists! Issue number: ${similarityCheckContent.issue}`,
 			);
 
+			const response: Content = {
+				text: `Issue already exists! Issue number: ${similarityCheckContent.issue}`,
+				action: "CREATE_ISSUE",
+				source: "github",
+				attachments: [],
+			};
+
 			if (callback) {
-				await callback({
-					text: `Issue already exists! Issue number: ${similarityCheckContent.issue}`,
-					action: "CREATE_ISSUE",
-					source: "github",
-					attachments: [],
-				});
+				await callback(response);
 			}
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error creating issue in repository ${content.owner}/${content.repo}:`,

@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -376,17 +377,18 @@ export const executeAdvancedTradeAction: Action = {
 			elizaLogger.info("Parsed order:", JSON.stringify(parsedOrder));
 			elizaLogger.info("Parsed order success:", parsedOrder.success);
 			if (parsedOrder.success === true) {
-				callback(
-					{
-						text: `Advanced Trade executed successfully:
-    - Product: ${productId}
-    - Type: ${orderType} Order
-    - Side: ${side}
-    - Amount: ${amountInCurrency}
-    ${orderType === "LIMIT" ? `- Limit Price: ${limitPrice}\n` : ""}`,
-					},
-					[],
-				);
+				const response: Content = {
+					text: `Advanced Trade executed successfully:
+- Product: ${productId}
+- Type: ${orderType} Order
+- Side: ${side}
+- Amount: ${amountInCurrency}
+${orderType === "LIMIT" ? `- Limit Price: ${limitPrice}\n` : ""}`,
+				};
+
+				callback(response, []);
+
+				traceResult(state, response);
 			} else {
 				callback(
 					{
@@ -413,10 +415,6 @@ export const executeAdvancedTradeAction: Action = {
 		try {
 			// await appendTradeToCsv(order);
 			elizaLogger.info("Trade logged to CSV");
-
-			return traceResult(state, {
-				message: "Trade logged to CSV",
-			});
 		} catch (csvError) {
 			elizaLogger.warn("Failed to log trade to CSV:", csvError.message);
 			// Continue execution as this is non-critical

@@ -1,6 +1,7 @@
 import { createClientV2 } from "@0x/swap-ts-sdk";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -156,10 +157,15 @@ export const getQuote: Action = {
 				.filter(Boolean)
 				.join("\n");
 
-			callback({
+			const response: Content = {
 				text: formattedResponse,
-			});
-			return traceResult(state, true);
+			};
+
+			callback(response);
+
+			traceResult(state, response);
+
+			return true;
 		} catch (error) {
 			elizaLogger.error("Error getting quote:", error);
 			if (callback) {

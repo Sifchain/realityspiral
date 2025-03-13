@@ -1,5 +1,6 @@
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -90,14 +91,18 @@ export const modifyIssueAction: Action = {
 
 			elizaLogger.info(`Modified issue #${issue.number} successfully!`);
 
+			const response: Content = {
+				text: `Modified issue #${issue.number} successfully!`,
+				attachments: [],
+			};
+
 			if (callback) {
-				callback({
-					text: `Modified issue #${issue.number} successfully!`,
-					attachments: [],
-				});
+				callback(response);
 			}
 
-			return traceResult(state, issue);
+			traceResult(state, response);
+
+			return issue;
 		} catch (error) {
 			elizaLogger.error(
 				`Error modifying issue #${content.issue} in repository ${content.owner}/${content.repo}:`,

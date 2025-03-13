@@ -4,6 +4,7 @@ import path from "node:path";
 import { Coinbase, type Wallet } from "@coinbase/coinbase-sdk";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -363,9 +364,9 @@ export const sendMassPayoutAction: Action = {
 						}`,
 				)
 				.join("\n");
-			callback(
-				{
-					text: `Mass payouts completed successfully.
+
+			const response: Content = {
+				text: `Mass payouts completed successfully.
 - Successful Transactions: ${successTransactions.length}
 - Failed Transactions: ${failedTransactions.length}
 
@@ -374,13 +375,11 @@ ${successTransactions.length > 0 ? `✅ Successful Transactions:\n${successDetai
 ${failedTransactions.length > 0 ? `❌ Failed Transactions:\n${failedDetails}` : "No failed transactions."}
 ${charityTransactions.length > 0 ? `✅ Charity Transactions:\n${charityDetails}` : "No charity transactions."}
 `,
-				},
-				[],
-			);
+			};
 
-			return traceResult(state, {
-				message: "Mass payouts completed successfully.",
-			});
+			callback(response, []);
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error("Error during mass payouts:", error.message);
 			callback({ text: `Failed to complete payouts: ${error.message}` }, []);

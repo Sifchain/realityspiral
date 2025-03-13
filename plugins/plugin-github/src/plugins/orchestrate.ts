@@ -65,8 +65,6 @@ export const orchestrateAction: Action = {
 					`/tmp/orchestrate-result-${action.githubAction}.json`,
 					JSON.stringify(result, null, 2),
 				);
-
-				traceResult(state, result);
 			} catch (error) {
 				elizaLogger.error(
 					`Error executing action ${action.githubAction}:`,
