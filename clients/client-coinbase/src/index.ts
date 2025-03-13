@@ -25,6 +25,7 @@ import {
 	readContractWrapper,
 } from "@realityspiral/plugin-coinbase";
 import {
+	Side,
 	getProviderAndSigner,
 	placeMarketOrder,
 } from "@realityspiral/plugin-synfutures";
@@ -443,19 +444,35 @@ Generate only the tweet text, no commentary or markdown.`;
 		) {
 			const defaultLeverage = Number(process.env.DEFAULT_LEVERAGE) || 5;
 			// Map BUY to LONG and SELL to SHORT for margin trading
-			const side = buy ? "LONG" : "SHORT";
+			const side = event.side === "long" ? Side.LONG : Side.SHORT;
+
 			const instrumentSymbol = event.ticker;
 			const { signer } = getProviderAndSigner();
+			// need to consider closing the order
 			try {
-				const txHash = await placeMarketOrder(
-					instrumentSymbol,
-					side as any,
-					String(amount),
-					String(defaultLeverage),
-					signer,
-				);
-				return txHash.transactionHash;
-			} catch (error: any) {
+				if (buy) {
+					const tx = await placeMarketOrder(
+						instrumentSymbol,
+						side,
+						String(amount),
+						String(defaultLeverage),
+						signer,
+					);
+					elizaLogger.info(`tx ${JSON.stringify(tx)}`);
+					return tx.transactionHash;
+				} else {
+					// need to do soemthing different if it sell.
+					const tx = await placeMarketOrder(
+						instrumentSymbol,
+						side,
+						String(amount),
+						String(defaultLeverage),
+						signer,
+					);
+					elizaLogger.info(`tx ${JSON.stringify(tx)}`);
+					return tx.transactionHash;
+				}
+			} catch (error) {
 				elizaLogger.error("Margin/short trade failed:", error.message);
 				return null;
 			}
