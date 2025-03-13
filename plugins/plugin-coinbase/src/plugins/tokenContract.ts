@@ -14,10 +14,13 @@ import {
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { createArrayCsvWriter } from "csv-writer";
 import { ABI } from "../constants";
 import {
@@ -222,6 +225,15 @@ ${deploymentDetails.totalSupply !== "N/A" ? `- Total Supply: ${deploymentDetails
 				},
 				[],
 			);
+
+			return traceResult(state, {
+				message: `Token contract deployed successfully:
+- Type: ${deploymentDetails.contractType}
+- Name: ${name}
+- Symbol: ${symbol}
+- Network: ${network}
+- Contract Address: ${contractAddress}`,
+			});
 		} catch (error) {
 			elizaLogger.error("Error deploying token contract:", error);
 			callback(
@@ -399,6 +411,15 @@ ${assetId ? `- Asset ID: ${assetId}` : ""}`,
 				},
 				[],
 			);
+
+			return traceResult(state, {
+				message: `Contract method invoked successfully:
+- Contract Address: ${contractAddress}
+- Method: ${method}
+- Network: ${networkId}
+- Status: ${invocation.getStatus()}
+- Transaction URL: ${invocation.getTransactionLink() || "N/A"}`,
+			});
 		} catch (error) {
 			elizaLogger.error("Error invoking contract method: ", error.message);
 			callback(
@@ -517,6 +538,14 @@ export const readContractAction: Action = {
 				},
 				[],
 			);
+
+			return traceResult(state, {
+				message: `Contract read successful:
+- Contract Address: ${contractAddress}
+- Method: ${method}
+- Network: ${networkId}
+- Result: ${JSON.stringify(result, null, 2)}`,
+			});
 		} catch (error) {
 			elizaLogger.error("Error reading contract: ", error.message);
 			callback(

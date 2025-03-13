@@ -7,10 +7,13 @@ import {
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { createPullRequestTemplate } from "../templates";
 import {
 	type CreatePullRequestContent,
@@ -121,13 +124,15 @@ export const createPullRequestAction: Action = {
 			elizaLogger.info(
 				`Pull request created successfully! URL: ${pullRequest.html_url}`,
 			);
+
 			if (callback) {
 				callback({
 					text: `Pull request created successfully! URL: ${pullRequest.html_url}`,
 					attachments: [],
 				});
 			}
-			return pullRequest;
+
+			return traceResult(state, pullRequest);
 		} catch (error) {
 			elizaLogger.error(
 				`Error creating pull request on ${content.owner}/${content.repo} branch ${content.branch}:`,

@@ -22,6 +22,7 @@
 		"@elizaos/plugin-tee-log": "^0.1.9",
 		"@elizaos/plugin-tee-verifiable-log": "^0.1.9",
 		"@realityspiral/client-coinbase": "workspace:*",
+		"@realityspiral/plugin-instrumentation": "workspace:*",
 		"@types/body-parser": "1.19.5",
 		"@types/cors": "2.8.17",
 		"@types/express": "5.0.0",

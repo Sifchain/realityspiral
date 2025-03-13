@@ -6,10 +6,13 @@ import {
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { GitHubService } from "../services/github";
 import { modifyIssueTemplate } from "../templates";
 import {
@@ -93,6 +96,8 @@ export const modifyIssueAction: Action = {
 					attachments: [],
 				});
 			}
+
+			return traceResult(state, issue);
 		} catch (error) {
 			elizaLogger.error(
 				`Error modifying issue #${content.issue} in repository ${content.owner}/${content.repo}:`,

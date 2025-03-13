@@ -7,10 +7,13 @@ import {
 	MemoryManager,
 	ModelClass,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { http, createWalletClient, parseUnits, publicActions } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
@@ -177,7 +180,8 @@ export const getIndicativePrice: Action = {
 			].join("\n");
 
 			callback({ text: formattedResponse });
-			return true;
+
+			return traceResult(state, true);
 		} catch (error) {
 			elizaLogger.error("Error getting price:", error);
 			callback({

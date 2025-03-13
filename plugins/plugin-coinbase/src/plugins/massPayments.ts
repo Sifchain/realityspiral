@@ -11,10 +11,13 @@ import {
 	type Plugin,
 	type Provider,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { parse } from "csv-parse/sync";
 import { createArrayCsvWriter } from "csv-writer";
 import { transferTemplate } from "../templates";
@@ -374,6 +377,10 @@ ${charityTransactions.length > 0 ? `✅ Charity Transactions:\n${charityDetails}
 				},
 				[],
 			);
+
+			return traceResult(state, {
+				message: "Mass payouts completed successfully.",
+			});
 		} catch (error) {
 			elizaLogger.error("Error during mass payouts:", error.message);
 			callback({ text: `Failed to complete payouts: ${error.message}` }, []);

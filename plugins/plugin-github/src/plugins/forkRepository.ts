@@ -6,10 +6,13 @@ import {
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { GitHubService } from "../services/github";
 import { forkRepositoryTemplate } from "../templates";
 import {
@@ -94,7 +97,7 @@ export const forkRepositoryAction: Action = {
 				});
 			}
 
-			return fork;
+			return traceResult(state, fork);
 		} catch (error) {
 			elizaLogger.error(
 				`Error forking repository ${content.owner}/${content.repo}:`,

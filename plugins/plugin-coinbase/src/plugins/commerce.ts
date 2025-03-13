@@ -2,7 +2,6 @@ import { Coinbase } from "@coinbase/coinbase-sdk";
 import {
 	ModelClass,
 	type Provider,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
@@ -18,6 +17,10 @@ import {
 	EmailClientInterface,
 	type SendEmailOptions,
 } from "@realityspiral/plugin-email";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import type { EmailClient } from "../../../plugin-email/src/clients/emailClient";
 import { chargeTemplate, getChargeTemplate } from "../templates";
 import { type ChargeContent, ChargeSchema, isChargeContent } from "../types";
@@ -247,6 +250,10 @@ export const createCoinbaseChargeAction: Action = {
 				},
 				[],
 			);
+
+			return traceResult(state, {
+				message: "Charge created successfully!",
+			});
 		} catch (error) {
 			elizaLogger.error(
 				"Error creating Coinbase Commerce charge:",
@@ -387,6 +394,10 @@ export const getAllChargesAction: Action = {
 				},
 				[],
 			);
+
+			return traceResult(state, {
+				message: "All charges fetched successfully!",
+			});
 		} catch (error) {
 			elizaLogger.error("Error fetching all charges:", error.message);
 			callback(
@@ -492,6 +503,10 @@ export const getChargeDetailsAction: Action = {
 				},
 				[],
 			);
+
+			return traceResult(state, {
+				message: "Charge details fetched successfully!",
+			});
 		} catch (error) {
 			elizaLogger.error(
 				`Error fetching details for charge ID ${charge.id}:`,

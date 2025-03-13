@@ -9,11 +9,14 @@ import {
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 	stringToUuid,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { createMemoriesFromFilesTemplate } from "../templates";
 import {
 	type CreateMemoriesFromFilesContent,
@@ -174,6 +177,8 @@ export const createMemoriesFromFilesAction: Action = {
 			//         attachments: [],
 			//     });
 			// }
+
+			return traceResult(state, { message: "Memories created successfully!" });
 		} catch (error) {
 			elizaLogger.error(
 				`Error creating memories from files on ${content.owner}/${content.repo} path ${content.path}:`,

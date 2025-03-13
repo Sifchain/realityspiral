@@ -8,10 +8,13 @@ import {
 	type Plugin,
 	type Provider,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { webhookTemplate } from "../templates";
 import { type WebhookContent, WebhookSchema, isWebhookContent } from "../types";
 import { appendWebhooksToCsv } from "../utils";
@@ -152,6 +155,10 @@ export const createWebhookAction: Action = {
 			);
 			await appendWebhooksToCsv([webhook]);
 			elizaLogger.info("Webhook appended to CSV successfully");
+
+			return traceResult(state, {
+				message: `Webhook created successfully: ${webhook.toString()}`,
+			});
 		} catch (error) {
 			elizaLogger.error("Error during webhook creation:", error.message);
 			callback(

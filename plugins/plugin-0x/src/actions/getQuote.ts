@@ -8,6 +8,7 @@ import {
 	type State,
 	elizaLogger,
 } from "@elizaos/core";
+import { traceResult } from "@realityspiral/plugin-instrumentation";
 import { formatUnits } from "viem";
 import { CHAIN_NAMES, NATIVE_TOKENS, ZX_MEMORY } from "../constants";
 import type { GetQuoteResponse, PriceInquiry, Quote } from "../types";
@@ -26,7 +27,7 @@ export const getQuote: Action = {
 	handler: async (
 		runtime: IAgentRuntime,
 		message: Memory,
-		_state: State,
+		state: State,
 		_options: Record<string, unknown>,
 		callback: HandlerCallback,
 	) => {
@@ -158,7 +159,7 @@ export const getQuote: Action = {
 			callback({
 				text: formattedResponse,
 			});
-			return true;
+			return traceResult(state, true);
 		} catch (error) {
 			elizaLogger.error("Error getting quote:", error);
 			if (callback) {

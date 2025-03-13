@@ -7,7 +7,6 @@ import {
 	type Provider,
 	type State,
 	type UUID,
-	composeContext,
 	elizaLogger,
 	generateText,
 	stringToUuid,
@@ -23,6 +22,7 @@ import {
 	initializeWallet,
 	readContractWrapper,
 } from "@realityspiral/plugin-coinbase";
+import { composeContext } from "@realityspiral/plugin-instrumentation";
 import { postTweet } from "@realityspiral/plugin-twitter";
 import express from "express";
 import { http, createWalletClient, erc20Abi, publicActions } from "viem";

@@ -7,10 +7,13 @@ import {
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { createCommitTemplate } from "../templates";
 import {
 	type CreateCommitContent,
@@ -104,13 +107,15 @@ export const createCommitAction: Action = {
 			elizaLogger.info(
 				`Commited changes to the repository ${content.owner}/${content.repo} successfully to branch '${content.branch}'! commit hash: ${hash}`,
 			);
+
 			if (callback) {
 				callback({
 					text: `Changes commited to repository ${content.owner}/${content.repo} successfully to branch '${content.branch}'! commit hash: ${hash}`,
 					attachments: [],
 				});
 			}
-			return commit;
+
+			return traceResult(state, commit);
 		} catch (error) {
 			elizaLogger.error(
 				`Error committing to the repository ${content.owner}/${content.repo} on branch '${content.branch}' message ${content.message}: See error: ${error.message}`,

@@ -4,11 +4,11 @@ import {
 	type Memory,
 	ModelClass,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 	truncateToCompleteSentence,
 } from "@elizaos/core";
+import { composeContext } from "@realityspiral/plugin-instrumentation";
 import { Scraper } from "agent-twitter-client";
 import { tweetTemplate } from "../templates";
 import { TweetSchema, isTweetContent } from "../types";

@@ -5,10 +5,10 @@ import {
 	type Memory,
 	ModelClass,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import { composeContext } from "@realityspiral/plugin-instrumentation";
 import { configGithubInfoTemplate } from "../templates";
 import {
 	type ConfigGithubInfoContent,

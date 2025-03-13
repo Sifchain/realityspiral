@@ -6,10 +6,13 @@ import {
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { initializeTemplate } from "../templates";
 import {
 	type InitializeContent,
@@ -107,6 +110,10 @@ export const initializeRepositoryAction: Action = {
 					attachments: [],
 				});
 			}
+
+			return traceResult(state, {
+				message: `Repository initialized successfully! URL: https://github.com/${content.owner}/${content.repo} @ branch: ${content.branch}`,
+			});
 		} catch (error) {
 			elizaLogger.error(
 				`Error initializing repository ${content.owner}/${content.repo} branch ${content.branch}:`,
