@@ -11,10 +11,13 @@ import {
 	type Plugin,
 	type Provider,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { parse } from "csv-parse/sync";
 import { createArrayCsvWriter } from "csv-writer";
 import { RESTClient } from "../../advanced-sdk-ts/src/rest";
@@ -233,6 +236,10 @@ export const executeTradeAction: Action = {
 			}
 
 			callback({ text: responseText }, []);
+
+			return traceResult(state, {
+				message: responseText,
+			});
 		} catch (error) {
 			elizaLogger.error("Error during trade execution: ", error.message);
 			callback(

@@ -18,6 +18,7 @@
 	"files": ["dist"],
 	"dependencies": {
 		"@elizaos/core": "^0.1.9",
+		"@realityspiral/plugin-instrumentation": "workspace:^",
 		"agent-twitter-client": "0.0.18",
 		"tsup": "8.3.5"
 	},

@@ -6,10 +6,13 @@ import {
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { GitHubService } from "../services/github";
 import {
 	addCommentToIssueTemplate,
@@ -157,12 +160,15 @@ export const addCommentToIssueAction: Action = {
 			elizaLogger.info(
 				`Added comment to issue #${content.issue} successfully! See comment at ${comment.html_url}`,
 			);
+			
 			if (callback) {
 				callback({
 					text: `Added comment to issue #${content.issue} successfully! See comment at ${comment.html_url}`,
 					attachments: [],
 				});
 			}
+
+			return traceResult(state, comment);
 		} catch (error) {
 			elizaLogger.error(
 				`Error adding comment to issue #${content.issue} in repository ${content.owner}/${content.repo}:`,

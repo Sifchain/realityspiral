@@ -7,11 +7,14 @@ import {
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 	stringToUuid,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { ideationTemplate } from "../templates";
 import { IdeationSchema, isIdeationContent } from "../types";
 
@@ -102,6 +105,8 @@ export const ideationAction: Action = {
 				attachments: [],
 			});
 		}
+
+		return traceResult(state, { message: "Ideas generated successfully!" });
 	},
 	examples: [
 		[

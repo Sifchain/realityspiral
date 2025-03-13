@@ -57,7 +57,7 @@ import { z } from "zod";
 import {
 	type RuntimeInstrumentation,
 	getRuntimeInstrumentation,
-} from "./runtime-instrumentation";
+} from "@realityspiral/plugin-instrumentation";
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory

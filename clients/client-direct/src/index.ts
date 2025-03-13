@@ -11,7 +11,6 @@ import {
 	type Memory,
 	ModelClass,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateCaption,
 	generateImage,
@@ -22,11 +21,12 @@ import {
 	settings,
 	stringToUuid,
 } from "@elizaos/core";
-import type { Instrumentation } from "@realityspiral/agent/instrumentation";
+import { composeContext } from "@realityspiral/plugin-instrumentation";
 import type {
 	RuntimeInstrumentation,
 	RuntimeLike,
-} from "@realityspiral/agent/runtime-instrumentation";
+	Instrumentation,
+} from "@realityspiral/plugin-instrumentation";
 import bodyParser from "body-parser";
 import cors from "cors";
 import express, { type Request as ExpressRequest } from "express";
@@ -290,10 +290,10 @@ export class DirectClient {
 				if (process.env.INSTRUMENTATION_ENABLED === "true") {
 					// Import the runtime instrumentation and instrumentation singleton
 					const instrumentationModule = await import(
-						"@realityspiral/agent/instrumentation"
+						"@realityspiral/plugin-instrumentation"
 					);
 					const runtimeInstrumentationModule = await import(
-						"@realityspiral/agent/runtime-instrumentation"
+						"@realityspiral/plugin-instrumentation"
 					);
 					runtimeInstrumentation =
 						runtimeInstrumentationModule.getRuntimeInstrumentation();

@@ -7,11 +7,11 @@ import {
 	type Provider,
 	type State,
 	type UUID,
-	composeContext,
 	elizaLogger,
 	generateText,
 	stringToUuid,
 } from "@elizaos/core";
+import { composeContext } from "@realityspiral/plugin-instrumentation";
 import {
 	TOKENS,
 	getPriceInquiry,

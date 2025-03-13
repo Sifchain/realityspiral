@@ -10,10 +10,13 @@ import {
 	type Plugin,
 	type Provider,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { parse } from "csv-parse/sync";
 import { createArrayCsvWriter } from "csv-writer";
 import { RESTClient } from "../../advanced-sdk-ts/src/rest";
@@ -410,6 +413,10 @@ export const executeAdvancedTradeAction: Action = {
 		try {
 			// await appendTradeToCsv(order);
 			elizaLogger.info("Trade logged to CSV");
+
+			return traceResult(state, {
+				message: "Trade logged to CSV",
+			});
 		} catch (csvError) {
 			elizaLogger.warn("Failed to log trade to CSV:", csvError.message);
 			// Continue execution as this is non-critical

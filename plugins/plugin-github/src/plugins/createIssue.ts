@@ -7,7 +7,6 @@ import {
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
@@ -25,6 +24,11 @@ import {
 	isSimilarityIssueCheckContent,
 } from "../types";
 import { saveIssueToMemory } from "../utils";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
+
 export const createIssueAction: Action = {
 	name: "CREATE_ISSUE",
 	similes: ["CREATE_ISSUE", "GITHUB_CREATE_ISSUE", "OPEN_ISSUE"],
@@ -157,7 +161,7 @@ export const createIssueAction: Action = {
 					await callback(memory.content);
 				}
 
-				return issue;
+				return traceResult(state, issue);
 			}
 
 			elizaLogger.info(

@@ -8,10 +8,13 @@ import {
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { GitHubService } from "../services/github";
 import {
 	addCommentToPRTemplate,
@@ -147,6 +150,8 @@ export const reactToPRAction: Action = {
 					attachments: [],
 				});
 			}
+
+			return traceResult(state, reaction);
 		} catch (error) {
 			elizaLogger.error(
 				`Error adding reaction to pull request #${content.pullRequest} in repository ${content.owner}/${content.repo}:`,

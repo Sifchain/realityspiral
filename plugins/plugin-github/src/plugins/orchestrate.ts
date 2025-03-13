@@ -7,10 +7,13 @@ import {
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import {
 	type OrchestratedGithubAction,
 	OrchestrationSchema,
@@ -62,6 +65,8 @@ export const orchestrateAction: Action = {
 					`/tmp/orchestrate-result-${action.githubAction}.json`,
 					JSON.stringify(result, null, 2),
 				);
+
+				traceResult(state, result);
 			} catch (error) {
 				elizaLogger.error(
 					`Error executing action ${action.githubAction}:`,

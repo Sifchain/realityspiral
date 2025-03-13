@@ -19,6 +19,7 @@
 	"dependencies": {
 		"@elizaos/core": "^0.1.9",
 		"@realityspiral/plugin-github": "workspace:*",
+		"@realityspiral/plugin-instrumentation": "workspace:*",
 		"@octokit/rest": "20.1.1",
 		"@octokit/types": "12.6.0",
 		"glob": "10.4.5",

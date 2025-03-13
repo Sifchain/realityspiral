@@ -1,4 +1,10 @@
-import { elizaLogger } from "@elizaos/core";
+import {
+	elizaLogger,
+	type State,
+	type Memory,
+	type TemplateType,
+	composeContext as originalComposeContext,
+} from "@elizaos/core";
 import { v4 as uuidv4 } from "uuid";
 import { Instrumentation } from "./instrumentation";
 
@@ -24,6 +30,20 @@ interface RuntimeLike {
 		callback?: (response: unknown) => void,
 	) => Promise<unknown>;
 	stop: () => Promise<unknown>;
+	composeState: (
+		message: Memory,
+		additionalKeys: { [key: string]: unknown },
+	) => Promise<unknown>;
+	updateRecentMessageState: (state: State) => Promise<State>;
+	composeContext: ({
+		state,
+		template,
+		templatingEngine,
+	}: {
+		state: State;
+		template: TemplateType;
+		templatingEngine?: "handlebars";
+	}) => string;
 
 	// We'll add a session ID if not present
 	sessionId?: string;
@@ -38,7 +58,7 @@ export type { RuntimeLike };
  */
 export class RuntimeInstrumentation {
 	private static instance: RuntimeInstrumentation;
-	private instrumentation: Instrumentation;
+	public instrumentation: Instrumentation;
 	private trackedRuntimes: Map<string, RuntimeLike> = new Map();
 
 	private constructor() {
@@ -283,6 +303,100 @@ export class RuntimeInstrumentation {
 						agentId: runtime.agentId,
 						sessionId: runtime.sessionId ?? "",
 						error: (error as Error).message,
+					},
+				});
+				throw error;
+			}
+		};
+
+		// Wrap the composeState method to track state composition
+		const originalComposeState = runtime.composeState.bind(runtime);
+		runtime.composeState = async (message, additionalKeys) => {
+			const startTime = Date.now();
+			try {
+				// Call the original method
+				const outputState = (await originalComposeState(
+					message,
+					additionalKeys,
+				)) as State;
+
+				// Log state composition
+				this.instrumentation.logEvent({
+					stage: "State",
+					subStage: "Composition",
+					event: "state_composition_completed",
+					data: {
+						sessionId: runtime.sessionId ?? "",
+						agentId: runtime.agentId,
+						processingTime: Date.now() - startTime,
+						messageId: message.id || uuidv4(),
+						roomId: (message.roomId as string) || "unknown",
+						inputMessage: JSON.stringify(message),
+						outputState: JSON.stringify(outputState),
+					},
+				});
+
+				return outputState;
+			} catch (error) {
+				// Log state composition error
+				this.instrumentation.logEvent({
+					stage: "State",
+					subStage: "Error",
+					event: "state_composition_error",
+					data: {
+						sessionId: runtime.sessionId ?? "",
+						agentId: runtime.agentId,
+						error: (error as Error).message,
+						processingTime: Date.now() - startTime,
+						messageId: message.id || uuidv4(),
+						roomId: (message.roomId as string) || "unknown",
+						inputMessage: JSON.stringify(message),
+					},
+				});
+				throw error;
+			}
+		};
+
+		// Wrap the updateRecentMessageState method to track state composition
+		const originalUpdateRecentMessageState =
+			runtime.updateRecentMessageState.bind(runtime);
+		runtime.updateRecentMessageState = async (state) => {
+			const startTime = Date.now();
+			try {
+				// Call the original method
+				const outputState = (await originalUpdateRecentMessageState(
+					state,
+				)) as State;
+
+				// Log state composition
+				this.instrumentation.logEvent({
+					stage: "State",
+					subStage: "Composition",
+					event: "state_composition_updated",
+					data: {
+						sessionId: runtime.sessionId ?? "",
+						agentId: runtime.agentId,
+						processingTime: Date.now() - startTime,
+						roomId: (state.roomId as string) || "unknown",
+						inputState: JSON.stringify(state),
+						outputState: JSON.stringify(outputState),
+					},
+				});
+
+				return outputState;
+			} catch (error) {
+				// Log state composition error
+				this.instrumentation.logEvent({
+					stage: "State",
+					subStage: "Error",
+					event: "state_composition_error",
+					data: {
+						sessionId: runtime.sessionId ?? "",
+						agentId: runtime.agentId,
+						error: (error as Error).message,
+						processingTime: Date.now() - startTime,
+						roomId: (state.roomId as string) || "unknown",
+						inputState: JSON.stringify(state),
 					},
 				});
 				throw error;

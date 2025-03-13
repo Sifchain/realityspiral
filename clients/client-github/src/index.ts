@@ -11,11 +11,11 @@ import {
 	ModelClass,
 	type State,
 	type UUID,
-	composeContext,
 	elizaLogger,
 	generateObject,
 	stringToUuid,
 } from "@elizaos/core";
+import { composeContext } from "@realityspiral/plugin-instrumentation";
 import {
 	addCommentToIssueAction,
 	closeIssueAction,
