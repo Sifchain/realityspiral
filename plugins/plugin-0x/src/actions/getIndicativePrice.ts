@@ -1,6 +1,7 @@
 import { createClientV2 } from "@0x/swap-ts-sdk";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -179,9 +180,13 @@ export const getIndicativePrice: Action = {
 				`💫 Happy with the price? Type 'quote' to continue`,
 			].join("\n");
 
-			callback({ text: formattedResponse });
+			const response: Content = { text: formattedResponse };
 
-			return traceResult(state, true);
+			callback(response);
+
+			traceResult(state, response);
+
+			return true;
 		} catch (error) {
 			elizaLogger.error("Error getting price:", error);
 			callback({

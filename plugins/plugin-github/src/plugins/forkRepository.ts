@@ -1,5 +1,6 @@
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -88,16 +89,18 @@ export const forkRepositoryAction: Action = {
 
 			elizaLogger.info(`Repository forked successfully! URL: ${fork.html_url}`);
 
+			const response: Content = {
+				text: `Repository forked successfully! URL: ${fork.html_url}`,
+				action: "FORK_REPOSITORY",
+				source: "github",
+				attachments: [],
+			};
+
 			if (callback) {
-				callback({
-					text: `Repository forked successfully! URL: ${fork.html_url}`,
-					action: "FORK_REPOSITORY",
-					source: "github",
-					attachments: [],
-				});
+				callback(response);
 			}
 
-			return traceResult(state, fork);
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error forking repository ${content.owner}/${content.repo}:`,

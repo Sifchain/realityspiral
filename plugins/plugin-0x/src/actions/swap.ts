@@ -1,5 +1,6 @@
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -107,11 +108,16 @@ export const swap: Action = {
 			});
 
 			if (receipt.status === "success") {
-				callback({
+				const response: Content = {
 					text: `✅ Swap executed successfully!\nView on Explorer: ${CHAIN_EXPLORERS[chainId]}/tx/${txHash}`,
 					content: { hash: txHash, status: "success" },
-				});
-				return traceResult(state, true);
+				};
+
+				callback(response);
+
+				traceResult(state, response);
+
+				return true;
 			}
 			callback({
 				text: `❌ Swap failed! Check transaction: ${CHAIN_EXPLORERS[chainId]}/tx/${txHash}`,

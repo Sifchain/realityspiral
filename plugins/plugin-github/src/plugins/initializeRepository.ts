@@ -1,5 +1,6 @@
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -102,18 +103,19 @@ export const initializeRepositoryAction: Action = {
 			elizaLogger.info(
 				`Repository initialized successfully! URL: https://github.com/${content.owner}/${content.repo} @ branch: ${content.branch}`,
 			);
+
+			const response: Content = {
+				text: `Repository initialized successfully! URL: https://github.com/${content.owner}/${content.repo} @ branch: ${content.branch}`,
+				action: "INITIALIZE_REPOSITORY",
+				source: "github",
+				attachments: [],
+			};
+
 			if (callback) {
-				callback({
-					text: `Repository initialized successfully! URL: https://github.com/${content.owner}/${content.repo} @ branch: ${content.branch}`,
-					action: "INITIALIZE_REPOSITORY",
-					source: "github",
-					attachments: [],
-				});
+				callback(response);
 			}
 
-			return traceResult(state, {
-				message: `Repository initialized successfully! URL: https://github.com/${content.owner}/${content.repo} @ branch: ${content.branch}`,
-			});
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error initializing repository ${content.owner}/${content.repo} branch ${content.branch}:`,

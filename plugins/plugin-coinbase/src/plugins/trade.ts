@@ -4,6 +4,7 @@ import path from "node:path";
 import { Coinbase } from "@coinbase/coinbase-sdk";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -235,11 +236,13 @@ export const executeTradeAction: Action = {
 				responseText += "\n(Note: Charity transfer was not completed)";
 			}
 
-			callback({ text: responseText }, []);
+			const response: Content = {
+				text: responseText,
+			};
 
-			return traceResult(state, {
-				message: responseText,
-			});
+			callback(response, []);
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error("Error during trade execution: ", error.message);
 			callback(
