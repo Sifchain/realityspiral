@@ -21,9 +21,12 @@ import {
 	settings,
 	stringToUuid,
 } from "@elizaos/core";
-import { composeContext } from "@realityspiral/plugin-instrumentation";
-import type {
+import {
+	composeContext,
+	getRuntimeInstrumentation,
 	Instrumentation,
+} from "@realityspiral/plugin-instrumentation";
+import type {
 	RuntimeInstrumentation,
 	RuntimeLike,
 } from "@realityspiral/plugin-instrumentation";
@@ -288,16 +291,8 @@ export class DirectClient {
 				let runtimeInstrumentation: RuntimeInstrumentation;
 				let instrumentation: Instrumentation;
 				if (process.env.INSTRUMENTATION_ENABLED === "true") {
-					// Import the runtime instrumentation and instrumentation singleton
-					const instrumentationModule = await import(
-						"@realityspiral/plugin-instrumentation"
-					);
-					const runtimeInstrumentationModule = await import(
-						"@realityspiral/plugin-instrumentation"
-					);
-					runtimeInstrumentation =
-						runtimeInstrumentationModule.getRuntimeInstrumentation();
-					instrumentation = instrumentationModule.Instrumentation.getInstance();
+					runtimeInstrumentation = getRuntimeInstrumentation();
+					instrumentation = Instrumentation.getInstance();
 				}
 
 				const text = req.body.text;

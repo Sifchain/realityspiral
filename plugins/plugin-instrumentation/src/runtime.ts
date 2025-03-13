@@ -58,7 +58,7 @@ export type { RuntimeLike };
  */
 export class RuntimeInstrumentation {
 	private static instance: RuntimeInstrumentation;
-	public instrumentation: Instrumentation;
+	private instrumentation: Instrumentation;
 	private trackedRuntimes: Map<string, RuntimeLike> = new Map();
 
 	private constructor() {
