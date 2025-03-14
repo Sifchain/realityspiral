@@ -1,5 +1,6 @@
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -7,6 +8,7 @@ import {
 	type State,
 	elizaLogger,
 } from "@elizaos/core";
+import { traceResult } from "@realityspiral/plugin-instrumentation";
 import {
 	type Hex,
 	concat,
@@ -40,7 +42,7 @@ export const swap: Action = {
 	handler: async (
 		runtime: IAgentRuntime,
 		message: Memory,
-		_state: State,
+		state: State,
 		_options: Record<string, unknown>,
 		callback: HandlerCallback,
 	) => {
@@ -106,10 +108,15 @@ export const swap: Action = {
 			});
 
 			if (receipt.status === "success") {
-				callback({
+				const response: Content = {
 					text: `✅ Swap executed successfully!\nView on Explorer: ${CHAIN_EXPLORERS[chainId]}/tx/${txHash}`,
 					content: { hash: txHash, status: "success" },
-				});
+				};
+
+				callback(response);
+
+				traceResult(state, response);
+
 				return true;
 			}
 			callback({

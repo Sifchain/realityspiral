@@ -8,16 +8,20 @@ import {
 } from "@coinbase/coinbase-sdk";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { createArrayCsvWriter } from "csv-writer";
 import { ABI } from "../constants";
 import {
@@ -208,9 +212,8 @@ export const deployTokenContractAction: Action = {
 				],
 			]);
 
-			callback(
-				{
-					text: `Token contract deployed successfully:
+			const response: Content = {
+				text: `Token contract deployed successfully:
 - Type: ${deploymentDetails.contractType}
 - Name: ${name}
 - Symbol: ${symbol}
@@ -219,9 +222,11 @@ export const deployTokenContractAction: Action = {
 - Transaction URL: ${transaction}
 ${deploymentDetails.baseURI !== "N/A" ? `- Base URI: ${deploymentDetails.baseURI}` : ""}
 ${deploymentDetails.totalSupply !== "N/A" ? `- Total Supply: ${deploymentDetails.totalSupply}` : ""}.`,
-				},
-				[],
-			);
+			};
+
+			callback(response, []);
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error("Error deploying token contract:", error);
 			callback(
@@ -387,18 +392,19 @@ export const invokeContractAction: Action = {
 				],
 			]);
 
-			callback(
-				{
-					text: `Contract method invoked successfully:
+			const response: Content = {
+				text: `Contract method invoked successfully:
 - Contract Address: ${contractAddress}
 - Method: ${method}
 - Network: ${networkId}
 - Status: ${invocation.getStatus()}
 - Transaction URL: ${invocation.getTransactionLink() || "N/A"}${amount ? `\n- Amount: ${amount}` : ""}
 ${assetId ? `- Asset ID: ${assetId}` : ""}`,
-				},
-				[],
-			);
+			};
+
+			callback(response, []);
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error("Error invoking contract method: ", error.message);
 			callback(
@@ -507,16 +513,17 @@ export const readContractAction: Action = {
 				ABI as any,
 			);
 
-			callback(
-				{
-					text: `Contract read successful:
+			const response: Content = {
+				text: `Contract read successful:
 - Contract Address: ${contractAddress}
 - Method: ${method}
 - Network: ${networkId}
 - Result: ${JSON.stringify(result, null, 2)}`,
-				},
-				[],
-			);
+			};
+
+			callback(response, []);
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error("Error reading contract: ", error.message);
 			callback(

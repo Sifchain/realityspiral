@@ -1,15 +1,19 @@
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { GitHubService } from "../services/github";
 import {
 	addCommentToIssueTemplate,
@@ -157,12 +161,17 @@ export const addCommentToIssueAction: Action = {
 			elizaLogger.info(
 				`Added comment to issue #${content.issue} successfully! See comment at ${comment.html_url}`,
 			);
+
+			const response: Content = {
+				text: `Added comment to issue #${content.issue} successfully! See comment at ${comment.html_url}`,
+				attachments: [],
+			};
+
 			if (callback) {
-				callback({
-					text: `Added comment to issue #${content.issue} successfully! See comment at ${comment.html_url}`,
-					attachments: [],
-				});
+				callback(response);
 			}
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error adding comment to issue #${content.issue} in repository ${content.owner}/${content.repo}:`,
@@ -329,12 +338,16 @@ export const reactToIssueAction: Action = {
 				`Added reaction to issue #${content.issue} successfully! Issue: ${issue.html_url}`,
 			);
 
+			const response: Content = {
+				text: `Added reaction to issue #${content.issue} successfully! Issue: ${issue.html_url}`,
+				attachments: [],
+			};
+
 			if (callback) {
-				callback({
-					text: `Added reaction to issue #${content.issue} successfully! Issue: ${issue.html_url}`,
-					attachments: [],
-				});
+				callback(response);
 			}
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error adding reaction to issue #${content.issue} in repository ${content.owner}/${content.repo}:`,
@@ -479,12 +492,16 @@ export const closeIssueAction: Action = {
 			elizaLogger.info("Issue:", JSON.stringify(issue, null, 2));
 			elizaLogger.info(`Closed issue #${content.issue} successfully!`);
 
+			const response: Content = {
+				text: `Closed issue #${content.issue} successfully! Issue: ${issue.html_url}`,
+				attachments: [],
+			};
+
 			if (callback) {
-				callback({
-					text: `Closed issue #${content.issue} successfully! Issue: ${issue.html_url}`,
-					attachments: [],
-				});
+				callback(response);
 			}
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error closing issue #${content.issue} in repository ${content.owner}/${content.repo}:`,

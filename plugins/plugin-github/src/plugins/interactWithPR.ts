@@ -1,17 +1,20 @@
 import fs from "node:fs/promises";
 import {
 	type Action,
-	Content,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { GitHubService } from "../services/github";
 import {
 	addCommentToPRTemplate,
@@ -141,12 +144,16 @@ export const reactToPRAction: Action = {
 				`Added reaction to pull request #${content.pullRequest} successfully! PR: ${pr.html_url}`,
 			);
 
+			const response: Content = {
+				text: `Added reaction to pull request #${content.pullRequest} successfully! PR: ${pr.html_url}`,
+				attachments: [],
+			};
+
 			if (callback) {
-				callback({
-					text: `Added reaction to pull request #${content.pullRequest} successfully! PR: ${pr.html_url}`,
-					attachments: [],
-				});
+				callback(response);
 			}
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error adding reaction to pull request #${content.pullRequest} in repository ${content.owner}/${content.repo}:`,
@@ -393,12 +400,16 @@ export const addCommentToPRAction: Action = {
 				// );
 			}
 
+			const response: Content = {
+				text: `Added comment to pull request #${content.pullRequest} successfully! See comment at ${addedComment.html_url}`,
+				attachments: [],
+			};
+
 			if (callback) {
-				callback({
-					text: `Added comment to pull request #${content.pullRequest} successfully! See comment at ${addedComment.html_url}`,
-					attachments: [],
-				});
+				callback(response);
 			}
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error adding comment to pull request #${content.pullRequest} in repository ${content.owner}/${content.repo}:`,
@@ -606,12 +617,16 @@ export const closePRAction: Action = {
 				`Closed pull request #${content.pullRequest} successfully!`,
 			);
 
+			const response: Content = {
+				text: `Closed pull request #${content.pullRequest} successfully!`,
+				attachments: [],
+			};
+
 			if (callback) {
-				callback({
-					text: `Closed pull request #${content.pullRequest} successfully!`,
-					attachments: [],
-				});
+				callback(response);
 			}
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error closing pull request #${content.pullRequest} in repository ${content.owner}/${content.repo}:`,
@@ -719,12 +734,16 @@ export const mergePRAction: Action = {
 				`Merged pull request #${content.pullRequest} successfully!`,
 			);
 
+			const response: Content = {
+				text: `Merged pull request #${content.pullRequest} successfully!`,
+				attachments: [],
+			};
+
 			if (callback) {
-				callback({
-					text: `Merged pull request #${content.pullRequest} successfully!`,
-					attachments: [],
-				});
+				callback(response);
 			}
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error merging pull request #${content.pullRequest} in repository ${content.owner}/${content.repo}:`,
@@ -936,12 +955,16 @@ export const replyToPRCommentAction: Action = {
 					`Replied to comment #${comment.id} in pull request #${content.pullRequest} successfully with emoji reaction: ${replyContent.emojiReaction}!`,
 				);
 
+				const response: Content = {
+					text: `Replied to comment #${comment.id} in pull request #${content.pullRequest} successfully with emoji reaction: ${replyContent.emojiReaction}!`,
+					attachments: [],
+				};
+
 				if (callback) {
-					callback({
-						text: `Replied to comment #${comment.id} in pull request #${content.pullRequest} successfully with emoji reaction: ${replyContent.emojiReaction}!`,
-						attachments: [],
-					});
+					callback(response);
 				}
+
+				return traceResult(state, response);
 			} catch (error) {
 				elizaLogger.error(
 					`Error replying to comment #${comment.id} in pull request #${content.pullRequest} in repository ${content.owner}/${content.repo}:`,
@@ -1046,13 +1069,17 @@ export const generateCodeFileChangesAction: Action = {
 			JSON.stringify(content, null, 2),
 		);
 
+		const response: Content = {
+			text: "Generated code file changes successfully!",
+			action: "GENERATE_CODE_FILE_CHANGES",
+			attachments: [],
+		};
+
 		if (callback) {
-			await callback({
-				text: "Generated code file changes successfully!",
-				action: "GENERATE_CODE_FILE_CHANGES",
-				attachments: [],
-			});
+			await callback(response);
 		}
+
+		traceResult(state, response);
 
 		return content;
 	},
@@ -1213,13 +1240,17 @@ export const implementFeatureAction: Action = {
 				`Pull request created successfully! ${(pullRequest as any).html_url}`,
 			);
 
+			const response: Content = {
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				text: `Pull request created successfully! ${(pullRequest as any).html_url}`,
+				attachments: [],
+			};
+
 			if (callback) {
-				callback({
-					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-					text: `Pull request created successfully! ${(pullRequest as any).html_url}`,
-					attachments: [],
-				});
+				callback(response);
 			}
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error implementing feature in repository ${content.owner}/${content.repo} on branch ${content.branch}:`,

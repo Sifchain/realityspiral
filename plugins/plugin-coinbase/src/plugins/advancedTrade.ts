@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -10,10 +11,13 @@ import {
 	type Plugin,
 	type Provider,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { parse } from "csv-parse/sync";
 import { createArrayCsvWriter } from "csv-writer";
 import { RESTClient } from "../../advanced-sdk-ts/src/rest";
@@ -373,17 +377,18 @@ export const executeAdvancedTradeAction: Action = {
 			elizaLogger.info("Parsed order:", JSON.stringify(parsedOrder));
 			elizaLogger.info("Parsed order success:", parsedOrder.success);
 			if (parsedOrder.success === true) {
-				callback(
-					{
-						text: `Advanced Trade executed successfully:
-    - Product: ${productId}
-    - Type: ${orderType} Order
-    - Side: ${side}
-    - Amount: ${amountInCurrency}
-    ${orderType === "LIMIT" ? `- Limit Price: ${limitPrice}\n` : ""}`,
-					},
-					[],
-				);
+				const response: Content = {
+					text: `Advanced Trade executed successfully:
+- Product: ${productId}
+- Type: ${orderType} Order
+- Side: ${side}
+- Amount: ${amountInCurrency}
+${orderType === "LIMIT" ? `- Limit Price: ${limitPrice}\n` : ""}`,
+				};
+
+				callback(response, []);
+
+				traceResult(state, response);
 			} else {
 				callback(
 					{

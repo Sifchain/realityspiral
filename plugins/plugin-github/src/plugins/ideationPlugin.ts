@@ -1,17 +1,21 @@
 // @minified-ignore-file
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 	stringToUuid,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { ideationTemplate } from "../templates";
 import { IdeationSchema, isIdeationContent } from "../types";
 
@@ -96,12 +100,16 @@ export const ideationAction: Action = {
 
 		await runtime.messageManager.createMemory(newMemory);
 
+		const response: Content = {
+			text: content.response,
+			attachments: [],
+		};
+
 		if (callback) {
-			await callback({
-				text: content.response,
-				attachments: [],
-			});
+			await callback(response);
 		}
+
+		return traceResult(state, response);
 	},
 	examples: [
 		[

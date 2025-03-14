@@ -11,7 +11,6 @@ import {
 	ModelClass,
 	type State,
 	type UUID,
-	composeContext,
 	elizaLogger,
 	generateObject,
 	stringToUuid,
@@ -35,6 +34,7 @@ import {
 	saveIssuesToMemory,
 	savePullRequestsToMemory,
 } from "@realityspiral/plugin-github";
+import { composeContext } from "@realityspiral/plugin-instrumentation";
 import { configGithubInfoAction } from "./actions/configGithubInfo";
 import { stopAction } from "./actions/stop";
 import { validateGithubConfig } from "./environment";

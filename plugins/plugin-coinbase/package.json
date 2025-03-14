@@ -20,6 +20,7 @@
 		"@elizaos/core": "^0.1.9",
 		"@coinbase/coinbase-sdk": "0.15.0",
 		"@realityspiral/plugin-email": "workspace:^",
+		"@realityspiral/plugin-instrumentation": "workspace:^",
 		"coinbase-api": "1.0.5",
 		"coinbase-advanced-sdk": "file:../../plugins/plugin-coinbase/advanced-sdk-ts",
 		"jsonwebtoken": "^9.0.2",

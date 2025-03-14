@@ -1,15 +1,19 @@
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { GitHubService } from "../services/github";
 import { forkRepositoryTemplate } from "../templates";
 import {
@@ -85,16 +89,18 @@ export const forkRepositoryAction: Action = {
 
 			elizaLogger.info(`Repository forked successfully! URL: ${fork.html_url}`);
 
+			const response: Content = {
+				text: `Repository forked successfully! URL: ${fork.html_url}`,
+				action: "FORK_REPOSITORY",
+				source: "github",
+				attachments: [],
+			};
+
 			if (callback) {
-				callback({
-					text: `Repository forked successfully! URL: ${fork.html_url}`,
-					action: "FORK_REPOSITORY",
-					source: "github",
-					attachments: [],
-				});
+				callback(response);
 			}
 
-			return fork;
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error forking repository ${content.owner}/${content.repo}:`,

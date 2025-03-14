@@ -4,6 +4,7 @@ import path from "node:path";
 import { Coinbase, type Wallet } from "@coinbase/coinbase-sdk";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -11,10 +12,13 @@ import {
 	type Plugin,
 	type Provider,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { parse } from "csv-parse/sync";
 import { createArrayCsvWriter } from "csv-writer";
 import { transferTemplate } from "../templates";
@@ -360,9 +364,9 @@ export const sendMassPayoutAction: Action = {
 						}`,
 				)
 				.join("\n");
-			callback(
-				{
-					text: `Mass payouts completed successfully.
+
+			const response: Content = {
+				text: `Mass payouts completed successfully.
 - Successful Transactions: ${successTransactions.length}
 - Failed Transactions: ${failedTransactions.length}
 
@@ -371,9 +375,11 @@ ${successTransactions.length > 0 ? `✅ Successful Transactions:\n${successDetai
 ${failedTransactions.length > 0 ? `❌ Failed Transactions:\n${failedDetails}` : "No failed transactions."}
 ${charityTransactions.length > 0 ? `✅ Charity Transactions:\n${charityDetails}` : "No charity transactions."}
 `,
-				},
-				[],
-			);
+			};
+
+			callback(response, []);
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error("Error during mass payouts:", error.message);
 			callback({ text: `Failed to complete payouts: ${error.message}` }, []);

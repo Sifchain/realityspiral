@@ -2,12 +2,12 @@ import { Coinbase } from "@coinbase/coinbase-sdk";
 import {
 	ModelClass,
 	type Provider,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
 import type {
 	Action,
+	Content,
 	HandlerCallback,
 	IAgentRuntime,
 	Memory,
@@ -18,6 +18,10 @@ import {
 	EmailClientInterface,
 	type SendEmailOptions,
 } from "@realityspiral/plugin-email";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import type { EmailClient } from "../../../plugin-email/src/clients/emailClient";
 import { chargeTemplate, getChargeTemplate } from "../templates";
 import { type ChargeContent, ChargeSchema, isChargeContent } from "../types";
@@ -241,12 +245,14 @@ export const createCoinbaseChargeAction: Action = {
 					elizaLogger.error("Error sending email:", error.message);
 				}
 			}
-			callback(
-				{
-					text: text,
-				},
-				[],
-			);
+
+			const response: Content = {
+				text: text,
+			};
+
+			callback(response, []);
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				"Error creating Coinbase Commerce charge:",
@@ -381,12 +387,14 @@ export const getAllChargesAction: Action = {
 
 			elizaLogger.info("Fetched all charges:", charges);
 			const sanitizedCharges = sanitizeInvoices(charges);
-			callback(
-				{
-					text: `Successfully fetched all charges. Total charges: ${charges.length}.\nSee Details:\n${sanitizedCharges.map((charge) => `\nName: ${charge.name} Description: ${charge.description} Amount: ${charge.amount} Currency: ${charge.currency} Url: ${charge.url}`).join(",\n")}`,
-				},
-				[],
-			);
+
+			const response: Content = {
+				text: `Successfully fetched all charges. Total charges: ${charges.length}.\nSee Details:\n${sanitizedCharges.map((charge) => `\nName: ${charge.name} Description: ${charge.description} Amount: ${charge.amount} Currency: ${charge.currency} Url: ${charge.url}`).join(",\n")}`,
+			};
+
+			callback(response, []);
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error("Error fetching all charges:", error.message);
 			callback(
@@ -475,23 +483,24 @@ export const getChargeDetailsAction: Action = {
 
 			const chargeData = chargeDetails.data;
 
-			callback(
-				{
-					text: `Successfully fetched charge details for ID: ${charge.id}`,
-					attachments: [
-						{
-							id: chargeData.id,
-							url: chargeData.hosted_url,
-							title: `Charge Details for ${charge.id}`,
-							source: "coinbase",
-							description: JSON.stringify(chargeDetails, null, 2),
-							text: `Pay here: ${chargeData.hosted_url}`,
-							contentType: "application/json",
-						},
-					],
-				},
-				[],
-			);
+			const response: Content = {
+				text: `Successfully fetched charge details for ID: ${charge.id}`,
+				attachments: [
+					{
+						id: chargeData.id,
+						url: chargeData.hosted_url,
+						title: `Charge Details for ${charge.id}`,
+						source: "coinbase",
+						description: JSON.stringify(chargeDetails, null, 2),
+						text: `Pay here: ${chargeData.hosted_url}`,
+						contentType: "application/json",
+					},
+				],
+			};
+
+			callback(response, []);
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error fetching details for charge ID ${charge.id}:`,

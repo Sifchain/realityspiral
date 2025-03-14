@@ -1,16 +1,20 @@
 import fs from "node:fs/promises";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { createPullRequestTemplate } from "../templates";
 import {
 	type CreatePullRequestContent,
@@ -121,13 +125,17 @@ export const createPullRequestAction: Action = {
 			elizaLogger.info(
 				`Pull request created successfully! URL: ${pullRequest.html_url}`,
 			);
+
+			const response: Content = {
+				text: `Pull request created successfully! URL: ${pullRequest.html_url}`,
+				attachments: [],
+			};
+
 			if (callback) {
-				callback({
-					text: `Pull request created successfully! URL: ${pullRequest.html_url}`,
-					attachments: [],
-				});
+				callback(response);
 			}
-			return pullRequest;
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error creating pull request on ${content.owner}/${content.repo} branch ${content.branch}:`,
