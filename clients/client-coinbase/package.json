@@ -29,6 +29,7 @@
 		"@realityspiral/plugin-coinbase": "workspace:*",
 		"@realityspiral/plugin-twitter": "workspace:*",
 		"@realityspiral/plugin-0x": "workspace:*",
+		"@realityspiral/plugin-synfutures": "workspace:*",
 		"@realityspiral/plugin-instrumentation": "workspace:*",
 		"express": "^4.18.2",
 		"body-parser": "^1.20.2",

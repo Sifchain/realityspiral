@@ -25,6 +25,7 @@
 		"@realityspiral/client-direct": "workspace:*",
 		"@realityspiral/client-github": "workspace:*",
 		"@realityspiral/plugin-0x": "workspace:*",
+		"@realityspiral/plugin-synfutures": "workspace:*",
 		"@realityspiral/plugin-coinbase": "workspace:*",
 		"@realityspiral/plugin-email": "workspace:*",
 		"@realityspiral/plugin-github": "workspace:*",

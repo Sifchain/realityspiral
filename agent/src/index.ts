@@ -55,6 +55,7 @@ import {
 	type RuntimeInstrumentation,
 	getRuntimeInstrumentation,
 } from "@realityspiral/plugin-instrumentation";
+import synfuturesPlugin from "@realityspiral/plugin-synfutures";
 import Database from "better-sqlite3";
 import yargs from "yargs";
 import { z } from "zod";
@@ -531,6 +532,9 @@ export async function createAgent(
 		character,
 		// character.plugins are handled when clients are added
 		plugins: [
+			getSecret(character, "MARGIN_SHORT_TRADING_ENABLED") === "true"
+				? synfuturesPlugin
+				: null,
 			getSecret(character, "COINBASE_COMMERCE_KEY")
 				? coinbaseCommercePlugin
 				: null,
