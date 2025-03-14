@@ -94,11 +94,12 @@ export const initContextAction: Action = {
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => true,
+	validate: async (_runtime: IAgentRuntime) => true,
 	handler: async (
-		runtime: IAgentRuntime,
+		_runtime: IAgentRuntime,
 		_message: Memory,
-		state: State,
+		_state: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
 		callback: HandlerCallback,
 	) => {
@@ -137,11 +138,12 @@ export const getAllInstrumentsAction: Action = {
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => true,
+	validate: async (_runtime: IAgentRuntime) => true,
 	handler: async (
-		runtime: IAgentRuntime,
+		_runtime: IAgentRuntime,
 		_message: Memory,
-		state: State,
+		_state: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
 		callback: HandlerCallback,
 	) => {
@@ -182,11 +184,12 @@ export const depositToGateAction: Action = {
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => true,
+	validate: async (_runtime: IAgentRuntime) => true,
 	handler: async (
 		runtime: IAgentRuntime,
 		message: Memory,
 		state: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
 		callback: HandlerCallback,
 	) => {
@@ -201,8 +204,10 @@ export const depositToGateAction: Action = {
 			const { signer } = getProviderAndSigner();
 
 			if (!state) {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = (await runtime.composeState(message, {})) as State;
 			} else {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = await runtime.updateRecentMessageState(state);
 			}
 
@@ -254,11 +259,12 @@ export const placeMarketOrderAction: Action = {
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => true,
+	validate: async (_runtime: IAgentRuntime) => true,
 	handler: async (
 		runtime: IAgentRuntime,
 		message: Memory,
 		state: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
 		callback: HandlerCallback,
 	) => {
@@ -273,8 +279,10 @@ export const placeMarketOrderAction: Action = {
 			const { signer } = getProviderAndSigner();
 
 			if (!state) {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = (await runtime.composeState(message, {})) as State;
 			} else {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = await runtime.updateRecentMessageState(state);
 			}
 
@@ -332,19 +340,22 @@ export const closePositionAction: Action = {
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => true,
+	validate: async (_runtime: IAgentRuntime) => true,
 	handler: async (
 		runtime: IAgentRuntime,
 		message: Memory,
 		state: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
 		callback: HandlerCallback,
 	) => {
 		elizaLogger.info("Closing position...");
 		try {
 			if (!state) {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = (await runtime.composeState(message, {})) as State;
 			} else {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = await runtime.updateRecentMessageState(state);
 			}
 
@@ -397,19 +408,22 @@ export const withdrawFromGateAction: Action = {
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => true,
+	validate: async (_runtime: IAgentRuntime) => true,
 	handler: async (
 		runtime: IAgentRuntime,
 		message: Memory,
 		state: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
 		callback: HandlerCallback,
 	) => {
 		elizaLogger.info("Withdrawing from gate...");
 		try {
 			if (!state) {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = (await runtime.composeState(message, {})) as State;
 			} else {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = await runtime.updateRecentMessageState(state);
 			}
 
@@ -462,19 +476,22 @@ export const getPortfolioAction: Action = {
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => true,
+	validate: async (_runtime: IAgentRuntime) => true,
 	handler: async (
 		runtime: IAgentRuntime,
 		message: Memory,
 		state: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
 		callback: HandlerCallback,
 	) => {
 		elizaLogger.info("Retrieving portfolio...");
 		try {
 			if (!state) {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = (await runtime.composeState(message, {})) as State;
 			} else {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = await runtime.updateRecentMessageState(state);
 			}
 

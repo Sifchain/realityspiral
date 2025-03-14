@@ -101,6 +101,7 @@ export async function depositToGate(
 	return await ctx.perp.gate.deposit(
 		token.address,
 		parseAmount(amount, token.decimals),
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		{ signer: signer as any },
 	);
 }
@@ -121,6 +122,7 @@ export async function withdrawFromGate(
 	return await ctx.perp.gate.withdraw(
 		token.address,
 		parseAmount(amount, token.decimals),
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		{ signer: signer as any },
 	);
 }
@@ -172,6 +174,7 @@ export async function placeMarketOrder(
 			limitTick: result.limitTick,
 			deadline: Math.floor(Date.now() / 1000) + 300,
 		},
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		{ signer: signer as any },
 	);
 }
@@ -221,6 +224,7 @@ export async function closePosition(
 			limitTick: result.limitTick,
 			deadline: Math.floor(Date.now() / 1000) + 300,
 		},
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		{ signer: signer as any },
 	);
 }
@@ -284,6 +288,7 @@ export async function placeLimitOrder(
 			margin: result.margin,
 			deadline: Math.floor(Date.now() / 1000) + 300,
 		},
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		{ signer: signer as any },
 	);
 }
@@ -310,6 +315,7 @@ export async function cancelLimitOrder(
 			tick,
 			deadline: Math.floor(Date.now() / 1000) + 60,
 		},
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		{ signer: signer as any },
 	);
 }
@@ -334,7 +340,7 @@ export async function placeBatchScaledLimitOrders(
 	leverage: string,
 	lowerTickOffset: number,
 	upperTickOffset: number,
-	orderCount: number,
+	_orderCount: number,
 	sizeDistribution: BatchOrderSizeDistribution,
 	signer: ethers.Wallet,
 ) {
@@ -389,13 +395,14 @@ export async function placeBatchScaledLimitOrders(
 		{
 			instrumentAddr: instrument.instrumentAddr,
 			expiry,
-			ticks: result.orders.map((order) => order!.tick),
-			ratios: result.orders.map((order) => order!.ratio),
+			ticks: result.orders.map((order) => order?.tick),
+			ratios: result.orders.map((order) => order?.ratio),
 			baseSize: result.size.base,
 			side,
 			leverage: parseAmount(leverage),
 			deadline: Math.floor(Date.now() / 1000) + 300,
 		},
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		{ signer: signer as any },
 	);
 }
@@ -436,6 +443,7 @@ export async function cancelAllLimitOrders(
 			orderTicks: ticks,
 			deadline: Math.floor(Date.now() / 1000) + 300,
 		},
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		{ signer: signer as any },
 	);
 }
@@ -486,6 +494,7 @@ export async function adjustPositionLeverage(
 			transferIn: result.transferIn,
 			margin: result.margin,
 		},
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		{ signer: signer as any },
 	);
 }
@@ -525,7 +534,7 @@ export async function adjustPositionMargin(
 	const absMarginAmount = Math.abs(Number.parseFloat(marginAmount)).toString();
 
 	// Simulate adjusting the margin
-	const result = await ctx.perp.simulate.simulateAdjustMarginByMargin({
+	const _result = await ctx.perp.simulate.simulateAdjustMarginByMargin({
 		tradeInfo: portfolio.position,
 		slippage,
 		transferIn,
@@ -541,6 +550,7 @@ export async function adjustPositionMargin(
 			transferIn,
 			margin: parseAmount(absMarginAmount),
 		},
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		{ signer: signer as any },
 	);
 }
@@ -599,6 +609,7 @@ export async function addLiquidity(
 			deadline: Math.floor(Date.now() / 1000) + 300,
 			referralCode: undefined,
 		},
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		{ signer: signer as any },
 	);
 }
@@ -649,6 +660,7 @@ export async function removeLiquidity(
 			limitTicks: simulateResult.limitTicks,
 			deadline: Math.floor(Date.now() / 1000) + 300,
 		},
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		{ signer: signer as any },
 	);
 }
@@ -732,6 +744,7 @@ export async function placeCrossMarketOrder(
 			orderMargin: result.orderSimulation.margin,
 			deadline: Math.floor(Date.now() / 1000) + 300,
 		},
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		{ signer: signer as any },
 	);
 }

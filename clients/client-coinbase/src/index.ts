@@ -23,11 +23,11 @@ import {
 	initializeWallet,
 	readContractWrapper,
 } from "@realityspiral/plugin-coinbase";
+import { composeContext } from "@realityspiral/plugin-instrumentation";
 import {
 	getProviderAndSigner,
 	placeMarketOrder,
 } from "@realityspiral/plugin-synfutures";
-import { composeContext } from "@realityspiral/plugin-instrumentation";
 import { postTweet } from "@realityspiral/plugin-twitter";
 import express from "express";
 import { http, createWalletClient, erc20Abi, publicActions } from "viem";
@@ -449,12 +449,14 @@ Generate only the tweet text, no commentary or markdown.`;
 			try {
 				const txHash = await placeMarketOrder(
 					instrumentSymbol,
+					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 					side as any,
 					String(amount),
 					String(defaultLeverage),
 					signer,
 				);
 				return txHash.transactionHash;
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			} catch (error: any) {
 				elizaLogger.error("Margin/short trade failed:", error.message);
 				return null;
