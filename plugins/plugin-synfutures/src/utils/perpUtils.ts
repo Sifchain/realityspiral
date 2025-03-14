@@ -15,16 +15,16 @@ import { Context } from "@derivation-tech/context";
 import { txPlugin } from "@derivation-tech/tx-plugin";
 import { BigNumber } from "@ethersproject/bignumber";
 import { MaxUint256 } from "@ethersproject/constants";
+import type { TransactionReceipt } from "@ethersproject/providers";
 import {
 	type BatchOrderSizeDistribution,
-	Portfolio,
+	type Portfolio,
 	type Side,
 	perpPlugin,
 	utils,
 } from "@synfutures/sdks-perp";
 import dotenv from "dotenv";
 import { type ethers, parseUnits } from "ethers";
-import { TransactionReceipt } from "@ethersproject/providers";
 
 dotenv.config();
 
