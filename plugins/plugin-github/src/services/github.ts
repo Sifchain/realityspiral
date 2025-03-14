@@ -2,6 +2,7 @@ import { elizaLogger } from "@elizaos/core";
 import { GraphqlResponseError, graphql } from "@octokit/graphql";
 import type { GraphQlQueryResponseData } from "@octokit/graphql";
 import { Octokit, type RestEndpointMethodTypes } from "@octokit/rest";
+import { captureError } from "../../../shared/error-tracking";
 import type { GithubReaction } from "../types";
 
 interface GitHubConfig {
@@ -41,6 +42,11 @@ export class GitHubService {
 			throw new Error("Unable to get file contents");
 		} catch (error) {
 			elizaLogger.error(`Error getting file contents: ${error}`);
+			captureError(error as Error, {
+				path,
+				owner: this.config.owner,
+				repo: this.config.repo,
+			});
 			throw error;
 		}
 	}

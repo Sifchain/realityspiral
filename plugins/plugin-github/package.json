@@ -10,6 +10,7 @@
 		"@octokit/types": "12.6.0",
 		"@octokit/graphql": "8.2.0",
 		"@realityspiral/plugin-instrumentation": "workspace:*",
+		"@sentry/node": "^7.101.1",
 		"glob": "10.4.5",
 		"simple-git": "3.27.0",
 		"zod": "3.23.8"

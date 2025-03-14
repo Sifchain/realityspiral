@@ -35,6 +35,7 @@ import {
 	savePullRequestsToMemory,
 } from "@realityspiral/plugin-github";
 import { composeContext } from "@realityspiral/plugin-instrumentation";
+import { captureError, initErrorTracking } from "../../shared/error-tracking";
 import { configGithubInfoAction } from "./actions/configGithubInfo";
 import { stopAction } from "./actions/stop";
 import { validateGithubConfig } from "./environment";
@@ -53,6 +54,9 @@ import {
 	sleep,
 	unregisterActions,
 } from "./utils";
+
+// Initialize error tracking
+initErrorTracking();
 
 export class GitHubClient extends EventEmitter {
 	apiToken: string;
@@ -150,6 +154,10 @@ export class GitHubClient extends EventEmitter {
 				}
 			} catch (error) {
 				elizaLogger.error("Error monitoring users:", error);
+				captureError(error as Error, {
+					agentId: this.runtime.agentId,
+					character: this.character.name,
+				});
 			}
 
 			elizaLogger.info("Sleeping for 5 seconds");
@@ -186,6 +194,10 @@ export class GitHubClient extends EventEmitter {
 		} catch (error) {
 			elizaLogger.error(`Error in user process for ${userId}:`, error);
 			this.userProcesses.delete(userId);
+			captureError(error as Error, {
+				userId,
+				agentId: this.runtime.agentId,
+			});
 		}
 	}
 

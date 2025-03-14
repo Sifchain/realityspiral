@@ -20,6 +20,7 @@
 		"@elizaos/core": "^0.1.9",
 		"@realityspiral/plugin-github": "workspace:*",
 		"@realityspiral/plugin-instrumentation": "workspace:*",
+		"@sentry/node": "^7.101.1",
 		"@octokit/rest": "20.1.1",
 		"@octokit/types": "12.6.0",
 		"glob": "10.4.5",
