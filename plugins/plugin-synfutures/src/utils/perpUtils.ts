@@ -13,9 +13,8 @@
 
 import { Context } from "@derivation-tech/context";
 import { txPlugin } from "@derivation-tech/tx-plugin";
+import type { TransactionReceipt } from "@ethersproject/abstract-provider";
 import { BigNumber } from "@ethersproject/bignumber";
-import { MaxUint256 } from "@ethersproject/constants";
-import type { TransactionReceipt } from "@ethersproject/providers";
 import {
 	type BatchOrderSizeDistribution,
 	type Portfolio,
