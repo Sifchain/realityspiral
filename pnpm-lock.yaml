@@ -582,6 +582,9 @@ importers:
       '@elizaos/core':
         specifier: ^0.1.9
         version: 0.1.9(@google-cloud/vertexai@1.9.3(encoding@0.1.13))(@langchain/core@0.3.42(openai@4.87.3(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.23.8)))(axios@1.8.3)(encoding@0.1.13)(react@19.0.0)(sswr@2.2.0(svelte@5.23.0))(svelte@5.23.0)(vue@3.5.13(typescript@5.7.3))(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+      '@ethersproject/abstract-provider':
+        specifier: ^5.8.0
+        version: 5.8.0
       '@ethersproject/bignumber':
         specifier: ^5.8.0
         version: 5.8.0

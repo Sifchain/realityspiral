@@ -17,12 +17,14 @@ import { BigNumber } from "@ethersproject/bignumber";
 import { MaxUint256 } from "@ethersproject/constants";
 import {
 	type BatchOrderSizeDistribution,
+	Portfolio,
 	type Side,
 	perpPlugin,
 	utils,
 } from "@synfutures/sdks-perp";
 import dotenv from "dotenv";
 import { type ethers, parseUnits } from "ethers";
+import { TransactionReceipt } from "@ethersproject/providers";
 
 dotenv.config();
 
@@ -77,7 +79,7 @@ export async function getPortfolio(
 	traderAddr: string,
 	instrumentAddr: string,
 	expiry: number,
-) {
+): Promise<Portfolio> {
 	return await ctx.perp.observer.getPortfolio({
 		traderAddr,
 		instrumentAddr,
@@ -96,7 +98,7 @@ export async function depositToGate(
 	tokenSymbol: string,
 	amount: string,
 	signer: ethers.Wallet,
-) {
+): Promise<TransactionReceipt> {
 	const token = await ctx.getTokenInfo(tokenSymbol);
 	return await ctx.perp.gate.deposit(
 		token.address,
@@ -117,7 +119,7 @@ export async function withdrawFromGate(
 	tokenSymbol: string,
 	amount: string,
 	signer: ethers.Wallet,
-) {
+): Promise<TransactionReceipt> {
 	const token = await ctx.getTokenInfo(tokenSymbol);
 	return await ctx.perp.gate.withdraw(
 		token.address,
@@ -142,7 +144,7 @@ export async function placeMarketOrder(
 	quoteAmount: string,
 	leverage: string,
 	signer: ethers.Wallet,
-) {
+): Promise<TransactionReceipt> {
 	const instrument = await getInstrumentBySymbol(instrumentSymbol);
 	const expiry = 4294967295; // PERP_EXPIRY (type(uint32).max)
 
@@ -188,7 +190,7 @@ export async function placeMarketOrder(
 export async function closePosition(
 	instrumentSymbol: string,
 	signer: ethers.Wallet,
-) {
+): Promise<TransactionReceipt> {
 	const instrument = await getInstrumentBySymbol(instrumentSymbol);
 	const expiry = 4294967295; // PERP_EXPIRY (type(uint32).max)
 
@@ -246,7 +248,7 @@ export async function placeLimitOrder(
 	leverage: string,
 	tickOffset: number,
 	signer: ethers.Wallet,
-) {
+): Promise<TransactionReceipt> {
 	const instrument = await getInstrumentBySymbol(instrumentSymbol);
 	const expiry = 4294967295; // PERP_EXPIRY (type(uint32).max)
 	const amm = instrument.amms.get(expiry);
@@ -304,7 +306,7 @@ export async function cancelLimitOrder(
 	instrumentSymbol: string,
 	tick: number,
 	signer: ethers.Wallet,
-) {
+): Promise<TransactionReceipt> {
 	const instrument = await getInstrumentBySymbol(instrumentSymbol);
 	const expiry = 4294967295; // PERP_EXPIRY (type(uint32).max)
 
@@ -343,7 +345,7 @@ export async function placeBatchScaledLimitOrders(
 	_orderCount: number,
 	sizeDistribution: BatchOrderSizeDistribution,
 	signer: ethers.Wallet,
-) {
+): Promise<TransactionReceipt> {
 	const instrument = await getInstrumentBySymbol(instrumentSymbol);
 	const expiry = 4294967295; // PERP_EXPIRY (type(uint32).max)
 	const amm = instrument.amms.get(expiry);
@@ -416,7 +418,7 @@ export async function placeBatchScaledLimitOrders(
 export async function cancelAllLimitOrders(
 	instrumentSymbol: string,
 	signer: ethers.Wallet,
-) {
+): Promise<TransactionReceipt> {
 	const instrument = await getInstrumentBySymbol(instrumentSymbol);
 	const expiry = 4294967295; // PERP_EXPIRY (type(uint32).max)
 
@@ -459,7 +461,7 @@ export async function adjustPositionLeverage(
 	instrumentSymbol: string,
 	newLeverage: string,
 	signer: ethers.Wallet,
-) {
+): Promise<TransactionReceipt> {
 	const instrument = await getInstrumentBySymbol(instrumentSymbol);
 	const expiry = 4294967295; // PERP_EXPIRY (type(uint32).max)
 
@@ -510,7 +512,7 @@ export async function adjustPositionMargin(
 	instrumentSymbol: string,
 	marginAmount: string,
 	signer: ethers.Wallet,
-) {
+): Promise<TransactionReceipt> {
 	const instrument = await getInstrumentBySymbol(instrumentSymbol);
 	const expiry = 4294967295; // PERP_EXPIRY (type(uint32).max)
 
@@ -568,7 +570,7 @@ export async function addLiquidity(
 	marginAmount: string,
 	alphaFactor: string,
 	signer: ethers.Wallet,
-) {
+): Promise<TransactionReceipt> {
 	const instrument = await getInstrumentBySymbol(instrumentSymbol);
 	const expiry = 4294967295; // PERP_EXPIRY (type(uint32).max)
 	const amm = instrument.amms.get(expiry);
@@ -627,7 +629,7 @@ export async function removeLiquidity(
 	tickLower: number,
 	tickUpper: number,
 	signer: ethers.Wallet,
-) {
+): Promise<TransactionReceipt> {
 	const instrument = await getInstrumentBySymbol(instrumentSymbol);
 	const expiry = 4294967295; // PERP_EXPIRY (type(uint32).max)
 
@@ -682,7 +684,7 @@ export async function placeCrossMarketOrder(
 	leverage: string,
 	tickOffset: number,
 	signer: ethers.Wallet,
-) {
+): Promise<TransactionReceipt> {
 	const instrument = await getInstrumentBySymbol(instrumentSymbol);
 	const expiry = 4294967295; // PERP_EXPIRY (type(uint32).max)
 	const amm = instrument.amms.get(expiry);

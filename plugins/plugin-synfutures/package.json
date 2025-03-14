@@ -7,6 +7,7 @@
 	"dependencies": {
 		"@elizaos/core": "^0.1.9",
 		"@ethersproject/bignumber": "^5.8.0",
+		"@ethersproject/abstract-provider": "^5.8.0",
 		"@derivation-tech/context": "^0.1.0",
 		"@derivation-tech/tx-plugin": "^0.1.0",
 		"@synfutures/sdks-perp": "^0.0.6",
