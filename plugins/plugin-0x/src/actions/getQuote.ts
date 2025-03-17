@@ -1,6 +1,7 @@
 import { createClientV2 } from "@0x/swap-ts-sdk";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -8,6 +9,7 @@ import {
 	type State,
 	elizaLogger,
 } from "@elizaos/core";
+import { traceResult } from "@realityspiral/plugin-instrumentation";
 import { formatUnits } from "viem";
 import { CHAIN_NAMES, NATIVE_TOKENS, ZX_MEMORY } from "../constants";
 import type { GetQuoteResponse, PriceInquiry, Quote } from "../types";
@@ -26,7 +28,7 @@ export const getQuote: Action = {
 	handler: async (
 		runtime: IAgentRuntime,
 		message: Memory,
-		_state: State,
+		state: State,
 		_options: Record<string, unknown>,
 		callback: HandlerCallback,
 	) => {
@@ -155,9 +157,14 @@ export const getQuote: Action = {
 				.filter(Boolean)
 				.join("\n");
 
-			callback({
+			const response: Content = {
 				text: formattedResponse,
-			});
+			};
+
+			callback(response);
+
+			traceResult(state, response);
+
 			return true;
 		} catch (error) {
 			elizaLogger.error("Error getting quote:", error);

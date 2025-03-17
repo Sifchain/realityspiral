@@ -1,16 +1,20 @@
 import fs from "node:fs/promises";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { createCommitTemplate } from "../templates";
 import {
 	type CreateCommitContent,
@@ -104,13 +108,17 @@ export const createCommitAction: Action = {
 			elizaLogger.info(
 				`Commited changes to the repository ${content.owner}/${content.repo} successfully to branch '${content.branch}'! commit hash: ${hash}`,
 			);
+
+			const response: Content = {
+				text: `Changes commited to repository ${content.owner}/${content.repo} successfully to branch '${content.branch}'! commit hash: ${hash}`,
+				attachments: [],
+			};
+
 			if (callback) {
-				callback({
-					text: `Changes commited to repository ${content.owner}/${content.repo} successfully to branch '${content.branch}'! commit hash: ${hash}`,
-					attachments: [],
-				});
+				callback(response);
 			}
-			return commit;
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error committing to the repository ${content.owner}/${content.repo} on branch '${content.branch}' message ${content.message}: See error: ${error.message}`,

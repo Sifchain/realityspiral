@@ -1,16 +1,20 @@
 import { createClientV2 } from "@0x/swap-ts-sdk";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
 	MemoryManager,
 	ModelClass,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { http, createWalletClient, parseUnits, publicActions } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
@@ -176,7 +180,12 @@ export const getIndicativePrice: Action = {
 				`💫 Happy with the price? Type 'quote' to continue`,
 			].join("\n");
 
-			callback({ text: formattedResponse });
+			const response: Content = { text: formattedResponse };
+
+			callback(response);
+
+			traceResult(state, response);
+
 			return true;
 		} catch (error) {
 			elizaLogger.error("Error getting price:", error);

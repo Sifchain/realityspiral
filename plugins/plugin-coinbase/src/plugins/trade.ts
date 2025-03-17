@@ -4,6 +4,7 @@ import path from "node:path";
 import { Coinbase } from "@coinbase/coinbase-sdk";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -11,10 +12,13 @@ import {
 	type Plugin,
 	type Provider,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { parse } from "csv-parse/sync";
 import { createArrayCsvWriter } from "csv-writer";
 import { RESTClient } from "../../advanced-sdk-ts/src/rest";
@@ -232,7 +236,13 @@ export const executeTradeAction: Action = {
 				responseText += "\n(Note: Charity transfer was not completed)";
 			}
 
-			callback({ text: responseText }, []);
+			const response: Content = {
+				text: responseText,
+			};
+
+			callback(response, []);
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error("Error during trade execution: ", error.message);
 			callback(

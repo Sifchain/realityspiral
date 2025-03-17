@@ -104,6 +104,7 @@ async function main() {
 	try {
 		const instruments = await getAllInstruments();
 		elizaLogger.info(`Found ${instruments.length} instruments:`);
+		// biome-ignore lint/complexity/noForEach: <explanation>
 		instruments.forEach((instrument) => {
 			elizaLogger.info(`- ${instrument.symbol}`);
 		});

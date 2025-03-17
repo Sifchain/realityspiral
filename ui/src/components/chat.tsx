@@ -53,6 +53,23 @@ const saveMessagesToLocalStorage = (
 	}
 };
 
+// Helper function to deduplicate messages based on text content
+const deduplicateMessages = (
+	messages: ContentWithUser[],
+): ContentWithUser[] => {
+	const uniqueMessages = [];
+	const seenTexts = new Set();
+
+	for (const message of messages) {
+		if (!seenTexts.has(message.text)) {
+			seenTexts.add(message.text);
+			uniqueMessages.push(message);
+		}
+	}
+
+	return uniqueMessages;
+};
+
 // Helper function to get messages from local storage
 const getMessagesFromLocalStorage = (agentId: UUID): ContentWithUser[] => {
 	try {
@@ -60,7 +77,8 @@ const getMessagesFromLocalStorage = (agentId: UUID): ContentWithUser[] => {
 		const storedMessages = localStorage.getItem(
 			`chat_messages_${agentId}_${sessionId}`,
 		);
-		return storedMessages ? JSON.parse(storedMessages) : [];
+		const messages = storedMessages ? JSON.parse(storedMessages) : [];
+		return deduplicateMessages(messages);
 	} catch (error) {
 		console.error("Error retrieving messages from local storage:", error);
 		return [];
@@ -221,13 +239,13 @@ export default function Page({ agentId }: { agentId: UUID }) {
 		queryFn: () => apiClient.getMemories(agentId),
 		refetchInterval: 5000,
 		select: (data) => {
-			const existingMessages =
-				queryClient.getQueryData<ContentWithUser[]>(["messages", agentId]) ||
-				[];
-
 			if (data.memories.length === 0 && !joinRoomQuery.isSuccess) {
 				joinRoomQuery.refetch();
 			}
+
+			const existingMessages =
+				queryClient.getQueryData<ContentWithUser[]>(["messages", agentId]) ||
+				[];
 
 			// Filter out messages that already exist in our cache
 			const newMessages = data.memories.reverse().filter(
@@ -239,8 +257,8 @@ export default function Page({ agentId }: { agentId: UUID }) {
 					),
 			);
 
-			// If we have new messages, add them to our messages
 			if (newMessages.length > 0) {
+				// If we have new messages, add them to our messages
 				const updatedMessages = [
 					...existingMessages,
 					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -251,12 +269,18 @@ export default function Page({ agentId }: { agentId: UUID }) {
 						attachments: msg.content.attachments || [],
 					})),
 				];
-				queryClient.setQueryData(["messages", agentId], updatedMessages);
+
+				// Deduplicate messages
+				const deduplicatedMessages = deduplicateMessages(updatedMessages);
+
+				// Update the query cache
+				queryClient.setQueryData(["messages", agentId], deduplicatedMessages);
 
 				// Save to local storage
-				saveMessagesToLocalStorage(agentId, updatedMessages);
+				saveMessagesToLocalStorage(agentId, deduplicatedMessages);
 
-				return updatedMessages;
+				// Return the deduplicated messages
+				return deduplicatedMessages;
 			}
 
 			return existingMessages;

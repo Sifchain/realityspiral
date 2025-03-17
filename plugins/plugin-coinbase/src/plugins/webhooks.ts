@@ -1,6 +1,7 @@
 import { Coinbase, Webhook } from "@coinbase/coinbase-sdk";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
@@ -8,10 +9,13 @@ import {
 	type Plugin,
 	type Provider,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { webhookTemplate } from "../templates";
 import { type WebhookContent, WebhookSchema, isWebhookContent } from "../types";
 import { appendWebhooksToCsv } from "../utils";
@@ -144,14 +148,18 @@ export const createWebhookAction: Action = {
 				eventFilters,
 			});
 			elizaLogger.info("Webhook created successfully:", webhook.toString());
-			callback(
-				{
-					text: `Webhook created successfully: ${webhook.toString()}`,
-				},
-				[],
-			);
+
+			const response: Content = {
+				text: `Webhook created successfully: ${webhook.toString()}`,
+			};
+
+			callback(response, []);
+
 			await appendWebhooksToCsv([webhook]);
+
 			elizaLogger.info("Webhook appended to CSV successfully");
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error("Error during webhook creation:", error.message);
 			callback(

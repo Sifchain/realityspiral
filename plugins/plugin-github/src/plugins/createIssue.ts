@@ -1,16 +1,20 @@
 import fs from "node:fs/promises";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { GitHubService } from "../services/github";
 import {
 	createIssueTemplate,
@@ -25,6 +29,7 @@ import {
 	isSimilarityIssueCheckContent,
 } from "../types";
 import { saveIssueToMemory } from "../utils";
+
 export const createIssueAction: Action = {
 	name: "CREATE_ISSUE",
 	similes: ["CREATE_ISSUE", "GITHUB_CREATE_ISSUE", "OPEN_ISSUE"],
@@ -157,21 +162,25 @@ export const createIssueAction: Action = {
 					await callback(memory.content);
 				}
 
-				return issue;
+				return traceResult(state, memory.content);
 			}
 
 			elizaLogger.info(
 				`Issue already exists! Issue number: ${similarityCheckContent.issue}`,
 			);
 
+			const response: Content = {
+				text: `Issue already exists! Issue number: ${similarityCheckContent.issue}`,
+				action: "CREATE_ISSUE",
+				source: "github",
+				attachments: [],
+			};
+
 			if (callback) {
-				await callback({
-					text: `Issue already exists! Issue number: ${similarityCheckContent.issue}`,
-					action: "CREATE_ISSUE",
-					source: "github",
-					attachments: [],
-				});
+				await callback(response);
 			}
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error creating issue in repository ${content.owner}/${content.repo}:`,

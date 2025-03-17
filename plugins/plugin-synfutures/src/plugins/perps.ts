@@ -6,10 +6,13 @@ import {
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import type { Side } from "@synfutures/sdks-perp";
 import { Wallet } from "ethers";
 import * as ethers from "ethers";
@@ -94,11 +97,12 @@ export const initContextAction: Action = {
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => true,
+	validate: async (_runtime: IAgentRuntime) => true,
 	handler: async (
-		runtime: IAgentRuntime,
+		_runtime: IAgentRuntime,
 		_message: Memory,
 		state: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
 		callback: HandlerCallback,
 	) => {
@@ -109,10 +113,16 @@ export const initContextAction: Action = {
 				isContextInitialized = true;
 				elizaLogger.info("Context initialized successfully.");
 			}
-			callback({ text: "Context initialized successfully." }, []);
+
+			const response = { text: "Context initialized successfully." };
+			callback(response, []);
+			traceResult(state, response);
 		} catch (error) {
-			elizaLogger.error("Error initializing context: ", error.message);
-			callback({ text: `Failed to initialize context: ${error.message}` }, []);
+			const response = {
+				text: `Failed to initialize context: ${error.message}`,
+			};
+			callback(response, []);
+			traceResult(state, response);
 		}
 	},
 };
@@ -137,11 +147,12 @@ export const getAllInstrumentsAction: Action = {
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => true,
+	validate: async (_runtime: IAgentRuntime) => true,
 	handler: async (
-		runtime: IAgentRuntime,
+		_runtime: IAgentRuntime,
 		_message: Memory,
 		state: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
 		callback: HandlerCallback,
 	) => {
@@ -154,10 +165,17 @@ export const getAllInstrumentsAction: Action = {
 			}
 			const instruments = await getAllInstruments();
 			elizaLogger.info("Instruments retrieved successfully.", instruments);
-			callback({ text: `Retrieved ${instruments.length} instruments.` }, []);
+
+			const response = { text: `Retrieved ${instruments.length} instruments.` };
+			callback(response, []);
+			traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error("Error fetching instruments: ", error.message);
-			callback({ text: `Failed to fetch instruments: ${error.message}` }, []);
+			const response = {
+				text: `Failed to fetch instruments: ${error.message}`,
+			};
+			callback(response, []);
+			traceResult(state, response);
 		}
 	},
 };
@@ -182,11 +200,12 @@ export const depositToGateAction: Action = {
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => true,
+	validate: async (_runtime: IAgentRuntime) => true,
 	handler: async (
 		runtime: IAgentRuntime,
 		message: Memory,
 		state: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
 		callback: HandlerCallback,
 	) => {
@@ -201,8 +220,10 @@ export const depositToGateAction: Action = {
 			const { signer } = getProviderAndSigner();
 
 			if (!state) {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = (await runtime.composeState(message, {})) as State;
 			} else {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = await runtime.updateRecentMessageState(state);
 			}
 
@@ -226,10 +247,15 @@ export const depositToGateAction: Action = {
 			const { tokenSymbol, amount } = details.object;
 			await depositToGate(tokenSymbol, amount, signer);
 			elizaLogger.info("Deposit successful.");
-			callback({ text: "Deposited successfully." }, []);
+
+			const response = { text: "Deposited successfully." };
+			callback(response, []);
+			traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error("Error depositing to gate: ", error.message);
-			callback({ text: `Failed to deposit: ${error.message}` }, []);
+			const response = { text: `Failed to deposit: ${error.message}` };
+			callback(response, []);
+			traceResult(state, response);
 		}
 	},
 };
@@ -254,11 +280,12 @@ export const placeMarketOrderAction: Action = {
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => true,
+	validate: async (_runtime: IAgentRuntime) => true,
 	handler: async (
 		runtime: IAgentRuntime,
 		message: Memory,
 		state: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
 		callback: HandlerCallback,
 	) => {
@@ -273,8 +300,10 @@ export const placeMarketOrderAction: Action = {
 			const { signer } = getProviderAndSigner();
 
 			if (!state) {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = (await runtime.composeState(message, {})) as State;
 			} else {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = await runtime.updateRecentMessageState(state);
 			}
 
@@ -304,10 +333,17 @@ export const placeMarketOrderAction: Action = {
 				signer,
 			);
 			elizaLogger.info("Market order placed successfully.");
-			callback({ text: "Market order placed successfully." }, []);
+
+			const response = { text: "Market order placed successfully." };
+			callback(response, []);
+			traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error("Error placing market order: ", error.message);
-			callback({ text: `Failed to place market order: ${error.message}` }, []);
+			const response = {
+				text: `Failed to place market order: ${error.message}`,
+			};
+			callback(response, []);
+			traceResult(state, response);
 		}
 	},
 };
@@ -332,19 +368,22 @@ export const closePositionAction: Action = {
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => true,
+	validate: async (_runtime: IAgentRuntime) => true,
 	handler: async (
 		runtime: IAgentRuntime,
 		message: Memory,
 		state: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
 		callback: HandlerCallback,
 	) => {
 		elizaLogger.info("Closing position...");
 		try {
 			if (!state) {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = (await runtime.composeState(message, {})) as State;
 			} else {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = await runtime.updateRecentMessageState(state);
 			}
 
@@ -369,10 +408,15 @@ export const closePositionAction: Action = {
 			const { signer } = getProviderAndSigner();
 			await closePosition(instrumentSymbol, signer);
 			elizaLogger.info("Position closed successfully.");
-			callback({ text: "Position closed successfully." }, []);
+
+			const response = { text: "Position closed successfully." };
+			callback(response, []);
+			traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error("Error closing position: ", error.message);
-			callback({ text: `Failed to close position: ${error.message}` }, []);
+			const response = { text: `Failed to close position: ${error.message}` };
+			callback(response, []);
+			traceResult(state, response);
 		}
 	},
 };
@@ -397,19 +441,22 @@ export const withdrawFromGateAction: Action = {
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => true,
+	validate: async (_runtime: IAgentRuntime) => true,
 	handler: async (
 		runtime: IAgentRuntime,
 		message: Memory,
 		state: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
 		callback: HandlerCallback,
 	) => {
 		elizaLogger.info("Withdrawing from gate...");
 		try {
 			if (!state) {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = (await runtime.composeState(message, {})) as State;
 			} else {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = await runtime.updateRecentMessageState(state);
 			}
 
@@ -434,10 +481,15 @@ export const withdrawFromGateAction: Action = {
 			const { signer } = getProviderAndSigner();
 			await withdrawFromGate(tokenSymbol, amount, signer);
 			elizaLogger.info("Withdrawal successful.");
-			callback({ text: "Withdrawal successful." }, []);
+
+			const response = { text: "Withdrawal successful." };
+			callback(response, []);
+			traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error("Error withdrawing from gate: ", error.message);
-			callback({ text: `Failed to withdraw: ${error.message}` }, []);
+			const response = { text: `Failed to withdraw: ${error.message}` };
+			callback(response, []);
+			traceResult(state, response);
 		}
 	},
 };
@@ -462,19 +514,22 @@ export const getPortfolioAction: Action = {
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => true,
+	validate: async (_runtime: IAgentRuntime) => true,
 	handler: async (
 		runtime: IAgentRuntime,
 		message: Memory,
 		state: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
 		callback: HandlerCallback,
 	) => {
 		elizaLogger.info("Retrieving portfolio...");
 		try {
 			if (!state) {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = (await runtime.composeState(message, {})) as State;
 			} else {
+				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = await runtime.updateRecentMessageState(state);
 			}
 
@@ -504,10 +559,17 @@ export const getPortfolioAction: Action = {
 				expiry,
 			);
 			elizaLogger.info("Portfolio retrieved successfully.", portfolio);
-			callback({ text: "Portfolio retrieved successfully." }, []);
+
+			const response = { text: "Portfolio retrieved successfully." };
+			callback(response, []);
+			traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error("Error retrieving portfolio: ", error.message);
-			callback({ text: `Failed to retrieve portfolio: ${error.message}` }, []);
+			const response = {
+				text: `Failed to retrieve portfolio: ${error.message}`,
+			};
+			callback(response, []);
+			traceResult(state, response);
 		}
 	},
 };

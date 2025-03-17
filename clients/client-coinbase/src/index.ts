@@ -7,7 +7,6 @@ import {
 	type Provider,
 	type State,
 	type UUID,
-	composeContext,
 	elizaLogger,
 	generateText,
 	stringToUuid,
@@ -24,6 +23,7 @@ import {
 	initializeWallet,
 	readContractWrapper,
 } from "@realityspiral/plugin-coinbase";
+import { composeContext } from "@realityspiral/plugin-instrumentation";
 import {
 	Side,
 	getProviderAndSigner,
@@ -450,29 +450,17 @@ Generate only the tweet text, no commentary or markdown.`;
 			const { signer } = getProviderAndSigner();
 			// need to consider closing the order
 			try {
-				if (buy) {
-					const tx = await placeMarketOrder(
-						instrumentSymbol,
-						side,
-						String(amount),
-						String(defaultLeverage),
-						signer,
-					);
-					elizaLogger.info(`tx ${JSON.stringify(tx)}`);
-					return tx.transactionHash;
-				} else {
-					// need to do soemthing different if it sell.
-					const tx = await placeMarketOrder(
-						instrumentSymbol,
-						side,
-						String(amount),
-						String(defaultLeverage),
-						signer,
-					);
-					elizaLogger.info(`tx ${JSON.stringify(tx)}`);
-					return tx.transactionHash;
-				}
-			} catch (error) {
+				const txHash = await placeMarketOrder(
+					instrumentSymbol,
+					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+					side as any,
+					String(amount),
+					String(defaultLeverage),
+					signer,
+				);
+				return txHash.transactionHash;
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			} catch (error: any) {
 				elizaLogger.error("Margin/short trade failed:", error.message);
 				return null;
 			}

@@ -3,17 +3,21 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
 	ModelClass,
 	type Plugin,
 	type State,
-	composeContext,
 	elizaLogger,
 	generateObject,
 	stringToUuid,
 } from "@elizaos/core";
+import {
+	composeContext,
+	traceResult,
+} from "@realityspiral/plugin-instrumentation";
 import { createMemoriesFromFilesTemplate } from "../templates";
 import {
 	type CreateMemoriesFromFilesContent,
@@ -166,14 +170,19 @@ export const createMemoriesFromFilesAction: Action = {
 			);
 
 			elizaLogger.info("Memories created successfully!");
+
+			const response: Content = {
+				text: "Memories created successfully!",
+				action: "CREATE_MEMORIES_FROM_FILES",
+				source: "github",
+				attachments: [],
+			};
+
 			// if (callback) {
-			//     callback({
-			//         text: "Memories created successfully!",
-			//         action: "CREATE_MEMORIES_FROM_FILES",
-			//         source: "github",
-			//         attachments: [],
-			//     });
+			//     callback(response);
 			// }
+
+			return traceResult(state, response);
 		} catch (error) {
 			elizaLogger.error(
 				`Error creating memories from files on ${content.owner}/${content.repo} path ${content.path}:`,
