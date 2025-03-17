@@ -1,7 +1,10 @@
+import type { Side } from "@realityspiral/plugin-synfutures";
+
 export interface WebhookEvent {
 	event: "buy" | "sell";
 	ticker: string;
 	price: number;
+	side: "long" | "short";
 	timestamp: number;
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	metadata?: Record<string, any>;
@@ -12,6 +15,7 @@ export interface TradeAction {
 	ticker: string;
 	amount: number;
 	price?: number;
+	side: Side;
 }
 
 export const blockExplorerBaseTxUrl = (txHash: string) =>
