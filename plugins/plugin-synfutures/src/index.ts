@@ -30,6 +30,6 @@ export const synfuturesPlugin: Plugin = {
 };
 
 export { getProviderAndSigner, placeMarketOrder } from "./plugins/perps";
-export type { Side } from "@synfutures/sdks-perp";
+export { Side } from "@synfutures/sdks-perp";
 
 export default synfuturesPlugin;
