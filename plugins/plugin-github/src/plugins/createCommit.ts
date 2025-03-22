@@ -15,6 +15,7 @@ import {
 	composeContext,
 	traceResult,
 } from "@realityspiral/plugin-instrumentation";
+import { captureError } from "@realityspiral/shared-sentry";
 import { createCommitTemplate } from "../templates";
 import {
 	type CreateCommitContent,
@@ -27,7 +28,6 @@ import {
 	getRepoPath,
 	writeFiles,
 } from "../utils";
-import { captureError } from "@realityspiral/shared-sentry";
 
 export const createCommitAction: Action = {
 	name: "CREATE_COMMIT",

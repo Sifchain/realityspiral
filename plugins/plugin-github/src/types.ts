@@ -1,7 +1,7 @@
 import { elizaLogger } from "@elizaos/core";
+import { captureError } from "@realityspiral/shared-sentry";
 import { z } from "zod";
 import { githubReactions } from "./constants";
-import { captureError } from "@realityspiral/shared-sentry";
 
 export const InitializeSchema = z.object({
 	owner: z.string().min(1, "GitHub owner is required"),
@@ -194,10 +194,10 @@ export const isCreateIssueContent = (
 		return true;
 	}
 	elizaLogger.error("Invalid content: ", object);
-  captureError(new Error("Invalid CreateIssueContent content"), {
-			content: object,
-			validationType: "CreateIssueContent",
-		});
+	captureError(new Error("Invalid CreateIssueContent content"), {
+		content: object,
+		validationType: "CreateIssueContent",
+	});
 	return false;
 };
 
@@ -231,10 +231,10 @@ export const isModifyIssueContent = (
 		return true;
 	}
 	elizaLogger.error("Invalid content: ", object);
-  captureError(new Error("Invalid ModifyIssueContent content"), {
-			content: object,
-			validationType: "ModifyIssueContent",
-		});
+	captureError(new Error("Invalid ModifyIssueContent content"), {
+		content: object,
+		validationType: "ModifyIssueContent",
+	});
 	return false;
 };
 
@@ -281,10 +281,10 @@ export const isAddCommentToIssueContent = (
 		return true;
 	}
 	elizaLogger.error("Invalid content: ", object);
-  captureError(new Error("Invalid AddCommentToIssueContent content"), {
-			content: object,
-			validationType: "AddCommentToIssueContent",
-		});
+	captureError(new Error("Invalid AddCommentToIssueContent content"), {
+		content: object,
+		validationType: "AddCommentToIssueContent",
+	});
 	return false;
 };
 
@@ -325,10 +325,10 @@ export const isAddCommentToPRContent = (
 		return true;
 	}
 	elizaLogger.error("Invalid content: ", object);
-  captureError(new Error("Invalid AddCommentToPRContent content"), {
-			content: object,
-			validationType: "AddCommentToPRContent",
-		});
+	captureError(new Error("Invalid AddCommentToPRContent content"), {
+		content: object,
+		validationType: "AddCommentToPRContent",
+	});
 	return false;
 };
 
@@ -393,10 +393,10 @@ export const isReactToIssueContent = (
 		return true;
 	}
 	elizaLogger.error("Invalid content: ", object);
-  captureError(new Error("Invalid ReactToIssueContent content"), {
-			content: object,
-			validationType: "ReactToIssueContent",
-		});
+	captureError(new Error("Invalid ReactToIssueContent content"), {
+		content: object,
+		validationType: "ReactToIssueContent",
+	});
 	return false;
 };
 
@@ -422,10 +422,10 @@ export const isReactToPRContent = (object: any): object is ReactToPRContent => {
 		return true;
 	}
 	elizaLogger.error("Invalid content: ", object);
-  captureError(new Error("Invalid ReactToPRContent content"), {
-			content: object,
-			validationType: "ReactToPRContent",
-		});
+	captureError(new Error("Invalid ReactToPRContent content"), {
+		content: object,
+		validationType: "ReactToPRContent",
+	});
 	return false;
 };
 
@@ -461,10 +461,10 @@ export const isClosePRActionContent = (
 		return true;
 	}
 	elizaLogger.error("Invalid content: ", object);
-  captureError(new Error("Invalid ClosePRActionContent content"), {
-			content: object,
-			validationType: "ClosePRActionContent",
-		});
+	captureError(new Error("Invalid ClosePRActionContent content"), {
+		content: object,
+		validationType: "ClosePRActionContent",
+	});
 	return false;
 };
 
@@ -490,10 +490,10 @@ export const isCloseIssueActionContent = (
 		return true;
 	}
 	elizaLogger.error("Invalid content: ", object);
-  captureError(new Error("Invalid CloseIssueActionContent content"), {
-			content: object,
-			validationType: "CloseIssueActionContent",
-		});
+	captureError(new Error("Invalid CloseIssueActionContent content"), {
+		content: object,
+		validationType: "CloseIssueActionContent",
+	});
 	return false;
 };
 
@@ -524,10 +524,10 @@ export const isMergePRActionContent = (
 		return true;
 	}
 	elizaLogger.error("Invalid content: ", object);
-  captureError(new Error("Invalid MergePRActionContent content"), {
-			content: object,
-			validationType: "MergePRActionContent",
-		});
+	captureError(new Error("Invalid MergePRActionContent content"), {
+		content: object,
+		validationType: "MergePRActionContent",
+	});
 	return false;
 };
 
@@ -553,10 +553,10 @@ export const isReplyToPRCommentContent = (
 		return true;
 	}
 	elizaLogger.error("Invalid content: ", object);
-  captureError(new Error("Invalid ReplyToPRCommentContent content"), {
-			content: object,
-			validationType: "ReplyToPRCommentContent",
-		});
+	captureError(new Error("Invalid ReplyToPRCommentContent content"), {
+		content: object,
+		validationType: "ReplyToPRCommentContent",
+	});
 	return false;
 };
 
@@ -605,10 +605,10 @@ export const isImplementFeatureContent = (
 		return true;
 	}
 	elizaLogger.error("Invalid content: ", object);
-  captureError(new Error("Invalid ImplementFeatureContent content"), {
-			content: object,
-			validationType: "ImplementFeatureContent",
-		});
+	captureError(new Error("Invalid ImplementFeatureContent content"), {
+		content: object,
+		validationType: "ImplementFeatureContent",
+	});
 	return false;
 };
 
@@ -648,10 +648,10 @@ export const isGenerateCodeFileChangesContent = (
 		return true;
 	}
 	elizaLogger.error("Invalid content: ", object);
-  captureError(new Error("Invalid GenerateCodeFileChangesContent content"), {
-			content: object,
-			validationType: "GenerateCodeFileChangesContent",
-		});
+	captureError(new Error("Invalid GenerateCodeFileChangesContent content"), {
+		content: object,
+		validationType: "GenerateCodeFileChangesContent",
+	});
 	return false;
 };
 

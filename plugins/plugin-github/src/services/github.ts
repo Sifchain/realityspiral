@@ -217,7 +217,7 @@ export class GitHubService {
 				issueNumber,
 				updates,
 				owner: this.config.owner,
-				repo: this.config.repo
+				repo: this.config.repo,
 			});
 			throw error;
 		}
@@ -246,7 +246,7 @@ export class GitHubService {
 			captureError(error as Error, {
 				issueNumber,
 				owner: this.config.owner,
-				repo: this.config.repo
+				repo: this.config.repo,
 			});
 			throw error;
 		}
@@ -264,7 +264,7 @@ export class GitHubService {
 				issueNumber,
 				reaction: "eyes",
 				owner: this.config.owner,
-				repo: this.config.repo
+				repo: this.config.repo,
 			});
 		}
 		try {
@@ -283,7 +283,7 @@ export class GitHubService {
 				issueNumber,
 				reaction: emojiReaction,
 				owner: this.config.owner,
-				repo: this.config.repo
+				repo: this.config.repo,
 			});
 			throw error;
 		}
@@ -308,7 +308,7 @@ export class GitHubService {
 			captureError(error as Error, {
 				issueNumber,
 				owner: this.config.owner,
-				repo: this.config.repo
+				repo: this.config.repo,
 			});
 			throw error;
 		}

@@ -15,6 +15,7 @@ import {
 	composeContext,
 	traceResult,
 } from "@realityspiral/plugin-instrumentation";
+import { captureError } from "@realityspiral/shared-sentry";
 import { GitHubService } from "../services/github";
 import {
 	createIssueTemplate,
@@ -29,7 +30,6 @@ import {
 	isSimilarityIssueCheckContent,
 } from "../types";
 import { saveIssueToMemory } from "../utils";
-import { captureError } from "@realityspiral/shared-sentry";
 
 export const createIssueAction: Action = {
 	name: "CREATE_ISSUE",

@@ -15,6 +15,7 @@ import {
 	composeContext,
 	traceResult,
 } from "@realityspiral/plugin-instrumentation";
+import { captureError } from "@realityspiral/shared-sentry";
 import { createPullRequestTemplate } from "../templates";
 import {
 	type CreatePullRequestContent,
@@ -29,7 +30,6 @@ import {
 	saveCreatedPullRequestToMemory,
 	writeFiles,
 } from "../utils";
-import { captureError } from "@realityspiral/shared-sentry";
 
 export const createPullRequestAction: Action = {
 	name: "CREATE_PULL_REQUEST",

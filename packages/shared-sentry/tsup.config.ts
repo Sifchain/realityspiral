@@ -9,4 +9,4 @@ export default defineConfig({
 	sourcemap: true,
 	clean: true,
 	external: ["@elizaos/core", "@sentry/node"],
-}); 
+});

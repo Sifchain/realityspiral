@@ -37,4 +37,4 @@ export function captureUIError(
 		}
 		Sentry.captureException(error);
 	});
-} 
+}

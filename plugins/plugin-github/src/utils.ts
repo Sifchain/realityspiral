@@ -12,11 +12,11 @@ import {
 } from "@elizaos/core";
 import { Octokit } from "@octokit/rest";
 import type { RestEndpointMethodTypes } from "@octokit/rest";
+import { captureError } from "@realityspiral/shared-sentry";
 import { glob } from "glob";
 import simpleGit, { type CommitResult } from "simple-git";
 import { GitHubService } from "./services/github";
 import { contextTemplate } from "./templates";
-import { captureError } from "@realityspiral/shared-sentry";
 
 export function getRepoPath(owner: string, repo: string) {
 	return path.join("/tmp", "elizaos-repos", owner, repo);
