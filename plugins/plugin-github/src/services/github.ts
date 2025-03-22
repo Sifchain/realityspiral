@@ -2,7 +2,7 @@ import { elizaLogger } from "@elizaos/core";
 import { GraphqlResponseError, graphql } from "@octokit/graphql";
 import type { GraphQlQueryResponseData } from "@octokit/graphql";
 import { Octokit, type RestEndpointMethodTypes } from "@octokit/rest";
-import { captureError } from "../../../shared/error-tracking";
+import { captureError } from "@realityspiral/shared-sentry";
 import type { GithubReaction } from "../types";
 
 interface GitHubConfig {
@@ -69,6 +69,11 @@ export class GitHubService {
 			return [];
 		} catch (error) {
 			elizaLogger.error(`Error getting test files: ${error}`);
+			captureError(error as Error, {
+				testPath,
+				owner: this.config.owner,
+				repo: this.config.repo,
+			});
 			throw error;
 		}
 	}
@@ -87,6 +92,10 @@ export class GitHubService {
 			return response.data.workflows;
 		} catch (error) {
 			elizaLogger.error(`Error getting workflows: ${error}`);
+			captureError(error as Error, {
+				owner: this.config.owner,
+				repo: this.config.repo,
+			});
 			throw error;
 		}
 	}
@@ -115,6 +124,11 @@ export class GitHubService {
 			return [];
 		} catch (error) {
 			elizaLogger.error(`Error getting documentation: ${error}`);
+			captureError(error as Error, {
+				docPath,
+				owner: this.config.owner,
+				repo: this.config.repo,
+			});
 			throw error;
 		}
 	}
@@ -140,6 +154,11 @@ export class GitHubService {
 			return [];
 		} catch (error) {
 			elizaLogger.error(`Error getting source files: ${error}`);
+			captureError(error as Error, {
+				sourcePath,
+				owner: this.config.owner,
+				repo: this.config.repo,
+			});
 			throw error;
 		}
 	}
@@ -163,6 +182,11 @@ export class GitHubService {
 			return response.data;
 		} catch (error) {
 			elizaLogger.error(`Error creating issue: ${error}`);
+			captureError(error as Error, {
+				title,
+				owner: this.config.owner,
+				repo: this.config.repo,
+			});
 			throw error;
 		}
 	}
@@ -189,6 +213,12 @@ export class GitHubService {
 			return response.data;
 		} catch (error) {
 			elizaLogger.error(`Error updating issue: ${error}`);
+			captureError(error as Error, {
+				issueNumber,
+				updates,
+				owner: this.config.owner,
+				repo: this.config.repo
+			});
 			throw error;
 		}
 	}
@@ -213,6 +243,11 @@ export class GitHubService {
 			});
 		} catch (error) {
 			elizaLogger.error(`Error adding comment to issue: ${error}`);
+			captureError(error as Error, {
+				issueNumber,
+				owner: this.config.owner,
+				repo: this.config.repo
+			});
 			throw error;
 		}
 		try {
@@ -225,6 +260,12 @@ export class GitHubService {
 			);
 		} catch (error) {
 			elizaLogger.error("Failed to add label to issue:", error);
+			captureError(error as Error, {
+				issueNumber,
+				reaction: "eyes",
+				owner: this.config.owner,
+				repo: this.config.repo
+			});
 		}
 		try {
 			if (emojiReaction) {
@@ -238,6 +279,12 @@ export class GitHubService {
 			}
 		} catch (error) {
 			elizaLogger.error(`Error adding comment to issue: ${error}`);
+			captureError(error as Error, {
+				issueNumber,
+				reaction: emojiReaction,
+				owner: this.config.owner,
+				repo: this.config.repo
+			});
 			throw error;
 		}
 		return response.data;
@@ -258,6 +305,11 @@ export class GitHubService {
 			return response.data;
 		} catch (error) {
 			elizaLogger.error(`Error getting issue details: ${error}`);
+			captureError(error as Error, {
+				issueNumber,
+				owner: this.config.owner,
+				repo: this.config.repo
+			});
 			throw error;
 		}
 	}

@@ -3,3 +3,4 @@ packages:
   - "clients/*"
   - "agent"
   - "ui"
+  - "packages/*"

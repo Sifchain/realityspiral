@@ -29,6 +29,7 @@ import {
 	isSimilarityIssueCheckContent,
 } from "../types";
 import { saveIssueToMemory } from "../utils";
+import { captureError } from "@realityspiral/shared-sentry";
 
 export const createIssueAction: Action = {
 	name: "CREATE_ISSUE",
@@ -182,11 +183,13 @@ export const createIssueAction: Action = {
 
 			return traceResult(state, response);
 		} catch (error) {
-			elizaLogger.error(
-				`Error creating issue in repository ${content.owner}/${content.repo}:`,
-				error,
-			);
-
+			elizaLogger.error("Error creating issue:", error);
+			captureError(error as Error, {
+				title: content.title,
+				owner: content.owner,
+				repo: content.repo,
+				action: "createIssue",
+			});
 			if (callback) {
 				await callback(
 					{

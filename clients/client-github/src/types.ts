@@ -1,5 +1,6 @@
 import { elizaLogger } from "@elizaos/core";
 import { githubReactions } from "@realityspiral/plugin-github";
+import { captureError } from "@realityspiral/shared-sentry";
 import { z } from "zod";
 
 export const ConfigGithubInfoSchema = z.object({
@@ -21,7 +22,12 @@ export const isConfigGithubInfoContent = (
 	if (ConfigGithubInfoSchema.safeParse(object).success) {
 		return true;
 	}
-	elizaLogger.error("Invalid content: ", object);
+	const errorMessage = "Invalid content";
+	elizaLogger.error(`${errorMessage}: ${object}`);
+	captureError(new Error(errorMessage), {
+		action: "isConfigGithubInfoContent",
+		object,
+	});
 	return false;
 };
 
@@ -38,7 +44,12 @@ export const isStopContent = (object: any): object is StopContent => {
 	if (StopSchema.safeParse(object).success) {
 		return true;
 	}
-	elizaLogger.error("Invalid content:", object);
+	const errorMessage = "Invalid content";
+	elizaLogger.error(`${errorMessage}: ${object}`);
+	captureError(new Error(errorMessage), {
+		action: "isStopContent",
+		object,
+	});
 	return false;
 };
 

@@ -12,6 +12,11 @@ import Chat from "./routes/chat";
 import Home from "./routes/home";
 import Overview from "./routes/overview";
 import Settings from "./routes/settings";
+import { initUISentry } from "./lib/sentry";
+
+// Initialize Sentry for UI
+initUISentry();
+
 const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {

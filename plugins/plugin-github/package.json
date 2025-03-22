@@ -6,6 +6,7 @@
 	"types": "dist/index.d.ts",
 	"dependencies": {
 		"@elizaos/core": "^0.1.9",
+    "@realityspiral/shared-sentry": "workspace:*",
 		"@octokit/rest": "20.1.1",
 		"@octokit/types": "12.6.0",
 		"@octokit/graphql": "8.2.0",

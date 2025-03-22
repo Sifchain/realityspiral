@@ -27,6 +27,7 @@ import {
 	getRepoPath,
 	writeFiles,
 } from "../utils";
+import { captureError } from "@realityspiral/shared-sentry";
 
 export const createCommitAction: Action = {
 	name: "CREATE_COMMIT",
@@ -78,8 +79,13 @@ export const createCommitAction: Action = {
 		});
 
 		if (!isCreateCommitContent(details.object)) {
-			elizaLogger.error("Invalid content:", details.object);
-			throw new Error("Invalid content");
+			const errorMessage = "Invalid content";
+			elizaLogger.error(`${errorMessage}: ${details.object}`);
+			captureError(new Error(errorMessage), {
+				action: "createCommit",
+				object: details.object,
+			});
+			throw new Error(errorMessage);
 		}
 
 		const content = details.object as CreateCommitContent;
@@ -123,6 +129,13 @@ export const createCommitAction: Action = {
 			elizaLogger.error(
 				`Error committing to the repository ${content.owner}/${content.repo} on branch '${content.branch}' message ${content.message}: See error: ${error.message}`,
 			);
+			captureError(error as Error, {
+				message: content.message,
+				branch: content.branch,
+				owner: content.owner,
+				repo: content.repo,
+				action: "createCommit",
+			});
 			if (callback) {
 				callback(
 					{
