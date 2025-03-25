@@ -2,7 +2,7 @@ import { elizaLogger } from "@elizaos/core";
 import { GraphqlResponseError, graphql } from "@octokit/graphql";
 import type { GraphQlQueryResponseData } from "@octokit/graphql";
 import { Octokit, type RestEndpointMethodTypes } from "@octokit/rest";
-import { captureError } from "@realityspiral/shared-sentry";
+import { captureError } from "@realityspiral/sentry";
 import type { GithubReaction } from "../types";
 
 interface GitHubConfig {

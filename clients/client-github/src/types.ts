@@ -1,6 +1,6 @@
 import { elizaLogger } from "@elizaos/core";
 import { githubReactions } from "@realityspiral/plugin-github";
-import { captureError } from "@realityspiral/shared-sentry";
+import { captureError } from "@realityspiral/sentry";
 import { z } from "zod";
 
 export const ConfigGithubInfoSchema = z.object({

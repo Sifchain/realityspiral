@@ -1,0 +1,21 @@
+{
+  "name": "@realityspiral/sentry",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup --format esm --dts"
+  },
+  "dependencies": {
+    "@elizaos/core": "^0.1.9",
+    "@sentry/node": "^7.101.1"
+  },
+  "devDependencies": {
+    "tsup": "8.3.5",
+    "typescript": "5.7.3"
+  }
+}

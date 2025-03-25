@@ -1,6 +1,10 @@
 {
 	"name": "Prosper",
-	"clients": ["coinbase", "twitter"],
+  "clients": [
+    "coinbase",
+    "twitter",
+    "telegram"
+  ],
 	"username": "Prosper",
 	"modelProvider": "openai",
 	"imageModelProvider": "openai",

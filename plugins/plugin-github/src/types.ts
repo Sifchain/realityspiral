@@ -1,5 +1,5 @@
 import { elizaLogger } from "@elizaos/core";
-import { captureError } from "@realityspiral/shared-sentry";
+import { captureError } from "@realityspiral/sentry";
 import { z } from "zod";
 import { githubReactions } from "./constants";
 

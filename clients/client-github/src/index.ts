@@ -35,7 +35,7 @@ import {
 	savePullRequestsToMemory,
 } from "@realityspiral/plugin-github";
 import { composeContext } from "@realityspiral/plugin-instrumentation";
-import { captureError, initErrorTracking } from "@realityspiral/shared-sentry";
+import { captureError, initErrorTracking } from "@realityspiral/sentry";
 import { configGithubInfoAction } from "./actions/configGithubInfo";
 import { stopAction } from "./actions/stop";
 import { validateGithubConfig } from "./environment";

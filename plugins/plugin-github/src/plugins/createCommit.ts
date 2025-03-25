@@ -15,7 +15,7 @@ import {
 	composeContext,
 	traceResult,
 } from "@realityspiral/plugin-instrumentation";
-import { captureError } from "@realityspiral/shared-sentry";
+import { captureError } from "@realityspiral/sentry";
 import { createCommitTemplate } from "../templates";
 import {
 	type CreateCommitContent,
