@@ -20,7 +20,6 @@ export function initUISentry() {
 		// If you're not using session replay, you can remove this option
 		replaysOnErrorSampleRate: 1.0,
 	});
-	captureUIError(new Error("Test error 45"));
 }
 
 export function captureUIError(
