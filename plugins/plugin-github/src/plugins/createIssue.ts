@@ -15,6 +15,7 @@ import {
 	composeContext,
 	traceResult,
 } from "@realityspiral/plugin-instrumentation";
+import { captureError } from "@realityspiral/sentry";
 import { GitHubService } from "../services/github";
 import {
 	createIssueTemplate,
@@ -182,11 +183,13 @@ export const createIssueAction: Action = {
 
 			return traceResult(state, response);
 		} catch (error) {
-			elizaLogger.error(
-				`Error creating issue in repository ${content.owner}/${content.repo}:`,
-				error,
-			);
-
+			elizaLogger.error("Error creating issue:", error);
+			captureError(error as Error, {
+				title: content.title,
+				owner: content.owner,
+				repo: content.repo,
+				action: "createIssue",
+			});
 			if (callback) {
 				await callback(
 					{

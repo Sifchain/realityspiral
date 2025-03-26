@@ -30,6 +30,7 @@ COPY plugins/plugin-synfutures/package.json ./plugins/plugin-synfutures/
 COPY plugins/plugin-twitter/package.json ./plugins/plugin-twitter/
 COPY agent/package.json ./agent/
 COPY ui/package.json ./ui/
+COPY packages/sentry/package.json ./packages/sentry/
 
 # Install dependencies
 RUN pnpm install

@@ -15,6 +15,7 @@ import {
 	composeContext,
 	traceResult,
 } from "@realityspiral/plugin-instrumentation";
+import { captureError } from "@realityspiral/sentry";
 import { GitHubService } from "../services/github";
 import {
 	addCommentToPRTemplate,
