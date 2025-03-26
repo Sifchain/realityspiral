@@ -224,15 +224,9 @@ oasis-cli account create --name <account-name>
 
 Request testnet tokens from the [Oasis Faucet](https://faucet.testnet.oasis.dev/).
 
-### Initialize and create the ROFL application
+### Create a ROFL application
 
 Note: Reality Spiral already has a ROFL app created with ID `rofl1qpkplp3uq5yage4kunt0ylmulett0arzwcdjvc8u`. The following steps are only needed if you want to create your own ROFL application instead of using the existing one.
-
-Initialize the ROFL application.
-
-```sh
-oasis rofl init
-```
 
 Choose a unique deployment name for your ROFL application instance.
 
