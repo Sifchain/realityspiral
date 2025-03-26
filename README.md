@@ -226,16 +226,26 @@ Request testnet tokens from the [Oasis Faucet](https://faucet.testnet.oasis.dev/
 
 ### Initialize and create the ROFL application
 
+Note: Reality Spiral already has a ROFL app created with ID `rofl1qpkplp3uq5yage4kunt0ylmulett0arzwcdjvc8u`. The following steps are only needed if you want to create your own ROFL application instead of using the existing one.
+
 Initialize the ROFL application.
 
 ```sh
 oasis rofl init
 ```
 
+Choose a unique deployment name for your ROFL application instance.
+
+```sh
+export DEPLOYMENT_NAME=<deployment-name>
+```
+
+Note: When specifying your deployment name, choose something other than `default` since this name is reserved for the existing Reality Spiral ROFL application. The deployment name identifies your specific instance in the configuration.
+
 Create the ROFL application.
 
 ```sh
-oasis rofl create --network testnet --account <account-name>
+oasis rofl create --network testnet --account <account-name> --deployment ${DEPLOYMENT_NAME}
 ```
 
 ```
@@ -250,7 +260,7 @@ Created ROFL app: rofl1qpkplp3uq5yage4kunt0ylmulett0arzwcdjvc8u
 Retrieve the ROFL app information.
 
 ```sh
-oasis rofl show
+oasis rofl show --deployment ${DEPLOYMENT_NAME}
 ```
 
 ```
@@ -283,9 +293,9 @@ Policy:
 No registered app instances.
 ```
 
-### Create the `rofl-compose.yaml` file
+### Update the `rofl-compose.yaml` file
 
-Create the `rofl-compose.yaml` file with the following content:
+Edit the `rofl-compose.yaml` file with the following content:
 
 ```yaml
 services:
@@ -298,6 +308,7 @@ services:
     platform: linux/amd64
     environment:
       - CHARACTERS=${CHARACTERS}
+      - SERVER_PORT=${SERVER_PORT}
       [...]
 ```
 
@@ -308,34 +319,34 @@ Add all required environment variables to the rofl-compose.yaml file to properly
 The following commands demonstrate how to encrypt each environment variable as a secret in the manifest:
 
 ```sh
-echo -n "characters/staff-engineer.character.json" | oasis rofl secret set CHARACTERS -
-echo -n "3000" | oasis rofl secret set SERVER_PORT -
-echo -n "5173" | oasis rofl secret set UI_PORT -
-echo -n "" | oasis rofl secret set UI_ALLOWED_HOSTS -
-echo -n "" | oasis rofl secret set UI_SERVER_URL -
-echo -n "" | oasis rofl secret set REMOTE_CHARACTER_URLS -
-echo -n "false" | oasis rofl secret set USE_CHARACTER_STORAGE -
-echo -n "log" | oasis rofl secret set DEFAULT_LOG_LEVEL -
-echo -n "false" | oasis rofl secret set LOG_JSON_FORMAT -
-echo -n "false" | oasis rofl secret set INSTRUMENTATION_ENABLED -
-echo -n "" | oasis rofl secret set EXPRESS_MAX_PAYLOAD -
-echo -n "sk-proj-XXXX" | oasis rofl secret set OPENAI_API_KEY -
-echo -n "" | oasis rofl secret set OPENAI_API_URL -
-echo -n "" | oasis rofl secret set SMALL_OPENAI_MODEL -
-echo -n "" | oasis rofl secret set MEDIUM_OPENAI_MODEL -
-echo -n "" | oasis rofl secret set LARGE_OPENAI_MODEL -
-echo -n "" | oasis rofl secret set EMBEDDING_OPENAI_MODEL -
-echo -n "" | oasis rofl secret set IMAGE_OPENAI_MODEL -
-echo -n "false" | oasis rofl secret set USE_OPENAI_EMBEDDING -
-echo -n "true" | oasis rofl secret set GITHUB_CLIENT_DISABLED -
-echo -n "true" | oasis rofl secret set GITHUB_PLUGIN_ENABLED -
-echo -n "ghp_XXXX" | oasis rofl secret set GITHUB_API_TOKEN -
-echo -n "5000" | oasis rofl secret set GITHUB_USER_CHECK_INTERVAL_MS -
-echo -n "5000" | oasis rofl secret set GITHUB_INFO_DISCOVERY_INTERVAL_MS -
-echo -n "20000" | oasis rofl secret set GITHUB_OODA_INTERVAL_MS -
-echo -n "10" | oasis rofl secret set GITHUB_ISSUES_LIMIT -
-echo -n "10" | oasis rofl secret set GITHUB_PULL_REQUESTS_LIMIT -
-echo -n "postgresql://user:password@localhost:5432/realityspiral" | oasis rofl secret set POSTGRES_URL -
+echo -n "characters/staff-engineer.character.json" | oasis rofl secret set  --deployment ${DEPLOYMENT_NAME} CHARACTERS -
+echo -n "3000" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} SERVER_PORT -
+echo -n "5173" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} UI_PORT -
+echo -n "" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} UI_ALLOWED_HOSTS -
+echo -n "" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} UI_SERVER_URL -
+echo -n "" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} REMOTE_CHARACTER_URLS -
+echo -n "false" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} USE_CHARACTER_STORAGE -
+echo -n "log" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} DEFAULT_LOG_LEVEL -
+echo -n "false" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} LOG_JSON_FORMAT -
+echo -n "false" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} INSTRUMENTATION_ENABLED -
+echo -n "" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} EXPRESS_MAX_PAYLOAD -
+echo -n "sk-proj-XXXX" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} OPENAI_API_KEY -
+echo -n "" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} OPENAI_API_URL -
+echo -n "" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} SMALL_OPENAI_MODEL -
+echo -n "" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} MEDIUM_OPENAI_MODEL -
+echo -n "" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} LARGE_OPENAI_MODEL -
+echo -n "" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} EMBEDDING_OPENAI_MODEL -
+echo -n "" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} IMAGE_OPENAI_MODEL -
+echo -n "false" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} USE_OPENAI_EMBEDDING -
+echo -n "true" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} GITHUB_CLIENT_DISABLED -
+echo -n "true" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} GITHUB_PLUGIN_ENABLED -
+echo -n "ghp_XXXX" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} GITHUB_API_TOKEN -
+echo -n "5000" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} GITHUB_USER_CHECK_INTERVAL_MS -
+echo -n "5000" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} GITHUB_INFO_DISCOVERY_INTERVAL_MS -
+echo -n "20000" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} GITHUB_OODA_INTERVAL_MS -
+echo -n "10" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} GITHUB_ISSUES_LIMIT -
+echo -n "10" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} GITHUB_PULL_REQUESTS_LIMIT -
+echo -n "postgresql://user:password@localhost:5432/realityspiral" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} POSTGRES_URL -
 ```
 
 You can customize the manifest file by adding additional secrets that your agent requires.
@@ -343,7 +354,7 @@ You can customize the manifest file by adding additional secrets that your agent
 After encrypting all the secrets, update the ROFL app's on-chain configuration by running:
 
 ```sh
-oasis rofl update
+oasis rofl update --deployment ${DEPLOYMENT_NAME}
 ```
 
 ```
@@ -367,7 +378,7 @@ docker run --platform linux/amd64 --volume .:/src --rm -it ghcr.io/oasisprotocol
 Once inside the container, build the ROFL app by running:
 
 ```sh
-oasis rofl build
+oasis rofl build --deployment ${DEPLOYMENT_NAME}
 ```
 
 ```
@@ -410,7 +421,7 @@ Upon completion, the build process generates a file named `realityspiral.default
 To learn how to deploy your ROFL app to either a self-hosted Oasis node or through an Oasis provider, run the following command:
 
 ```sh
-oasis rofl deploy
+oasis rofl deploy --deployment ${DEPLOYMENT_NAME}
 ```
 
 ```
