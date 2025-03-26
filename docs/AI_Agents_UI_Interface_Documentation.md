@@ -265,7 +265,7 @@ Ensure dependencies are updated to avoid known vulnerabilities."
 This use case focuses on the agent's ability to analyze a repository's security aspects and suggest targeted improvements. By addressing authentication, code vulnerabilities, dependency management, and configuration issues, the agent provides actionable insights to enhance repository security.
 
 **When to Use:**
-This is ideal when there are concerns about vulnerabilities, risks to sensitive data, or the need to implement stronger security protocols. It’s especially useful before releasing new features or after identifying potential security incidents.
+This is ideal when there are concerns about vulnerabilities, risks to sensitive data, or the need to implement stronger security protocols. It's especially useful before releasing new features or after identifying potential security incidents.
 
 
 Prompt Example 2:
@@ -344,7 +344,7 @@ Agent:
 "OODA loop stopped successfully!"
 ```
 
-**Description:** This use case demonstrates the agent’s capability to halt a specific process, in this case, the OODA loop (Observe, Orient, Decide, Act). The user specifies the OODA loop, and the agent processes the request to terminate it, returning a confirmation message.
+**Description:** This use case demonstrates the agent's capability to halt a specific process, in this case, the OODA loop (Observe, Orient, Decide, Act). The user specifies the OODA loop, and the agent processes the request to terminate it, returning a confirmation message.
 
 **When to Use:** This is ideal in scenarios where the OODA loop is actively running and needs to be stopped immediately, such as during real-time decision-making simulations or strategic operations.
 
@@ -372,7 +372,7 @@ Agent:
 ```plaintext
 "Agent stopped successfully!"
 ```
-**Description:** This use case highlights the agent’s ability to terminate its own operations. Upon receiving the command, the agent ceases its tasks and confirms the stop action.
+**Description:** This use case highlights the agent's ability to terminate its own operations. Upon receiving the command, the agent ceases its tasks and confirms the stop action.
 
 **When to Use:** This is useful when the user needs to pause or completely stop the AI agent from performing any tasks, especially in scenarios where further actions are no longer needed or the system requires troubleshooting.
 
@@ -386,7 +386,7 @@ Agent:
 ```plaintext
 "GitHub client stopped successfully!"
 ```
-**Description:** This use case highlights the agent’s ability to stop the GitHub client, which could be an interface or service related to GitHub operations. The agent processes the request and terminates the GitHub client, providing a success message.
+**Description:** This use case highlights the agent's ability to stop the GitHub client, which could be an interface or service related to GitHub operations. The agent processes the request and terminates the GitHub client, providing a success message.
 
 **When to Use:** This is useful when the GitHub client is actively running and needs to be halted, such as during the configuration of repositories, stopping automated pull requests, or terminating CI/CD tasks.
 
@@ -454,7 +454,7 @@ Advanced Trade executed successfully:
 - Response: {"success_response":{}}
 - Order Configuration: {"market_market_ioc":{"quote_size":"1000"}}
 ```
-**Description:** This scenario demonstrates the agent’s ability to execute an advanced market order. The user instructs the agent to buy $1 worth of Bitcoin (BTC) using advanced trading options. The agent processes the request and confirms the details of the executed order, including:
+**Description:** This scenario demonstrates the agent's ability to execute an advanced market order. The user instructs the agent to buy $1 worth of Bitcoin (BTC) using advanced trading options. The agent processes the request and confirms the details of the executed order, including:
 
 The product being traded (BTC-USD).
 The type of order (Market Order).
@@ -544,7 +544,7 @@ Charge created successfully:
 ```
 
 **Description:**
-This scenario demonstrates the agent’s ability to create a dynamic-price charge, where the price of the product or service (e.g., VIP Access Pass) may fluctuate depending on external factors such as cryptocurrency rates. The agent sets up the charge with the specified name and description, and provides a payment URL.
+This scenario demonstrates the agent's ability to create a dynamic-price charge, where the price of the product or service (e.g., VIP Access Pass) may fluctuate depending on external factors such as cryptocurrency rates. The agent sets up the charge with the specified name and description, and provides a payment URL.
 
 **When to Use:**
 Dynamic-price charges are ideal for products or memberships where pricing may vary based on external factors or market conditions, such as cryptocurrency value.
@@ -567,7 +567,7 @@ Charge created successfully:
 ```
 
 **Description:**
-This scenario showcases the agent’s ability to create a fixed-price payment request. The user specifies the amount (50 EUR), the name of the payment (Workshop Registration), and the agent generates a charge URL for easy payment collection.
+This scenario showcases the agent's ability to create a fixed-price payment request. The user specifies the amount (50 EUR), the name of the payment (Workshop Registration), and the agent generates a charge URL for easy payment collection.
 
 **When to Use:**
 This is useful for event organizers or businesses who need to collect payments for one-time events, such as workshops or registrations, using a specified price.
@@ -590,7 +590,7 @@ Charge created successfully:
 ```
 
 **Description:**
-This scenario illustrates the agent’s ability to generate an invoice for a fixed amount in cryptocurrency (e.g., 1000 USDC). The user specifies the service (Consulting Services) and amount, and the agent creates a payment link to be shared with the client.
+This scenario illustrates the agent's ability to generate an invoice for a fixed amount in cryptocurrency (e.g., 1000 USDC). The user specifies the service (Consulting Services) and amount, and the agent creates a payment link to be shared with the client.
 
 **When to Use:**
 This is suitable for professionals or businesses offering services and seeking to collect payments in cryptocurrency for a specific invoice.
@@ -615,7 +615,7 @@ Charge details retrieved:
 ```
 
 **Description:**
-This scenario highlights the agent’s ability to retrieve the current status of a specific charge by its ID (e.g., abc-123-def). The agent provides detailed information, including the charge status (e.g., COMPLETED), amount, creation time, and expiration time.
+This scenario highlights the agent's ability to retrieve the current status of a specific charge by its ID (e.g., abc-123-def). The agent provides detailed information, including the charge status (e.g., COMPLETED), amount, creation time, and expiration time.
 
 **When to Use:**
 This is useful for tracking payment statuses or verifying whether a charge has been completed, is pending, or has expired.
@@ -637,7 +637,7 @@ Active charges retrieved:
 Total active charges: 3
 ```
 **Description:**
-This scenario demonstrates the agent’s ability to list all currently active charges. It retrieves a summary of charges, including their IDs, amounts, and associated descriptions (e.g., Digital Art NFT, Workshop). The agent also provides the total number of active charges.
+This scenario demonstrates the agent's ability to list all currently active charges. It retrieves a summary of charges, including their IDs, amounts, and associated descriptions (e.g., Digital Art NFT, Workshop). The agent also provides the total number of active charges.
 
 **When to Use:**
 This feature is ideal for merchants or businesses who need an overview of outstanding payment requests or active charges for tracking purposes.
@@ -645,5 +645,19 @@ This feature is ideal for merchants or businesses who need an overview of outsta
 
 ## Limitations 
 Currently the GitHub plug-in can be used for small and medium repositories. We are actively integrating Decentralized Knowledge Graphs (DKG) to expand context limits and improve the relevance and accuracy of interactions, ensuring a more powerful and efficient AI experience.
+
+## Error Handling
+
+The UI uses Sentry for error tracking and monitoring. To enable it:
+
+1. Set up a Sentry account and get your DSN
+2. Add the following environment variables:
+```
+VITE_SENTRY_DSN=your-dsn-here
+VITE_SENTRY_ENVIRONMENT=development
+VITE_SENTRY_ENABLED=true
+```
+
+Note: These variables mirror the server-side Sentry configuration but with the VITE_ prefix for UI use.
 
 

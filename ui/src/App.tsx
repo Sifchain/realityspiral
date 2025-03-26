@@ -8,10 +8,15 @@ import MemoryManager from "./components/ui/memoriesManager";
 // import TemplateManager from "./components/ui/templatesManager";
 import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
+import { initUISentry } from "./lib/sentry";
 import Chat from "./routes/chat";
 import Home from "./routes/home";
 import Overview from "./routes/overview";
 import Settings from "./routes/settings";
+
+// Initialize Sentry for UI
+initUISentry();
+
 const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {

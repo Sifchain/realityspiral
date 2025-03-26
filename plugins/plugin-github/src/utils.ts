@@ -12,6 +12,7 @@ import {
 } from "@elizaos/core";
 import { Octokit } from "@octokit/rest";
 import type { RestEndpointMethodTypes } from "@octokit/rest";
+import { captureError } from "@realityspiral/sentry";
 import { glob } from "glob";
 import simpleGit, { type CommitResult } from "simple-git";
 import { GitHubService } from "./services/github";
@@ -34,6 +35,9 @@ export async function createReposDirectory(owner: string) {
 		});
 	} catch (error) {
 		elizaLogger.error("Error creating repos directory:", error);
+		captureError(error as Error, {
+			action: "createReposDirectory",
+		});
 		throw new Error(`Error creating repos directory: ${error}`);
 	}
 }
@@ -87,6 +91,12 @@ export async function cloneOrPullRepository(
 			`Error cloning or pulling repository ${owner}/${repo}:`,
 			error,
 		);
+		captureError(error as Error, {
+			action: "cloneOrPullRepository",
+			owner,
+			repo,
+			branch,
+		});
 		throw new Error(`Error cloning or pulling repository: ${error}`);
 	}
 }
@@ -98,12 +108,13 @@ export async function writeFiles(
 	try {
 		// check if the local repo exists
 		if (!existsSync(repoPath)) {
-			elizaLogger.error(
-				`Repository ${repoPath} does not exist locally. Please initialize the repository first.`,
-			);
-			throw new Error(
-				`Repository ${repoPath} does not exist locally. Please initialize the repository first.`,
-			);
+			const errorMessage = `Repository ${repoPath} does not exist locally. Please initialize the repository first.`;
+			elizaLogger.error(errorMessage);
+			captureError(new Error(errorMessage), {
+				action: "writeFiles",
+				repoPath,
+			});
+			throw new Error(errorMessage);
 		}
 
 		for (const file of files) {
@@ -113,6 +124,10 @@ export async function writeFiles(
 		}
 	} catch (error) {
 		elizaLogger.error("Error writing files:", error);
+		captureError(error as Error, {
+			action: "writeFiles",
+			repoPath,
+		});
 		throw new Error(`Error writing files: ${error}`);
 	}
 }
@@ -130,6 +145,9 @@ export async function getGitHubUserInfo(token: string) {
 		};
 	} catch (error) {
 		elizaLogger.error("Error getting GitHub user info:", error);
+		captureError(error as Error, {
+			action: "getGitHubUserInfo",
+		});
 		throw new Error(`Error getting GitHub user info: ${error}`);
 	}
 }
@@ -163,6 +181,12 @@ export async function commitAndPushChanges(
 		return commit;
 	} catch (error) {
 		elizaLogger.error("Error committing and pushing changes:", error);
+		captureError(error as Error, {
+			action: "commitAndPushChanges",
+			repoPath,
+			message,
+			branch,
+		});
 		throw new Error(`Error committing and pushing changes: ${error}`);
 	}
 }
@@ -206,6 +230,11 @@ export async function checkoutBranch(
 		}
 	} catch (error) {
 		elizaLogger.error("Error checking out branch:", error.message);
+		captureError(error as Error, {
+			action: "checkoutBranch",
+			repoPath,
+			branch,
+		});
 		throw new Error(`Error checking out branch: ${error.message}`);
 	}
 }
@@ -235,6 +264,15 @@ export async function createPullRequest(
 		return pr.data;
 	} catch (error) {
 		elizaLogger.error("Error creating pull request:", error);
+		captureError(error as Error, {
+			action: "createPullRequest",
+			owner,
+			repo,
+			branch,
+			title,
+			description,
+			base,
+		});
 		throw new Error(`Error creating pull request: ${error}`);
 	}
 }

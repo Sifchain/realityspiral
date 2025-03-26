@@ -35,6 +35,7 @@ import {
 	savePullRequestsToMemory,
 } from "@realityspiral/plugin-github";
 import { composeContext } from "@realityspiral/plugin-instrumentation";
+import { captureError, initErrorTracking } from "@realityspiral/sentry";
 import { configGithubInfoAction } from "./actions/configGithubInfo";
 import { stopAction } from "./actions/stop";
 import { validateGithubConfig } from "./environment";
@@ -53,6 +54,9 @@ import {
 	sleep,
 	unregisterActions,
 } from "./utils";
+
+// Initialize error tracking
+initErrorTracking();
 
 export class GitHubClient extends EventEmitter {
 	apiToken: string;
@@ -111,6 +115,8 @@ export class GitHubClient extends EventEmitter {
 		const joinRoomId = stringToUuid(`default-room-${this.runtime.agentId}`);
 
 		while (!this.stopped) {
+			let userId: UUID;
+			let userRoomId: UUID;
 			try {
 				// First check the default room for join messages
 				const joinMemories = await this.runtime.messageManager.getMemories({
@@ -129,11 +135,11 @@ export class GitHubClient extends EventEmitter {
 				elizaLogger.info("User IDs:", Array.from(userIds).join(", "));
 
 				// Start process for new users with user-specific room IDs
-				for (const userId of userIds) {
+				for (userId of userIds) {
 					if (!this.userProcesses.has(userId)) {
 						elizaLogger.info(`Starting process for new user: ${userId}`);
 						// Create user-specific room ID
-						const userRoomId = stringToUuid(
+						userRoomId = stringToUuid(
 							`default-room-${this.runtime.agentId}-${userId}`,
 						);
 						// Add user to new room
@@ -150,6 +156,12 @@ export class GitHubClient extends EventEmitter {
 				}
 			} catch (error) {
 				elizaLogger.error("Error monitoring users:", error);
+				captureError(error as Error, {
+					userId,
+					roomId: userRoomId,
+					agentId: this.runtime.agentId,
+					character: this.character.name,
+				});
 			}
 
 			elizaLogger.info("Sleeping for 5 seconds");
@@ -186,6 +198,12 @@ export class GitHubClient extends EventEmitter {
 		} catch (error) {
 			elizaLogger.error(`Error in user process for ${userId}:`, error);
 			this.userProcesses.delete(userId);
+			captureError(error as Error, {
+				userId,
+				roomId: userRoomId,
+				agentId: this.runtime.agentId,
+				action: "startUserProcess",
+			});
 		}
 	}
 
@@ -248,8 +266,15 @@ export class GitHubClient extends EventEmitter {
 			});
 
 			if (!isConfigGithubInfoContent(details.object)) {
-				elizaLogger.error("Invalid content:", details.object);
-				throw new Error("Invalid content");
+				const errorMessage = "Invalid content";
+				elizaLogger.error(`${errorMessage}: ${details.object}`);
+				captureError(new Error(errorMessage), {
+					userId,
+					roomId: userRoomId,
+					agentId: this.runtime.agentId,
+					action: "discoverGithubInfo",
+				});
+				throw new Error(errorMessage);
 			}
 
 			const content = details.object as ConfigGithubInfoContent;
@@ -338,8 +363,17 @@ export class GitHubClient extends EventEmitter {
 
 		// if message is null throw an error
 		if (!message) {
-			elizaLogger.error("No message found, repo init loop cannot continue.");
-			throw new Error("No message found, repo init loop cannot continue.");
+			const error = new Error(
+				"No message found, repo init loop cannot continue.",
+			);
+			elizaLogger.error(error.message);
+			captureError(error, {
+				agentId: this.runtime.agentId,
+				userId,
+				roomId: userRoomId,
+				action: "initializeRepository",
+			});
+			throw error;
 		}
 
 		const issuesLimit =
@@ -400,7 +434,14 @@ export class GitHubClient extends EventEmitter {
 				// biome-ignore lint/style/noParameterAssign: <explanation>
 				state = await this.runtime.updateRecentMessageState(state);
 			} else {
-				elizaLogger.error("Empty response, skipping");
+				const errorMessage = "Empty response, skipping";
+				elizaLogger.error(errorMessage);
+				captureError(new Error(errorMessage), {
+					userId,
+					roomId: userRoomId,
+					agentId: this.runtime.agentId,
+					action: "initializeRepository",
+				});
 			}
 
 			return [responseMemory];
@@ -598,8 +639,15 @@ export class GitHubClient extends EventEmitter {
 			});
 
 			if (!isOODAContent(details.object)) {
-				elizaLogger.error("Invalid content:", details.object);
-				throw new Error("Invalid content");
+				const errorMessage = "Invalid content";
+				elizaLogger.error(errorMessage);
+				captureError(new Error(errorMessage), {
+					userId,
+					roomId: userRoomId,
+					agentId: this.runtime.agentId,
+					action: "startOODALoop",
+				});
+				throw new Error(errorMessage);
 			}
 
 			const content = details.object as OODAContent;
@@ -644,7 +692,14 @@ export class GitHubClient extends EventEmitter {
 			try {
 				await this.runtime.messageManager.createMemory(actionMemory);
 			} catch (error) {
-				elizaLogger.error("Error creating memory:", error);
+				const errorMessage = "Error creating memory";
+				elizaLogger.error(errorMessage);
+				captureError(new Error(errorMessage), {
+					userId,
+					roomId: userRoomId,
+					agentId: this.runtime.agentId,
+					action: "startOODALoop",
+				});
 				throw error; // Re-throw other errors
 			}
 
@@ -701,6 +756,10 @@ export const GitHubClientInterface: Client = {
 			await runtime.clients.github.stop();
 		} catch (e) {
 			elizaLogger.error("GitHub client stop error:", e);
+			captureError(e as Error, {
+				agentId: runtime.agentId,
+				action: "stop",
+			});
 		}
 	},
 };

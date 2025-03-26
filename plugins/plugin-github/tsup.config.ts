@@ -21,5 +21,6 @@ export default defineConfig({
 		"path",
 		"url",
 		// Add other modules you want to externalize
+		"@realityspiral/sentry",
 	],
 });

@@ -15,6 +15,7 @@ import {
 	composeContext,
 	traceResult,
 } from "@realityspiral/plugin-instrumentation";
+import { captureError } from "@realityspiral/sentry";
 import { createPullRequestTemplate } from "../templates";
 import {
 	type CreatePullRequestContent,
@@ -137,10 +138,15 @@ export const createPullRequestAction: Action = {
 
 			return traceResult(state, response);
 		} catch (error) {
-			elizaLogger.error(
-				`Error creating pull request on ${content.owner}/${content.repo} branch ${content.branch}:`,
-				error,
-			);
+			elizaLogger.error("Error creating pull request:", error);
+			captureError(error as Error, {
+				title: content.title,
+				base: content.base,
+				branch: content.branch,
+				owner: content.owner,
+				repo: content.repo,
+				action: "createPullRequest",
+			});
 			if (callback) {
 				callback(
 					{
