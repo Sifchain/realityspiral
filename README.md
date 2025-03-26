@@ -131,7 +131,314 @@ The Docker image will be tagged with:
 - Minor version (e.g., `0.9`)
 - Major version (e.g., `0`)
 
+## Deployment to Docker server
+
+Reality Spiral uses an advanced deployment system with three environments (production, staging, and development) managed through Docker containers and GitHub Actions workflows.
+
+### Deployment Architecture
+
+The system consists of:
+- Multiple containerized services (agents and prosper instances)
+- A shared PostgreSQL database
+- A custom Docker network for container communication
+
+### Environment Configurations
+
+Each environment has dedicated containers with specific ports:
+
+- **Production**
+  - agents-prod (ports: 5010, 3010)
+  - prosper-prod (ports: 5020, 3020)
+- **Staging**
+  - agents-staging (ports: 5030, 3030) 
+  - prosper-staging (ports: 5040, 3040)
+- **Development**
+  - agents-dev (ports: 5050, 3050)
+  - prosper-dev (ports: 5060, 3060)
+
+### Deployment Process
+
+The deployment process is automated through GitHub Actions workflows:
+
+1. **Production Deployments** (`docker-prod.yml`)
+   - Triggered by publishing a new release
+   - Tags images with semantic version numbers (e.g., v1.2.3, 1.2, 1)
+   - Deploys to production environment
+
+2. **Staging Deployments** (`docker-staging.yml`)
+   - Triggered by pushes to the `main` branch
+   - Tags images with commit SHA and 'staging' tag
+   - Deploys to staging environment
+
+3. **Development Deployments** (`docker-dev.yml`)
+   - Triggered by pushes to non-main branches
+   - Tags images with commit SHA and 'dev' tag
+   - Deploys to development environment
+
+### Deployment Script
+
+The `deploy.sh` script handles the actual deployment process:
+
+1. Creates/ensures a Docker network exists
+2. Sets up and manages a PostgreSQL container
+3. Creates separate databases for each service
+4. Pulls the latest Docker images
+5. Deploys or updates containers with appropriate configurations
+6. Manages environment variables and port mappings
+
+### Database Management
+
+- Each service gets its own database within a shared PostgreSQL instance
+- Database names are automatically generated based on container names
+- Data persistence is handled through a Docker volume
+
+### Version Management
+
+- Production releases use semantic versioning (v1.2.3)
+- Staging builds are tagged with commit SHAs and 'staging'
+- Development builds are tagged with commit SHAs and 'dev'
+- All images are stored in GitHub Container Registry (ghcr.io)
+
+### Automatic Updates
+
+The deployment script checks for image updates before deploying:
+- Compares current and new image IDs
+- Only deploys if there's a new version available
+- Maintains container state and configurations
+
+## Deployment to TEE environment
+
+Reality Spiral can be deployed to a Trusted Execution Environment (TEE) using the [Oasis SDK](https://github.com/oasisprotocol/oasis-sdk). Below we are describing how to deploy Reality Spiral to a TEE environment using the Oasis ROFL tool.
+
+### Prerequisites
+
+Install the Oasis CLI using the latest release from the [Oasis CLI releases page](https://github.com/oasisprotocol/cli/releases).
+
+### Account Setup
+
+Create a new account using the Oasis CLI.
+
+```sh
+oasis-cli account create --name <account-name>
+```
+
+Request testnet tokens from the [Oasis Faucet](https://faucet.testnet.oasis.dev/).
+
+### Initialize and create the ROFL application
+
+Initialize the ROFL application.
+
+```sh
+oasis rofl init
+```
+
+Create the ROFL application.
+
+```sh
+oasis rofl create --network testnet --account <account-name>
+```
+
+```
+Broadcasting transaction...
+Transaction included in block successfully.
+Round:            10956862
+Transaction hash: 5e82260f0b8027213e065af8a27af53dd1743bbcce7e567352f8bbcdce4f7d77
+Execution successful.
+Created ROFL app: rofl1qpkplp3uq5yage4kunt0ylmulett0arzwcdjvc8u
+```
+
+Retrieve the ROFL app information.
+
+```sh
+oasis rofl show
+```
+
+```
+App ID:        rofl1qpkplp3uq5yage4kunt0ylmulett0arzwcdjvc8u
+Admin:         oasis1qryq3zag4v6cem8t3v8ahjd3wa3ugdtwcgrpp9nr
+Staked amount: 100.0 TEST
+Metadata:
+  net.oasis.rofl.name: realityspiral
+  net.oasis.rofl.version: 0.11.1
+Policy:
+  {
+    "quotes": {
+      "pcs": {
+        "tcb_validity_period": 30,
+        "min_tcb_evaluation_data_number": 18,
+        "tdx": {}
+      }
+    },
+    "enclaves": [],
+    "endorsements": [
+      {
+        "any": {}
+      }
+    ],
+    "fees": 2,
+    "max_expiration": 3
+  }
+
+=== Instances ===
+No registered app instances.
+```
+
+### Create the `rofl-compose.yaml` file
+
+Create the `rofl-compose.yaml` file with the following content:
+
+```yaml
+services:
+  realityspiral:
+    restart: always
+    image: ghcr.io/sifchain/realityspiral:staging
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    environment:
+      - CHARACTERS=${CHARACTERS}
+      [...]
+```
+
+Add all required environment variables to the rofl-compose.yaml file to properly configure and run the Reality Spiral agent.
+
+#### Encrypt the secrets inside the manifest file
+
+The following commands demonstrate how to encrypt each environment variable as a secret in the manifest:
+
+```sh
+echo -n "characters/staff-engineer.character.json" | oasis rofl secret set CHARACTERS -
+echo -n "3000" | oasis rofl secret set SERVER_PORT -
+echo -n "5173" | oasis rofl secret set UI_PORT -
+echo -n "" | oasis rofl secret set UI_ALLOWED_HOSTS -
+echo -n "" | oasis rofl secret set UI_SERVER_URL -
+echo -n "" | oasis rofl secret set REMOTE_CHARACTER_URLS -
+echo -n "false" | oasis rofl secret set USE_CHARACTER_STORAGE -
+echo -n "log" | oasis rofl secret set DEFAULT_LOG_LEVEL -
+echo -n "false" | oasis rofl secret set LOG_JSON_FORMAT -
+echo -n "false" | oasis rofl secret set INSTRUMENTATION_ENABLED -
+echo -n "" | oasis rofl secret set EXPRESS_MAX_PAYLOAD -
+echo -n "sk-proj-XXXX" | oasis rofl secret set OPENAI_API_KEY -
+echo -n "" | oasis rofl secret set OPENAI_API_URL -
+echo -n "" | oasis rofl secret set SMALL_OPENAI_MODEL -
+echo -n "" | oasis rofl secret set MEDIUM_OPENAI_MODEL -
+echo -n "" | oasis rofl secret set LARGE_OPENAI_MODEL -
+echo -n "" | oasis rofl secret set EMBEDDING_OPENAI_MODEL -
+echo -n "" | oasis rofl secret set IMAGE_OPENAI_MODEL -
+echo -n "false" | oasis rofl secret set USE_OPENAI_EMBEDDING -
+echo -n "true" | oasis rofl secret set GITHUB_CLIENT_DISABLED -
+echo -n "true" | oasis rofl secret set GITHUB_PLUGIN_ENABLED -
+echo -n "ghp_XXXX" | oasis rofl secret set GITHUB_API_TOKEN -
+echo -n "5000" | oasis rofl secret set GITHUB_USER_CHECK_INTERVAL_MS -
+echo -n "5000" | oasis rofl secret set GITHUB_INFO_DISCOVERY_INTERVAL_MS -
+echo -n "20000" | oasis rofl secret set GITHUB_OODA_INTERVAL_MS -
+echo -n "10" | oasis rofl secret set GITHUB_ISSUES_LIMIT -
+echo -n "10" | oasis rofl secret set GITHUB_PULL_REQUESTS_LIMIT -
+echo -n "postgresql://user:password@localhost:5432/realityspiral" | oasis rofl secret set POSTGRES_URL -
+```
+
+You can customize the manifest file by adding additional secrets that your agent requires.
+
+After encrypting all the secrets, update the ROFL app's on-chain configuration by running:
+
+```sh
+oasis rofl update
+```
+
+```
+Broadcasting transaction...
+Transaction included in block successfully.
+Round:            10957828
+Transaction hash: e19455bbd8a47322c2cabdf1b06213b4bd75eeaf2ac40207185a9343cf2047cc
+Execution successful.
+```
+
+### Build the ROFL app
+
+Let's proceed with building the ROFL app.
+
+For MacOS users, the following Docker image provides the necessary build environment. You can find detailed information about this image in the [prerequisites documentation](https://docs.oasis.io/build/rofl/prerequisites).
+
+```sh
+docker run --platform linux/amd64 --volume .:/src --rm -it ghcr.io/oasisprotocol/rofl-dev:main
+```
+
+Once inside the container, build the ROFL app by running:
+
+```sh
+oasis rofl build
+```
+
+```
+Building a ROFL application...
+Deployment: default
+Network:    testnet
+ParaTime:   sapphire
+Debug:      false
+App ID:     rofl1qpkplp3uq5yage4kunt0ylmulett0arzwcdjvc8u
+Name:       realityspiral
+Version:    0.11.1
+TEE:        tdx
+Kind:       container
+Building a container-based TDX ROFL application...
+Downloading firmware artifact...
+[...]
+Preparing stage 2 root filesystem...
+Unpacking template...
+Adding runtime as init...
+Adding extra files...
+Creating squashfs filesystem...
+Creating dm-verity hash tree...
+Creating ORC bundle...
+ROFL app built and bundle written to 'realityspiral.default.orc'.
+Computing enclave identity...
+Update the manifest with the following identities to use the new app:
+
+deployments:
+  default:
+    policy:
+      enclaves:
+        - "+gwV6aqbsA3jz7sgr3FI8IDB0IurwhwDJGtntGQhA7AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        - "yzklQN6SBWWcaHxn6rUfASq6YYMBf4A4e3ZkZE1OWNEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+```
+
+Upon completion, the build process generates a file named `realityspiral.default.orc`.
+
+### Deploy the ROFL app
+
+To learn how to deploy your ROFL app to either a self-hosted Oasis node or through an Oasis provider, run the following command:
+
+```sh
+oasis rofl deploy
+```
+
+```
+To deploy your ROFL app, you can decide between one of the two options:
+
+A. RUN YOUR OWN OASIS NODE
+
+   1. Follow https://docs.oasis.io/node/run-your-node/paratime-client-node
+      and configure your TDX Oasis node
+   2. Copy 'realityspiral.default.orc' to your node, for example:
+
+      scp realityspiral.default.orc mynode.com:/node/rofls
+
+   3. Add the following snippet to your Oasis node config.yml:
+
+      runtime:
+        paths:
+          - /node/rofls/realityspiral.default.orc
+
+   4. Restart your node
+
+B. DEPLOY YOUR ROFL TO THE OASIS PROVIDER
+
+   1. Upload 'realityspiral.default.orc' to a publicly accessible file server
+   2. Reach out to us at https://oasis.io/discord #dev-central channel and we
+      will run your ROFL app on our TDX Oasis nodes
+```
+
 ## Contributing
 
 Please refer to our contributing guidelines for information on how to contribute to Reality Spiral.
-
