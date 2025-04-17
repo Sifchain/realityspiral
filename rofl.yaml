@@ -30,7 +30,9 @@ deployments:
           tcb_validity_period: 30
           min_tcb_evaluation_data_number: 18
           tdx: {}
-      enclaves: []
+      enclaves:
+        - gaTDaMhAJGGbpe+ggKHI1IdDYq2ohPJaWJAP/ULKXlEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - 3sqkdo1FTMgV8S3Xj8uWFtjCPwBRTufXKmaeey1+bXkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
       endorsements:
         - any: {}
       fees: endorsing_node
@@ -42,12 +44,6 @@ deployments:
         value: pGJwa1ggkHPbc5A8TdFfXibeKMpNhpvtErxCufyZS5H16R7ObFFkbmFtZVgb/vT+PeNqA5/zaWDclgaq8aaZHTVWigFWBDCBZW5vbmNlT2m21PUpEzs18n1bz4vN5mV2YWx1ZVR7sv6bPMgZxPG/UDYb6NuPU/3LSA==
       - name: UI_PORT
         value: pGJwa1gglQLsycuw+HaqFB2JAOQAm0A4nUO7FsWXKqCJNJNRInFkbmFtZVc3uCVtSUQ45M6SMcDI+fDn9hJtYUIcFGVub25jZU+lz1Jmi/qsk4jfGPnRzI9ldmFsdWVUMkwxb0MHGDf/TB3nhUCtfMRmsRo=
-      - name: UI_ALLOWED_HOSTS
-        value: pGJwa1ggPWLL71kxGMLd61aDnda7K9KfxKV8yCTbwxizYJKGfX5kbmFtZVggjniq1pjhkmOot/HoMNFfKbl9alAgLQcdaUnDNIEO8bJlbm9uY2VPpagA97LX+Agv+ywHxNcHZXZhbHVlUHhthCzdcQgN1znlhQSrnew=
-      - name: UI_SERVER_URL
-        value: pGJwa1gg7XwtJ4deI1gzkOSQh9NOvM9CKXA5X4EgupJCZDojo3ZkbmFtZVgdZUvJvAWxF8fMC02DEwfzDnZvC8mr2JBMCjqaQItlbm9uY2VPuKF+Q6S6OS6rCl18A9NVZXZhbHVlUFbqIV9MyiJHmwGQ28RAzJU=
-      - name: REMOTE_CHARACTER_URLS
-        value: pGJwa1ggkN8qHW+RJMPn7wuXcHzcsidSDNvLF75cNn1s9qmNvyVkbmFtZVglfpIB5xLhPBHPrUbhxqJAb9xlQAi8IhxObH7LD08v6HxdHgehDWVub25jZU9caTcghcZBpDx3z/qf/bFldmFsdWVQtGnpGjBGW/wYOQg+FU/33g==
       - name: USE_CHARACTER_STORAGE
         value: pGJwa1ggLZ5g3mAHycFbGztK4IWPBT1AGbBcuHCLdTa6xftWgQFkbmFtZVgl2SEE6Pr31Cw3uFn1m44/fWd5qDwr3EFP8qO2d2bHtI1wxyeqIGVub25jZU90KgQbUELLEwbveCRclJJldmFsdWVV0K+mKmp0aIWk1h3kQtIidGWZ6b4G
       - name: DEFAULT_LOG_LEVEL
@@ -56,22 +52,6 @@ deployments:
         value: pGJwa1ggVuyREB9md4DRuBDTfOtxG/6UDuEOHENWcfgi0To7uXFkbmFtZVgf6gy8VjvlUu2kG2jIwoy3+fwo1YhE3p9jmEiA57wJu2Vub25jZU/TVVKaI8CElpIKE0I7FnpldmFsdWVVuNCDQyJFOAHy9+cFSg5OgPV8n3fx
       - name: INSTRUMENTATION_ENABLED
         value: pGJwa1ggWttGZ6p0cZpaeZvYGwW5tGT06bARz3MeGDudEcxwPGhkbmFtZVgnSAw76Fn5WPdi1tdcieBkvZvMDw11p0otfPOwXGM7exwNtLt/PMHdZW5vbmNlT3nK97bne7a34VlUfp9njmV2YWx1ZVUizq+wXhNknY4EJNPYOJoyQ1BhcgI=
-      - name: EXPRESS_MAX_PAYLOAD
-        value: pGJwa1gg6BNShIsmfROiL4jrD167AFsuFZfwbuz2WEbaZsICxnJkbmFtZVgjxNVKYaTbqsG6XTJ9+zSRDzA9OeWsLKeBleZa4yPylbYsaBdlbm9uY2VPlkvEAzzRmLN+rOzmWiBuZXZhbHVlUP8BcvSdQ3wWVoCA07gMnE0=
-      - name: OPENAI_API_KEY
-        value: pGJwa1ggEqTx9i/+HiFcWMygRqiia1e7gr86QKdfCB1l8kFyQwVkbmFtZVgel/pRWTSyktMkIgG0JZcwRL7N6vdjw1ZD3UG24Oi0ZW5vbmNlT4Twhq14fvofxIob3b7C3mV2YWx1ZVgcApNMubT4ZOOjKtpmfOt0FD/7zJpjz2jfr/8+jA==
-      - name: OPENAI_API_URL
-        value: pGJwa1ggFVaQhLHDSk365yiF3Ut4a+1fGP+8m+A168o4u5T8bVdkbmFtZVgeSUyq3FEL5vpbTnXt39X6+wXI7aFeH8JaF0Rsm+JaZW5vbmNlT2ZXUJGcOTuxyNG1bR0uEmV2YWx1ZVAr2T0klcbVHTXJeHbDMYPt
-      - name: SMALL_OPENAI_MODEL
-        value: pGJwa1gg9EfSMJ1NtVC1TfOJgbE67VacLc5cqL6nenpbMuxUi2FkbmFtZVgi43+Rv1iRtUvaPi3Qty5Y0epAG4GBYV3TvcaL32zuca1R/mVub25jZU8sevPNddzarUMBDHcw33VldmFsdWVQ3gKCuEkRig5QSfXXVtv7Ag==
-      - name: MEDIUM_OPENAI_MODEL
-        value: pGJwa1ggWzIwgxoKBy5XWq9MHOhlHMkk7NjARsQxYk1UWkhXeR1kbmFtZVgjeOPGVGAysl5PFdrf4GplM8E5i2j+WvQsE6p/z5zNthnhDOJlbm9uY2VPc3kqphczL3VxtgwLmHZXZXZhbHVlUGkzsSVWT9i1lkcUsewKAKc=
-      - name: LARGE_OPENAI_MODEL
-        value: pGJwa1ggOC5sICRGOVVEweIRpdw3w+yBuPStlPNY1ZnY6VF0WgdkbmFtZVgiypE7/hWn7P71abYeptsAZRARjx3qGTyJYDpC9UZa/mRPPGVub25jZU8rBYXUOx1xpZPsNctaC71ldmFsdWVQcbAkpET+OnGgo4gz+eLgcQ==
-      - name: EMBEDDING_OPENAI_MODEL
-        value: pGJwa1ggNE83XywFyypC7qS/Nu7KaCBI5kiNbA6FLNoNzG9SQGpkbmFtZVgmjoHTUiQwHMmxqNHYvMXUSsfqf1xcpYmOvKCXZsfzF7i5HUB6ectlbm9uY2VP+RbcWPVFLSc3VRUX1TI4ZXZhbHVlUEfF9OjwBD0BSEnwrY9vDUE=
-      - name: IMAGE_OPENAI_MODEL
-        value: pGJwa1ggKFE7ZtTw3vfOTBR/SgDdRlZt65FHcAso1kWViviYiUdkbmFtZVgihl39cIdNtfckOFywJ87McaskBcCNyOfOOqZaf+8633wG1WVub25jZU9kJLixRxbgZlh79lgCAHRldmFsdWVQudR+ODlVz2NROzAT2y7h/Q==
       - name: USE_OPENAI_EMBEDDING
         value: pGJwa1ggZEc2Ya+3oz22yrNqgAlHGEvifvcGbPhcdrJCto+FRF5kbmFtZVgkUyHA5KqpZQ2k3H3T3yX9J2MARJkeldS26wEy56Vz9KmComJ7ZW5vbmNlT36fN2fYxSn+hsr0KFfStGV2YWx1ZVVrbDf1RaPFpeySS4V/4NVBq0Bz0mo=
       - name: GITHUB_CLIENT_DISABLED
@@ -92,3 +72,5 @@ deployments:
         value: pGJwa1ggEqeznlq0UnAHFj4lBoH29STnjVi9+Ay/QRs7Cp2VlhZkbmFtZVgq5vkaaCR0K+2ZI2QyVMX3ooBBHeiRkQOhPOZWTNdZ/GfYNGcpMTvRDSjnZW5vbmNlT/Spea29w+GbZgFEySA5D2V2YWx1ZVKjuGNWgy88ImiKSPmRUiK54R4=
       - name: POSTGRES_URL
         value: pGJwa1ggtBdTWcv9SWlQW3FYOIxHP2hc6Z4QDrQ9AOxmbCHJ+ThkbmFtZVgco3IUu6FDSOxBoHGEuONfAhKQn+KWvcIm2fFK1WVub25jZU+1ITKyUk1dTj2sEMLxpc9ldmFsdWVYR5pnoOu8GXHRFr40l3a6JaM28/bFxcpwPAijWfH+8qsWo5SULeBtoq4kUcVjs2qi6J82hEQ/eVwuR91ZmvIxa90RNoo07Mm0
+      - name: OPENAI_API_KEY
+        value: pGJwa1gg1rJLIGM27ox4lr5rbAVlJy8ycXDDxGRtW7TNLsEbPnJkbmFtZVgeyY7+qt3Eynj/T3YdDgh06L4myQJa6Lp0y8MSgqmNZW5vbmNlT1pzFtfJ66yYrdw1Ir/W0WV2YWx1ZVi0ih2P4HhUdnkrFqgDe6FSwOaAbE+5zYS7E5fJ/A/Nf+DbN/O8iHXfDnoFk/y3lkD1BG+WDcWO+l/kkkuPPumVCQA8Ei64QjSPRFsPKeGoHfh9MI+eAvKQ4gvp9X3gDK44+e7zWPaojQb0nt3a6jhoRy55tdnw2RX5mX0ybMYBw+se1a74qW2LFqpweQASZdcV5PZPRFTMpEWvT3IVXej1Awl7+TXvwTw908eV6oHwUBZoxqU4

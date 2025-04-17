@@ -372,7 +372,7 @@ docker run --platform linux/amd64 --volume .:/src --rm -it ghcr.io/oasisprotocol
 Once inside the container, build the ROFL app by running:
 
 ```sh
-oasis rofl build --deployment ${DEPLOYMENT_NAME}
+oasis rofl build --update-manifest --deployment ${DEPLOYMENT_NAME}
 ```
 
 ```
