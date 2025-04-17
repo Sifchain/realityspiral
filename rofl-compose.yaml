@@ -1,7 +1,7 @@
 services:
   realityspiral:
     restart: always
-    image: ghcr.io/sifchain/realityspiral:dev
+    image: ghcr.io/sifchain/realityspiral:staging
     build:
       context: .
       dockerfile: Dockerfile
