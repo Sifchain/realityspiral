@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
 		envDir,
 		define: {
 			"import.meta.env.VITE_SERVER_URL": JSON.stringify(
-				env.UI_SERVER_URL?.trim() !== ""
+				env.UI_SERVER_URL && env.UI_SERVER_URL.trim() !== ""
 					? env.UI_SERVER_URL
 					: "http://localhost:3000",
 			),
@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => {
 			host: "0.0.0.0",
 			port: env.UI_PORT ? Number(env.UI_PORT) : 5173,
 			allowedHosts:
-				env.UI_ALLOWED_HOSTS?.trim() !== ""
+				env.UI_ALLOWED_HOSTS && env.UI_ALLOWED_HOSTS.trim() !== ""
 					? env.UI_ALLOWED_HOSTS.split(",")
 					: true,
 		},
