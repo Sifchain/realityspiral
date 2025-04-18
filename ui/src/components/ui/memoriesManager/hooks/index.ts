@@ -1,7 +1,8 @@
+import { getServerUrl } from "@/lib/serverUrl";
 import { useCallback, useEffect, useState } from "react";
 
 export const use = () => {
-	const API_BASE_URL = `${import.meta.env.VITE_SERVER_URL}/templates`;
+	const API_BASE_URL = `${getServerUrl()}/templates`;
 
 	const [lore, setLore] = useState<string[]>([]);
 	const [bio, setBio] = useState<string[]>([]);
