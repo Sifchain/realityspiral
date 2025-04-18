@@ -1,7 +1,6 @@
 import type { Character, UUID } from "@elizaos/core";
+import { getServerUrl } from "./serverUrl";
 import { getRoomId, getSessionId, getUserId } from "./utils";
-
-const BASE_URL = `${import.meta.env.VITE_SERVER_URL}`;
 
 const fetcher = async ({
 	url,
@@ -39,6 +38,8 @@ const fetcher = async ({
 			options.body = JSON.stringify(body);
 		}
 	}
+
+	const BASE_URL = getServerUrl();
 
 	return fetch(`${BASE_URL}${url}`, options).then(async (resp) => {
 		const contentType = resp.headers.get("Content-Type");

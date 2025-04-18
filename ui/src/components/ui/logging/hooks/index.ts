@@ -1,3 +1,4 @@
+import { getServerUrl } from "@/lib/serverUrl";
 import { useState } from "react";
 
 export const use = () => {
@@ -6,7 +7,7 @@ export const use = () => {
 		start_time: string;
 	};
 
-	const API_BASE_URL = `${import.meta.env.VITE_SERVER_URL}/traces`;
+	const API_BASE_URL = `${getServerUrl()}/traces`;
 
 	const [uniqueAgents, setUniqueAgents] = useState<string[]>([]);
 	const [uniqueRooms, setUniqueRooms] = useState<Room[]>([]); // biome-ignore lint/suspicious/noExplicitAny: <explanation>
