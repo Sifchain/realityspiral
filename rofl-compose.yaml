@@ -1,7 +1,7 @@
 services:
   realityspiral:
     restart: always
-    image: ghcr.io/sifchain/realityspiral:staging
+    image: ghcr.io/sifchain/realityspiral:dev
     build:
       context: .
       dockerfile: Dockerfile
@@ -13,6 +13,7 @@ services:
       - CHARACTERS=${CHARACTERS}
       - SERVER_PORT=${SERVER_PORT}
       - UI_PORT=${UI_PORT}
+      - UI_SERVER_URL=${UI_SERVER_URL}
       - USE_CHARACTER_STORAGE=${USE_CHARACTER_STORAGE}
       - DEFAULT_LOG_LEVEL=${DEFAULT_LOG_LEVEL}
       - LOG_JSON_FORMAT=${LOG_JSON_FORMAT}

@@ -31,8 +31,8 @@ deployments:
           min_tcb_evaluation_data_number: 18
           tdx: {}
       enclaves:
-        - nabmXHK+eMOKKp7X+cJ1ofszLoofJknPWBixQVHTu9MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
-        - JJfOYPA37hBwS7IGgMbD5Zv6QRgfD0jkTIULH3EEWqoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - 0/j/blmwtW1U/AbZBdAdGGihExIypZZf1d6AUq+MOoEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - h695TWa+i4TsiIgYzKiBXNs5bH6tRsyLhd1YM+1qRA4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
       endorsements:
         - any: {}
       fees: endorsing_node
@@ -74,3 +74,5 @@ deployments:
         value: pGJwa1ggtBdTWcv9SWlQW3FYOIxHP2hc6Z4QDrQ9AOxmbCHJ+ThkbmFtZVgco3IUu6FDSOxBoHGEuONfAhKQn+KWvcIm2fFK1WVub25jZU+1ITKyUk1dTj2sEMLxpc9ldmFsdWVYR5pnoOu8GXHRFr40l3a6JaM28/bFxcpwPAijWfH+8qsWo5SULeBtoq4kUcVjs2qi6J82hEQ/eVwuR91ZmvIxa90RNoo07Mm0
       - name: OPENAI_API_KEY
         value: pGJwa1gg1rJLIGM27ox4lr5rbAVlJy8ycXDDxGRtW7TNLsEbPnJkbmFtZVgeyY7+qt3Eynj/T3YdDgh06L4myQJa6Lp0y8MSgqmNZW5vbmNlT1pzFtfJ66yYrdw1Ir/W0WV2YWx1ZVi0ih2P4HhUdnkrFqgDe6FSwOaAbE+5zYS7E5fJ/A/Nf+DbN/O8iHXfDnoFk/y3lkD1BG+WDcWO+l/kkkuPPumVCQA8Ei64QjSPRFsPKeGoHfh9MI+eAvKQ4gvp9X3gDK44+e7zWPaojQb0nt3a6jhoRy55tdnw2RX5mX0ybMYBw+se1a74qW2LFqpweQASZdcV5PZPRFTMpEWvT3IVXej1Awl7+TXvwTw908eV6oHwUBZoxqU4
+      - name: UI_SERVER_URL
+        value: pGJwa1gg3VRP0x6znwChxcoDZsCvUFeZdvPRP9t7SiRLuDTXsgxkbmFtZVgdOY5gU2e+YW3dobda2HP7WUmZqYHKQpsHomKq9H9lbm9uY2VPpRYDVeOPL6n7v6wgJknOZXZhbHVlWCoQm990hBUbM4S6urtpbG0A4D1VDGER3tzj0/yvfbqFkwYlwLFAff+V2dA=
