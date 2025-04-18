@@ -41,9 +41,10 @@ export default defineConfig(({ mode }) => {
 		server: {
 			host: "0.0.0.0",
 			port: env.UI_PORT ? Number(env.UI_PORT) : 5173,
-			...(env.UI_ALLOWED_HOSTS && {
-				allowedHosts: env.UI_ALLOWED_HOSTS.split(","),
-			}),
+			allowedHosts:
+				env.UI_ALLOWED_HOSTS && env.UI_ALLOWED_HOSTS.trim() !== ""
+					? env.UI_ALLOWED_HOSTS.split(",")
+					: true,
 		},
 	};
 });
