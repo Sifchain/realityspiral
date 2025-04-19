@@ -18,7 +18,7 @@
 	"files": ["dist"],
 	"dependencies": {
 		"@elizaos/core": "^0.1.9",
-		"@coinbase/coinbase-sdk": "0.15.0",
+		"@coinbase/coinbase-sdk": "0.23.0",
 		"@realityspiral/plugin-email": "workspace:^",
 		"@realityspiral/plugin-instrumentation": "workspace:^",
 		"coinbase-api": "1.0.5",
