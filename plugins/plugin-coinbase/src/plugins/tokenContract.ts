@@ -350,7 +350,6 @@ export const invokeContractAction: Action = {
 			const invocationOptions = {
 				contractAddress,
 				method,
-				abi: ABI,
 				args: {
 					...args,
 					amount: args.amount || amount, // Ensure amount is passed in args
@@ -591,7 +590,6 @@ export const readContractWrapper = async (
 		contractAddress,
 		method,
 		args,
-		abi,
 	});
 	const serializedResult = serializeBigInt(result);
 	return serializedResult;
