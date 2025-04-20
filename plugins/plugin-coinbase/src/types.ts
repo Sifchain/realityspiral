@@ -148,16 +148,16 @@ export const isTokenContractContent = (
 
 // Add to types.ts
 export interface ContractInvocationContent {
-		contractAddress: string;
-		method: string;
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		args?: Record<string, any>;
-		amount?: string;
-		assetId?: string;
-		networkId: string;
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		abi?: any[];
-	}
+	contractAddress: string;
+	method: string;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	args?: Record<string, any>;
+	amount?: string;
+	assetId?: string;
+	networkId: string;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	abi?: any[];
+}
 
 export const ContractInvocationSchema = z.object({
 	contractAddress: z.string().describe("The address of the contract to invoke"),
