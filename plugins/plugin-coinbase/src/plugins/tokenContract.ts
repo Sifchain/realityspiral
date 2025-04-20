@@ -511,6 +511,7 @@ export const readContractAction: Action = {
 				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				ABI as any,
 			);
+			elizaLogger.log("Result:", JSON.stringify(result, null, 2));
 
 			const response: Content = {
 				text: `Contract read successful:
@@ -589,8 +590,10 @@ export const readContractWrapper = async (
 		networkId,
 		contractAddress,
 		method,
+		abi,
 		args,
 	});
+	elizaLogger.log("Result:", JSON.stringify(result, null, 2));
 	const serializedResult = serializeBigInt(result);
 	return serializedResult;
 };
