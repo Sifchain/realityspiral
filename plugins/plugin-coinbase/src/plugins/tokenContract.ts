@@ -37,7 +37,8 @@ import {
 	isReadContractContent,
 	isTokenContractContent,
 } from "../types";
-import { ContractHelper, initializeWallet } from "../utils";
+import { ContractHelper } from "../helpers/contractHelper";
+import { initializeWallet } from "../utils";
 
 // Dynamically resolve the file path to the src/plugins directory
 const __filename = fileURLToPath(import.meta.url);
@@ -321,16 +322,17 @@ export const invokeContractAction: Action = {
 			const { contractAddress, method, args, amount, assetId, networkId } =
 				invocationDetails.object;
 
-			// Invoke the contract using helper
-			const result = await contractHelper.invokeContract(
-				contractAddress as `0x${string}`,
+			// Use ContractHelper to invoke contract
+			const invocationResult = await contractHelper.invokeContract({
+				// Pass parameters as a single object
+				contractAddress: contractAddress as `0x${string}`, // Ensure type safety
 				method,
 				args,
 				networkId,
-				ABI,
-				amount,
-				assetId,
-			);
+				abi: ABI, // Pass the default ABI
+				amount: amount === "0" ? undefined : amount, // Pass amount if not "0"
+				assetId, // Pass assetId if present
+			});
 
 			// Log the invocation to CSV
 			const csvWriter = createArrayCsvWriter({
@@ -352,21 +354,21 @@ export const invokeContractAction: Action = {
 					contractAddress,
 					method,
 					networkId,
-					result.status,
-					result.transactionLink,
+					invocationResult.status,
+					invocationResult.transactionLink,
 					amount || "",
 					assetId || "",
 				],
 			]);
 
 			const response: Content = {
-				text: `Contract method invoked successfully:
+				text: `Contract invocation successful:
 - Contract Address: ${contractAddress}
 - Method: ${method}
-- Network: ${networkId}
-- Status: ${result.status}
-- Transaction URL: ${result.transactionLink || "N/A"}${amount ? `\n- Amount: ${amount}` : ""}
-${assetId ? `- Asset ID: ${assetId}` : ""}`,
+- Arguments: ${JSON.stringify(args)}
+- Network ID: ${networkId}
+- Status: ${invocationResult.status}
+- Transaction Link: ${invocationResult.transactionLink}`,
 			};
 
 			callback(response, []);
@@ -463,20 +465,22 @@ export const readContractAction: Action = {
 			}
 
 			const { contractAddress, method, args, networkId } = readDetails.object;
-			const result = await contractHelper.readContract(
-				contractAddress as `0x${string}`,
+			const result = await contractHelper.readContract({
+				// Pass parameters as a single object
+				networkId,
+				contractAddress: contractAddress as `0x${string}`, // Ensure type safety
 				method,
 				args,
-				networkId,
-				ABI,
-			);
+				abi: ABI, // Pass the default ABI
+			});
 
 			const response: Content = {
 				text: `Contract read successful:
 - Contract Address: ${contractAddress}
 - Method: ${method}
-- Network: ${networkId}
-- Result: ${JSON.stringify(result, null, 2)}`,
+- Arguments: ${JSON.stringify(args)}
+- Network ID: ${networkId}
+- Result: ${JSON.stringify(result)}`,
 			};
 
 			callback(response, []);

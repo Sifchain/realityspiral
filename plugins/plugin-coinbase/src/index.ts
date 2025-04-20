@@ -24,5 +24,7 @@ export {
 	initializeWallet,
 	type CoinbaseWallet,
 	readContractWrapper,
-	ContractHelper,
 } from "./utils";
+export * from "./constants";
+export * from "./types";
+export { ContractHelper } from "./helpers/contractHelper";

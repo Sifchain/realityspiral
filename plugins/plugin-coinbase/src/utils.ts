@@ -16,6 +16,7 @@ import { type IAgentRuntime, elizaLogger, settings } from "@elizaos/core";
 import { createArrayCsvWriter } from "csv-writer";
 import { ABI } from "./constants";
 import type { Transaction } from "./types";
+import { ContractHelper } from "./helpers/contractHelper";
 
 const tradeCsvFilePath = path.join("/tmp", "trades.csv");
 const transactionCsvFilePath = path.join("/tmp", "transactions.csv");
@@ -604,184 +605,80 @@ export function getCharityAddress(
 }
 
 /**
- * Helper class for smart contract operations
- */
-export class ContractHelper {
-	private runtime: IAgentRuntime;
-
-	constructor(runtime: IAgentRuntime) {
-		this.runtime = runtime;
-		this.configureSDK();
-	}
-
-	private configureSDK() {
-		Coinbase.configure({
-			apiKeyName:
-				this.runtime.getSetting("COINBASE_API_KEY") ??
-				process.env.COINBASE_API_KEY,
-			privateKey:
-				this.runtime.getSetting("COINBASE_PRIVATE_KEY") ??
-				process.env.COINBASE_PRIVATE_KEY,
-		});
-	}
-
-	/**
-	 * Read data from a smart contract
-	 */
-	async readContract(
-		contractAddress: `0x${string}`,
-		method: string,
-		args: any,
-		networkId: string,
-		abi: any,
-	) {
-		this.configureSDK();
-		const result = await readContract({
-			networkId,
-			contractAddress,
-			method,
-			args,
-			abi,
-		});
-		return this.serializeBigInt(result);
-	}
-
-	/**
-	 * Invoke a method on a smart contract
-	 */
-	async invokeContract(
-		contractAddress: `0x${string}`,
-		method: string,
-		args: any,
-		networkId: string,
-		abi: any,
-		amount?: string | number,
-		assetId?: string,
-	) {
-		this.configureSDK();
-		const { wallet } = await initializeWallet(this.runtime, networkId);
-
-		// Prepare invocation options
-		const invocationOptions = {
-			contractAddress,
-			method,
-			abi,
-			args: {
-				...args,
-				amount: args.amount || amount, // Ensure amount is passed in args
-			},
-			networkId,
-			assetId,
-		};
-
-		// Invoke the contract
-		const invocation = await wallet.invokeContract(invocationOptions);
-
-		// Wait for the transaction to be mined
-		await invocation.wait();
-
-		return {
-			status: invocation.getStatus(),
-			transactionLink: invocation.getTransactionLink() || "",
-			invocation,
-		};
-	}
-
-	/**
-	 * Helper to serialize BigInt values to strings
-	 */
-	private serializeBigInt(value: any): any {
-		if (typeof value === "bigint") {
-			return value.toString();
-		}
-		if (Array.isArray(value)) {
-			return value.map((v) => this.serializeBigInt(v));
-		}
-		if (typeof value === "object" && value !== null) {
-			return Object.fromEntries(
-				Object.entries(value).map(([k, v]) => [k, this.serializeBigInt(v)]),
-			);
-		}
-		return value;
-	}
-}
-
-/**
  * Wrapper function to read data from a smart contract using the Coinbase SDK
  * @param params Parameters for contract reading as a single object or multiple arguments
  * @returns The serialized contract response
  */
 // biome-ignore lint/suspicious/noExplicitAny: Needed for flexibility with different contract methods
 export async function readContractWrapper(
-	runtimeOrParams: IAgentRuntime | any,
-	contractAddress?: `0x${string}`,
-	method?: string,
-	args?: any,
-	networkId?: string,
-	abi?: any,
-): Promise<any> {
-	// Ensure Coinbase SDK is configured
-	let params: any;
+		runtimeOrParams: IAgentRuntime | any,
+		contractAddress?: `0x${string}`,
+		method?: string,
+		args?: any,
+		networkId?: string,
+		abi?: any,
+	): Promise<any> {
+		let params: any;
+		let runtime: IAgentRuntime;
 
-	// Handle both object-style and multi-argument calls
-	if (contractAddress && method) {
-		// Multi-argument form (runtime, contractAddress, method, args, networkId, abi)
-		const runtime = runtimeOrParams as IAgentRuntime;
+		// Handle both object-style and multi-argument calls
+		if (contractAddress && method) {
+			// Multi-argument form
+			runtime = runtimeOrParams as IAgentRuntime;
+			elizaLogger.debug(
+				"readContractWrapper (multi-arg): Preparing params using ContractHelper",
+			);
+			params = {
+				contractAddress,
+				method,
+				args,
+				networkId,
+				abi: abi || ABI, // Pass ABI along
+			};
+		} else {
+			// Object form
+			params = runtimeOrParams;
+			if (!params.runtime) {
+				elizaLogger.error(
+					"readContractWrapper (object-arg): Missing 'runtime' property in params object.",
+				);
+				throw new Error(
+					"The 'runtime' object must be provided within the params when calling readContractWrapper in object form.",
+				);
+			}
+			runtime = params.runtime;
+			elizaLogger.debug(
+				"readContractWrapper (object-arg): Preparing params using ContractHelper",
+			);
+			// Ensure ABI is included if not present
+			if (!params.abi) {
+				params.abi = ABI;
+			}
+		}
 
-		Coinbase.configure({
-			apiKeyName:
-				runtime.getSetting("COINBASE_API_KEY") ?? process.env.COINBASE_API_KEY,
-			privateKey:
-				runtime.getSetting("COINBASE_PRIVATE_KEY") ??
-				process.env.COINBASE_PRIVATE_KEY,
-		});
+		try {
+			// Always use ContractHelper which handles configuration
+			const contractHelper = new ContractHelper(runtime);
+			elizaLogger.debug(
+				"Attempting to read contract via ContractHelper with params:",
+				JSON.stringify(params, null, 2),
+			);
+			// Pass the entire params object to the helper's method
+			const result = await contractHelper.readContract(params);
 
-		params = {
-			contractAddress,
-			method,
-			args,
-			networkId,
-			abi: abi || ABI,
-		};
-	} else {
-		// Object form (all params in a single object)
-		params = runtimeOrParams;
-
-		Coinbase.configure({
-			apiKeyName: process.env.COINBASE_API_KEY,
-			privateKey: process.env.COINBASE_PRIVATE_KEY,
-		});
-
-		params.abi = params.abi || ABI;
+			// No need to serialize here, assume helper does it if needed (or called function handles it)
+			elizaLogger.debug("Contract read via helper result:", result);
+			return result;
+		} catch (error) {
+			elizaLogger.error(
+				"Error during ContractHelper.readContract call:",
+				error,
+			);
+			if (error instanceof Error) {
+				elizaLogger.error("Error name:", error.name);
+				elizaLogger.error("Error message:", error.message);
+				elizaLogger.error("Error stack:", error.stack);
+			}
+			throw error;
+		}
 	}
-
-	try {
-		elizaLogger.debug("Reading contract with params:", params);
-		const result = await readContract(params);
-		// Serialize BigInt values in the result for JSON compatibility
-		const serializedResult = serializeBigInt(result);
-		elizaLogger.debug("Contract read result (serialized):", serializedResult);
-		return serializedResult;
-	} catch (error) {
-		elizaLogger.error("Error reading contract:", error);
-		throw error;
-	}
-}
-
-/**
- * Helper function to serialize BigInt values
- */
-const serializeBigInt = (value: any): any => {
-	if (typeof value === "bigint") {
-		return value.toString();
-	}
-	if (Array.isArray(value)) {
-		return value.map(serializeBigInt);
-	}
-	if (typeof value === "object" && value !== null) {
-		return Object.fromEntries(
-			Object.entries(value).map(([k, v]) => [k, serializeBigInt(v)]),
-		);
-	}
-	return value;
-};
