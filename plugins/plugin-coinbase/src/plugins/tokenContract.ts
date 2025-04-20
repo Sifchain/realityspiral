@@ -37,7 +37,7 @@ import {
 	isReadContractContent,
 	isTokenContractContent,
 } from "../types";
-import { initializeWallet, ContractHelper } from "../utils";
+import { ContractHelper, initializeWallet } from "../utils";
 
 // Dynamically resolve the file path to the src/plugins directory
 const __filename = fileURLToPath(import.meta.url);
