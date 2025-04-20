@@ -24,6 +24,7 @@ import {
 } from "@realityspiral/plugin-instrumentation";
 import { createArrayCsvWriter } from "csv-writer";
 import { ABI } from "../constants";
+import { ContractHelper } from "../helpers/contractHelper";
 import {
 	contractInvocationTemplate,
 	readContractTemplate,
@@ -37,7 +38,6 @@ import {
 	isReadContractContent,
 	isTokenContractContent,
 } from "../types";
-import { ContractHelper } from "../helpers/contractHelper";
 import { initializeWallet } from "../utils";
 
 // Dynamically resolve the file path to the src/plugins directory

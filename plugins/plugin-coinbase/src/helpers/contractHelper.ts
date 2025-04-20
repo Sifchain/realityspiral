@@ -1,4 +1,4 @@
-import { Coinbase, readContract, Wallet } from "@coinbase/coinbase-sdk";
+import { Coinbase, Wallet, readContract } from "@coinbase/coinbase-sdk";
 import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
 import { ABI } from "../constants";
 import { initializeWallet } from "../utils";
@@ -131,4 +131,4 @@ export class ContractHelper {
 			throw error;
 		}
 	}
-} 
+}

@@ -15,8 +15,8 @@ import type { EthereumTransaction } from "@coinbase/coinbase-sdk/dist/client";
 import { type IAgentRuntime, elizaLogger, settings } from "@elizaos/core";
 import { createArrayCsvWriter } from "csv-writer";
 import { ABI } from "./constants";
-import type { Transaction } from "./types";
 import { ContractHelper } from "./helpers/contractHelper";
+import type { Transaction } from "./types";
 
 const tradeCsvFilePath = path.join("/tmp", "trades.csv");
 const transactionCsvFilePath = path.join("/tmp", "transactions.csv");
@@ -611,74 +611,71 @@ export function getCharityAddress(
  */
 // biome-ignore lint/suspicious/noExplicitAny: Needed for flexibility with different contract methods
 export async function readContractWrapper(
-		runtimeOrParams: IAgentRuntime | any,
-		contractAddress?: `0x${string}`,
-		method?: string,
-		args?: any,
-		networkId?: string,
-		abi?: any,
-	): Promise<any> {
-		let params: any;
-		let runtime: IAgentRuntime;
+	runtimeOrParams: IAgentRuntime | any,
+	contractAddress?: `0x${string}`,
+	method?: string,
+	args?: any,
+	networkId?: string,
+	abi?: any,
+): Promise<any> {
+	let params: any;
+	let runtime: IAgentRuntime;
 
-		// Handle both object-style and multi-argument calls
-		if (contractAddress && method) {
-			// Multi-argument form
-			runtime = runtimeOrParams as IAgentRuntime;
-			elizaLogger.debug(
-				"readContractWrapper (multi-arg): Preparing params using ContractHelper",
-			);
-			params = {
-				contractAddress,
-				method,
-				args,
-				networkId,
-				abi: abi || ABI, // Pass ABI along
-			};
-		} else {
-			// Object form
-			params = runtimeOrParams;
-			if (!params.runtime) {
-				elizaLogger.error(
-					"readContractWrapper (object-arg): Missing 'runtime' property in params object.",
-				);
-				throw new Error(
-					"The 'runtime' object must be provided within the params when calling readContractWrapper in object form.",
-				);
-			}
-			runtime = params.runtime;
-			elizaLogger.debug(
-				"readContractWrapper (object-arg): Preparing params using ContractHelper",
-			);
-			// Ensure ABI is included if not present
-			if (!params.abi) {
-				params.abi = ABI;
-			}
-		}
-
-		try {
-			// Always use ContractHelper which handles configuration
-			const contractHelper = new ContractHelper(runtime);
-			elizaLogger.debug(
-				"Attempting to read contract via ContractHelper with params:",
-				JSON.stringify(params, null, 2),
-			);
-			// Pass the entire params object to the helper's method
-			const result = await contractHelper.readContract(params);
-
-			// No need to serialize here, assume helper does it if needed (or called function handles it)
-			elizaLogger.debug("Contract read via helper result:", result);
-			return result;
-		} catch (error) {
+	// Handle both object-style and multi-argument calls
+	if (contractAddress && method) {
+		// Multi-argument form
+		runtime = runtimeOrParams as IAgentRuntime;
+		elizaLogger.debug(
+			"readContractWrapper (multi-arg): Preparing params using ContractHelper",
+		);
+		params = {
+			contractAddress,
+			method,
+			args,
+			networkId,
+			abi: abi || ABI, // Pass ABI along
+		};
+	} else {
+		// Object form
+		params = runtimeOrParams;
+		if (!params.runtime) {
 			elizaLogger.error(
-				"Error during ContractHelper.readContract call:",
-				error,
+				"readContractWrapper (object-arg): Missing 'runtime' property in params object.",
 			);
-			if (error instanceof Error) {
-				elizaLogger.error("Error name:", error.name);
-				elizaLogger.error("Error message:", error.message);
-				elizaLogger.error("Error stack:", error.stack);
-			}
-			throw error;
+			throw new Error(
+				"The 'runtime' object must be provided within the params when calling readContractWrapper in object form.",
+			);
+		}
+		runtime = params.runtime;
+		elizaLogger.debug(
+			"readContractWrapper (object-arg): Preparing params using ContractHelper",
+		);
+		// Ensure ABI is included if not present
+		if (!params.abi) {
+			params.abi = ABI;
 		}
 	}
+
+	try {
+		// Always use ContractHelper which handles configuration
+		const contractHelper = new ContractHelper(runtime);
+		elizaLogger.debug(
+			"Attempting to read contract via ContractHelper with params:",
+			JSON.stringify(params, null, 2),
+		);
+		// Pass the entire params object to the helper's method
+		const result = await contractHelper.readContract(params);
+
+		// No need to serialize here, assume helper does it if needed (or called function handles it)
+		elizaLogger.debug("Contract read via helper result:", result);
+		return result;
+	} catch (error) {
+		elizaLogger.error("Error during ContractHelper.readContract call:", error);
+		if (error instanceof Error) {
+			elizaLogger.error("Error name:", error.name);
+			elizaLogger.error("Error message:", error.message);
+			elizaLogger.error("Error stack:", error.stack);
+		}
+		throw error;
+	}
+}
