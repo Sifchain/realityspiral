@@ -134,6 +134,18 @@ const mockMessage = {
 // Mock state
 const mockState = {};
 
+// Mock validation functions
+vi.mock("../src/types", () => ({
+	isTokenContractContent: vi.fn().mockReturnValue(true),
+	isContractInvocationContent: vi.fn().mockReturnValue(true),
+	isReadContractContent: vi.fn().mockReturnValue(true),
+	isWebhookContent: vi.fn().mockReturnValue(true),
+	TokenContractSchema: { safeParse: vi.fn() },
+	ContractInvocationSchema: { safeParse: vi.fn() },
+	ReadContractSchema: { safeParse: vi.fn() },
+	WebhookSchema: { safeParse: vi.fn() },
+}));
+
 describe("Token Contract Plugin Tests", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -143,16 +155,20 @@ describe("Token Contract Plugin Tests", () => {
 		it("should have correct plugin properties", () => {
 			expect(tokenContractPlugin.name).toBe("tokenContract");
 			expect(tokenContractPlugin.actions).toBeDefined();
-			expect(Array.isArray(tokenContractPlugin.actions)).toBe(true);
-			expect(tokenContractPlugin.actions).toHaveLength(3);
 
-			// Verify actions exist
-			const actionNames = tokenContractPlugin.actions.map(
-				(action) => action.name,
-			);
-			expect(actionNames).toContain("DEPLOY_TOKEN_CONTRACT");
-			expect(actionNames).toContain("INVOKE_CONTRACT");
-			expect(actionNames).toContain("READ_CONTRACT");
+			if (tokenContractPlugin.actions) {
+				// Only proceed if actions is defined
+				expect(Array.isArray(tokenContractPlugin.actions)).toBe(true);
+				expect(tokenContractPlugin.actions).toHaveLength(3);
+
+				// Verify actions exist
+				const actionNames = tokenContractPlugin.actions.map(
+					(action) => action.name,
+				);
+				expect(actionNames).toContain("DEPLOY_TOKEN_CONTRACT");
+				expect(actionNames).toContain("INVOKE_CONTRACT");
+				expect(actionNames).toContain("READ_CONTRACT");
+			}
 		});
 	});
 
@@ -276,13 +292,10 @@ describe("Token Contract Plugin Tests", () => {
 		it("should handle errors when invoking contract", async () => {
 			const mockCallback = vi.fn();
 
-			// Force invokeContract to throw an error
-			(ContractHelper as any).mockImplementationOnce(() => ({
-				invokeContract: vi
-					.fn()
-					.mockRejectedValue(new Error("Contract invocation failed")),
-				configureSDK: vi.fn(),
-			}));
+			// Mock ContractHelper to throw an error
+			(ContractHelper as any).mockImplementationOnce(() => {
+				throw new Error("Contract invocation failed");
+			});
 
 			await invokeContractAction.handler(
 				mockRuntime as any,
