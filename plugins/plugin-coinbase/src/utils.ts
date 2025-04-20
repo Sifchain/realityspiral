@@ -9,6 +9,7 @@ import {
 	Wallet,
 	type WalletData,
 	type Webhook,
+	readContract
 } from "@coinbase/coinbase-sdk";
 import type { EthereumTransaction } from "@coinbase/coinbase-sdk/dist/client";
 import { type IAgentRuntime, elizaLogger, settings } from "@elizaos/core";
@@ -599,4 +600,105 @@ export function getCharityAddress(
 	}
 
 	return charityAddress;
+}
+
+/**
+ * Helper class for smart contract operations
+ */
+export class ContractHelper {
+	private runtime: IAgentRuntime;
+
+	constructor(runtime: IAgentRuntime) {
+		this.runtime = runtime;
+		this.configureSDK();
+	}
+
+	private configureSDK() {
+		Coinbase.configure({
+			apiKeyName:
+				this.runtime.getSetting("COINBASE_API_KEY") ?? process.env.COINBASE_API_KEY,
+			privateKey:
+				this.runtime.getSetting("COINBASE_PRIVATE_KEY") ?? process.env.COINBASE_PRIVATE_KEY,
+		});
+	}
+
+	/**
+	 * Read data from a smart contract
+	 */
+	async readContract(
+		contractAddress: `0x${string}`,
+		method: string,
+		args: any,
+		networkId: string,
+		abi: any
+	) {
+		this.configureSDK();
+		const result = await readContract({
+			networkId,
+			contractAddress,
+			method,
+			args,
+			abi,
+		});
+		return this.serializeBigInt(result);
+	}
+
+	/**
+	 * Invoke a method on a smart contract
+	 */
+	async invokeContract(
+		contractAddress: `0x${string}`,
+		method: string,
+		args: any,
+		networkId: string,
+		abi: any,
+		amount?: string | number,
+		assetId?: string
+	) {
+		this.configureSDK();
+		const { wallet } = await initializeWallet(this.runtime, networkId);
+		
+		// Prepare invocation options
+		const invocationOptions = {
+			contractAddress,
+			method,
+			abi,
+			args: {
+				...args,
+				amount: args.amount || amount, // Ensure amount is passed in args
+			},
+			networkId,
+			assetId,
+		};
+		
+		// Invoke the contract
+		const invocation = await wallet.invokeContract(invocationOptions);
+		
+		// Wait for the transaction to be mined
+		await invocation.wait();
+		
+		return {
+			status: invocation.getStatus(),
+			transactionLink: invocation.getTransactionLink() || "",
+			invocation
+		};
+	}
+
+	/**
+	 * Helper to serialize BigInt values to strings
+	 */
+	private serializeBigInt(value: any): any {
+		if (typeof value === "bigint") {
+			return value.toString();
+		}
+		if (Array.isArray(value)) {
+			return value.map((v) => this.serializeBigInt(v));
+		}
+		if (typeof value === "object" && value !== null) {
+			return Object.fromEntries(
+				Object.entries(value).map(([k, v]) => [k, this.serializeBigInt(v)]),
+			);
+		}
+		return value;
+	}
 }

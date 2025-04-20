@@ -37,30 +37,13 @@ import {
 	isReadContractContent,
 	isTokenContractContent,
 } from "../types";
-import { initializeWallet } from "../utils";
+import { initializeWallet, ContractHelper } from "../utils";
 
 // Dynamically resolve the file path to the src/plugins directory
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const baseDir = path.resolve(__dirname, "../../plugin-coinbase/src/plugins");
 const contractsCsvFilePath = path.join(baseDir, "contracts.csv");
-
-// Add this helper at the top level
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-const serializeBigInt = (value: any): any => {
-	if (typeof value === "bigint") {
-		return value.toString();
-	}
-	if (Array.isArray(value)) {
-		return value.map(serializeBigInt);
-	}
-	if (typeof value === "object" && value !== null) {
-		return Object.fromEntries(
-			Object.entries(value).map(([k, v]) => [k, serializeBigInt(v)]),
-		);
-	}
-	return value;
-};
 
 export const deployTokenContractAction: Action = {
 	name: "DEPLOY_TOKEN_CONTRACT",
@@ -311,14 +294,7 @@ export const invokeContractAction: Action = {
 		elizaLogger.debug("Starting INVOKE_CONTRACT handler...");
 
 		try {
-			Coinbase.configure({
-				apiKeyName:
-					runtime.getSetting("COINBASE_API_KEY") ??
-					process.env.COINBASE_API_KEY,
-				privateKey:
-					runtime.getSetting("COINBASE_PRIVATE_KEY") ??
-					process.env.COINBASE_PRIVATE_KEY,
-			});
+			const contractHelper = new ContractHelper(runtime);
 
 			const context = composeContext({
 				state,
@@ -344,26 +320,17 @@ export const invokeContractAction: Action = {
 
 			const { contractAddress, method, args, amount, assetId, networkId } =
 				invocationDetails.object;
-			const { wallet } = await initializeWallet(runtime, networkId);
 
-			// Prepare invocation options
-			const invocationOptions = {
+			// Invoke the contract using helper
+			const result = await contractHelper.invokeContract(
 				contractAddress,
 				method,
-				abi: ABI,
-				args: {
-					...args,
-					amount: args.amount || amount, // Ensure amount is passed in args
-				},
+				args,
 				networkId,
-				assetId,
-			};
-			elizaLogger.info("Invocation options:", invocationOptions);
-			// Invoke the contract
-			const invocation = await wallet.invokeContract(invocationOptions);
-
-			// Wait for the transaction to be mined
-			await invocation.wait();
+				ABI,
+				amount,
+				assetId
+			);
 
 			// Log the invocation to CSV
 			const csvWriter = createArrayCsvWriter({
@@ -385,8 +352,8 @@ export const invokeContractAction: Action = {
 					contractAddress,
 					method,
 					networkId,
-					invocation.getStatus(),
-					invocation.getTransactionLink() || "",
+					result.status,
+					result.transactionLink,
 					amount || "",
 					assetId || "",
 				],
@@ -397,8 +364,8 @@ export const invokeContractAction: Action = {
 - Contract Address: ${contractAddress}
 - Method: ${method}
 - Network: ${networkId}
-- Status: ${invocation.getStatus()}
-- Transaction URL: ${invocation.getTransactionLink() || "N/A"}${amount ? `\n- Amount: ${amount}` : ""}
+- Status: ${result.status}
+- Transaction URL: ${result.transactionLink || "N/A"}${amount ? `\n- Amount: ${amount}` : ""}
 ${assetId ? `- Asset ID: ${assetId}` : ""}`,
 			};
 
@@ -471,14 +438,7 @@ export const readContractAction: Action = {
 		elizaLogger.debug("Starting READ_CONTRACT handler...");
 
 		try {
-			Coinbase.configure({
-				apiKeyName:
-					runtime.getSetting("COINBASE_API_KEY") ??
-					process.env.COINBASE_API_KEY,
-				privateKey:
-					runtime.getSetting("COINBASE_PRIVATE_KEY") ??
-					process.env.COINBASE_PRIVATE_KEY,
-			});
+			const contractHelper = new ContractHelper(runtime);
 
 			const context = composeContext({
 				state,
@@ -503,14 +463,12 @@ export const readContractAction: Action = {
 			}
 
 			const { contractAddress, method, args, networkId } = readDetails.object;
-			const result = await readContractWrapper(
-				runtime,
+			const result = await contractHelper.readContract(
 				contractAddress,
 				method,
 				args,
 				networkId,
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-				ABI as any,
+				ABI
 			);
 
 			const response: Content = {
@@ -563,36 +521,7 @@ export const tokenContractPlugin: Plugin = {
 		"Enables deployment, invocation, and reading of ERC20, ERC721, and ERC1155 token contracts using the Coinbase SDK",
 	actions: [
 		deployTokenContractAction,
-		//  invokeContractAction,
+		invokeContractAction,
 		readContractAction,
 	],
-};
-
-export const readContractWrapper = async (
-	runtime: IAgentRuntime,
-	contractAddress: `0x${string}`,
-	method: string,
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	args: any,
-	networkId: string,
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	abi: any,
-) => {
-	Coinbase.configure({
-		apiKeyName:
-			runtime.getSetting("COINBASE_API_KEY") ?? process.env.COINBASE_API_KEY,
-		privateKey:
-			runtime.getSetting("COINBASE_PRIVATE_KEY") ??
-			process.env.COINBASE_PRIVATE_KEY,
-	});
-
-	const result = await readContract({
-		networkId,
-		contractAddress,
-		method,
-		args,
-		abi,
-	});
-	const serializedResult = serializeBigInt(result);
-	return serializedResult;
 };
