@@ -323,13 +323,13 @@ export const invokeContractAction: Action = {
 
 			// Invoke the contract using helper
 			const result = await contractHelper.invokeContract(
-				contractAddress,
+				contractAddress as `0x${string}`,
 				method,
 				args,
 				networkId,
 				ABI,
 				amount,
-				assetId
+				assetId,
 			);
 
 			// Log the invocation to CSV
@@ -464,11 +464,11 @@ export const readContractAction: Action = {
 
 			const { contractAddress, method, args, networkId } = readDetails.object;
 			const result = await contractHelper.readContract(
-				contractAddress,
+				contractAddress as `0x${string}`,
 				method,
 				args,
 				networkId,
-				ABI
+				ABI,
 			);
 
 			const response: Content = {
