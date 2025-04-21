@@ -1,0 +1,11 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"paths": {
+			"@realityspiral/plugin-instrumentation": [
+				"../plugin-instrumentation/src"
+			],
+			"@realityspiral/plugin-coinbase": ["../plugin-coinbase/src"]
+		}
+	}
+} 

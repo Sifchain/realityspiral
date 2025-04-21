@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"target": "es2016",
+		"module": "commonjs",
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"strict": true,
+		"skipLibCheck": true,
+		"resolveJsonModule": true,
+		"baseUrl": ".",
+		"paths": {
+			"@realityspiral/plugin-instrumentation": [
+				"../plugin-instrumentation/src"
+			],
+			"@realityspiral/plugin-coinbase": ["../plugin-coinbase/src"]
+		}
+	},
+	"include": ["src"]
+} 

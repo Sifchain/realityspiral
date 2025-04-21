@@ -654,74 +654,116 @@ export async function getTotalBalanceUSD(
 	runtime: IAgentRuntime,
 	publicKey: `0x${string}`,
 ): Promise<number> {
-	const client = createWalletClient({
-		account: privateKeyToAccount(
-			`0x${runtime.getSetting("WALLET_PRIVATE_KEY")}` as `0x${string}`,
-		),
-		chain: base,
-		transport: http(runtime.getSetting("ALCHEMY_HTTP_TRANSPORT_URL")),
-	}).extend(publicActions);
-	const ethBalanceBaseUnits = await client.getBalance({
-		address: publicKey,
-		blockTag: "pending",
-	});
-	elizaLogger.info(`ethBalanceBaseUnits ${ethBalanceBaseUnits}`);
-	const ethBalance = Number(ethBalanceBaseUnits) / 1e18;
-	elizaLogger.info(`ethBalance ${ethBalance}`);
-	const priceInquiry = await getPriceInquiry(
-		runtime,
-		"ETH",
-		Number(ethBalanceBaseUnits.toString()),
-		"USDC",
-		"base",
-	);
-	if (priceInquiry == null) {
-		elizaLogger.error("priceInquiry is null");
-		return 1000;
+	try {
+		// Initialize viem client once for all balance checks
+		const client = createWalletClient({
+			account: privateKeyToAccount(
+				`0x${runtime.getSetting("WALLET_PRIVATE_KEY")}` as `0x${string}`,
+			),
+			chain: base,
+			transport: http(runtime.getSetting("ALCHEMY_HTTP_TRANSPORT_URL")),
+		}).extend(publicActions);
+
+		// 1. GET ETH BALANCE WITH VIEM
+		const ethBalanceBaseUnits = await client.getBalance({
+			address: publicKey,
+			blockTag: "pending",
+		});
+		elizaLogger.info(`ethBalanceBaseUnits ${ethBalanceBaseUnits}`);
+		const ethBalance = Number(ethBalanceBaseUnits) / 1e18;
+		elizaLogger.info(`ethBalance ${ethBalance}`);
+
+		let ethBalanceUSD = 0;
+		// Only try to get ETH price if balance is significant
+		if (ethBalance > 0.000001) {
+			try {
+				const priceInquiry = await getPriceInquiry(
+					runtime,
+					"ETH",
+					Number(ethBalanceBaseUnits.toString()),
+					"USDC",
+					"base",
+				);
+				if (priceInquiry && priceInquiry.sellAmountBaseUnits) {
+					const quote = await getQuoteObj(runtime, priceInquiry, publicKey);
+					if (quote && quote.buyAmount) {
+						ethBalanceUSD = Number(quote.buyAmount) / 1e6;
+						elizaLogger.info(`ethBalanceUSD ${ethBalanceUSD}`);
+					}
+				}
+			} catch (error) {
+				elizaLogger.error("Error getting ETH price:", error);
+				// Continue with ethBalanceUSD as 0
+			}
+		}
+
+		// 2. GET USDC BALANCE WITH VIEM DIRECTLY
+		let usdcBalance = 0;
+		try {
+			const usdcBalanceResult = await client.readContract({
+				address: TOKENS.USDC.address as `0x${string}`,
+				abi: erc20Abi,
+				functionName: "balanceOf",
+				args: [publicKey],
+			});
+			usdcBalance = Number(usdcBalanceResult) / 1e6; // USDC has 6 decimals
+			elizaLogger.info(`usdcBalance ${usdcBalance}`);
+		} catch (error) {
+			elizaLogger.error("Error reading USDC balance with viem:", error);
+			// Continue with usdcBalance as 0
+		}
+
+		// 3. GET CBBTC BALANCE WITH VIEM DIRECTLY
+		let cbbtcBalanceUSD = 0;
+		try {
+			const cbbtcBalanceResult = await client.readContract({
+				address: TOKENS.cbBTC.address as `0x${string}`,
+				abi: erc20Abi,
+				functionName: "balanceOf",
+				args: [publicKey],
+			});
+			const cbbtcBalance = Number(cbbtcBalanceResult) / 1e8; // BTC typically has 8 decimals
+			elizaLogger.info(`cbBTC balance: ${cbbtcBalance}`);
+
+			// Only try to get cbBTC price if balance is significant
+			if (cbbtcBalance > 0.00000001) {
+				try {
+					const cbbtcPriceInquiry = await getPriceInquiry(
+						runtime,
+						"CBBTC",
+						Number(cbbtcBalanceResult.toString()),
+						"USDC",
+						"base",
+					);
+					if (cbbtcPriceInquiry && cbbtcPriceInquiry.sellAmountBaseUnits) {
+						const cbbtcQuote = await getQuoteObj(
+							runtime,
+							cbbtcPriceInquiry,
+							publicKey,
+						);
+						if (cbbtcQuote && cbbtcQuote.buyAmount) {
+							cbbtcBalanceUSD = Number(cbbtcQuote.buyAmount) / 1e6;
+							elizaLogger.info(`cbbtcBalanceUSD ${cbbtcBalanceUSD}`);
+						}
+					}
+				} catch (error) {
+					elizaLogger.error("Error getting cbBTC price:", error);
+					// Continue with cbbtcBalanceUSD as 0
+				}
+			}
+		} catch (error) {
+			elizaLogger.error("Error reading cbBTC balance with viem:", error);
+			// Continue with cbbtcBalanceUSD as 0
+		}
+
+		// Calculate total and return
+		const totalBalanceUSD = ethBalanceUSD + usdcBalance + cbbtcBalanceUSD;
+		elizaLogger.info(`Total balance USD: ${totalBalanceUSD}`);
+		return totalBalanceUSD || 0; // Return 0 if totalBalanceUSD is NaN
+	} catch (error) {
+		elizaLogger.error("Error in getTotalBalanceUSD:", error);
+		return 1000; // Default value in case of error
 	}
-	const quote = await getQuoteObj(runtime, priceInquiry, publicKey);
-	const ethBalanceUSD = Number(quote?.buyAmount) / 1e6;
-	elizaLogger.info(`ethBalanceUSD ${ethBalanceUSD}`);
-	const usdcBalanceBaseUnits = await readContractWrapper(
-		runtime,
-		TOKENS.USDC.address as `0x${string}`,
-		"balanceOf",
-		{
-			account: publicKey,
-		},
-		"base-mainnet",
-		erc20Abi,
-	);
-	const usdcBalance = Number(usdcBalanceBaseUnits) / 1e6;
-	elizaLogger.info(`usdcBalance ${usdcBalance}`);
-	// sleep for 5 seconds
-	await new Promise((resolve) => setTimeout(resolve, 5000));
-	// get cbbtc balance
-	const cbbtcBalanceBaseUnits = await readContractWrapper(
-		runtime,
-		TOKENS.cbBTC.address as `0x${string}`,
-		"balanceOf",
-		{
-			account: publicKey,
-		},
-		"base-mainnet",
-		erc20Abi,
-	);
-	const cbbtcPriceInquiry = await getPriceInquiry(
-		runtime,
-		"CBBTC",
-		Number(cbbtcBalanceBaseUnits.toString()),
-		"USDC",
-		"base",
-	);
-	if (cbbtcPriceInquiry == null) {
-		elizaLogger.error("cbbtcPriceInquiry is null");
-		return ethBalanceUSD + usdcBalance;
-	}
-	const cbbtcQuote = await getQuoteObj(runtime, cbbtcPriceInquiry, publicKey);
-	const cbbtcBalanceUSD = Number(cbbtcQuote?.buyAmount) / 1000000;
-	elizaLogger.info(`cbbtcBalanceUSD ${cbbtcBalanceUSD}`);
-	return ethBalanceUSD + usdcBalance + cbbtcBalanceUSD;
 }
 
 export async function getBalance(
