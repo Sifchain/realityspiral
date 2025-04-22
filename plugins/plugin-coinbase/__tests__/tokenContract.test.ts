@@ -16,12 +16,12 @@ type ElizaRuntime = {
 
 // Import only what we need from our own codebase
 import { ABI } from "../src/constants";
+import { ContractHelper } from "../src/helpers/contractHelper";
 import {
 	invokeContractAction,
 	readContractAction,
 	tokenContractPlugin,
 } from "../src/plugins/tokenContract";
-import { ContractHelper } from "../src/helpers/contractHelper";
 
 // Only mock fs which doesn't have hoisting issues
 vi.mock("node:fs", () => ({

@@ -6,7 +6,6 @@ import {
 	type State,
 	type HandlerCallback,
 } from "@elizaos/core";
-import { Instrumentation } from "@realityspiral/plugin-instrumentation";
 import {
 	type StakingResult,
 	type RewardInfo,
@@ -17,16 +16,21 @@ import {
 } from "../types";
 import { ABIS, SAPPHIRE_MAINNET, SAPPHIRE_TESTNET } from "../constants";
 import { ContractHelper } from "@realityspiral/plugin-coinbase";
-import { ethers } from "ethers";
 
 // Helper function to get user address via ContractHelper
 const getUserAddressString = async (
 	runtime: IAgentRuntime,
 	networkId: string,
 ): Promise<string> => {
+	elizaLogger.info("Creating ContractHelper for getUserAddressString", {
+		networkId,
+	});
 	const contractHelper = new ContractHelper(runtime);
 	try {
+		elizaLogger.info("Calling getUserAddress on ContractHelper", { networkId });
 		const walletAddress = await contractHelper.getUserAddress(networkId);
+		elizaLogger.info("Received wallet address", { walletAddress });
+		
 		const addressString = walletAddress as unknown as `0x${string}`;
 		if (!addressString) {
 			throw new Error(
@@ -37,7 +41,13 @@ const getUserAddressString = async (
 	} catch (error: unknown) {
 		elizaLogger.error(
 			"Failed to get user address string from ContractHelper",
-			error instanceof Error ? error.message : error,
+			error instanceof Error
+				? {
+						message: error.message,
+						stack: error.stack,
+						name: error.name,
+					}
+				: error,
 		);
 		const errorMessage =
 			error instanceof Error ? error.message : "Unknown error";
@@ -52,17 +62,15 @@ export const accumulatedFinancePlugin = (
 	runtime: IAgentRuntime,
 	config: Partial<PluginConfig> = {},
 ) => {
-	// Get instrumentation singleton
-	const instrumentation = Instrumentation.getInstance();
-
 	// Parse and validate configuration
 	const fullConfig = PluginConfigSchema.parse({
 		...config,
 		network: config.network || "mainnet",
 	});
 
-	// Create contract helper from plugin-coinbase
+	elizaLogger.info("Creating ContractHelper in accumulatedFinancePlugin");
 	const contractHelper = new ContractHelper(runtime);
+	elizaLogger.info("ContractHelper created successfully");
 
 	// Get network configuration
 	const networkConfig =
@@ -72,6 +80,10 @@ export const accumulatedFinancePlugin = (
 	elizaLogger.info("Accumulated Finance plugin initialized", {
 		network: fullConfig.network,
 		privacyLevel: fullConfig.privacyLevel,
+		contractAddresses: {
+			wrappedRose: networkConfig.CONTRACTS.WRAPPED_ROSE,
+			unwrappedRose: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
+		},
 	});
 
 	// Add warning for missing testnet addresses
@@ -102,73 +114,106 @@ export const accumulatedFinancePlugin = (
 		amount: string,
 		receiver?: string,
 	): Promise<StakingResult> => {
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "stake",
-			event: "requested",
-			data: { amount, receiver } as unknown as Record<string, unknown>,
-		});
-
 		try {
+			elizaLogger.info("Staking ROSE tokens", { amount, receiver });
 			const targetReceiver =
 				receiver || (await getUserAddressString(runtime, getNetworkId()));
+			elizaLogger.info("Target receiver address", { targetReceiver });
 
 			// First, we need to approve the wstROSE contract to spend our tokens
-			const approveResult = await contractHelper.invokeContract({
-				networkId: getNetworkId(),
-				contractAddress: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
-				method: "approve",
-				args: {
-					spender: networkConfig.CONTRACTS.WRAPPED_ROSE,
-					amount: amount,
-				},
-				abi: ABIS.ERC20,
+			elizaLogger.info("Preparing to approve token spending", {
+				tokenContract: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
+				spender: networkConfig.CONTRACTS.WRAPPED_ROSE,
+				amount,
 			});
 
-			elizaLogger.info("Approved token spending", {
-				hash: approveResult.status, // Assuming status contains hash or identifier
-			});
+			try {
+				elizaLogger.info("Invoking approve on token contract");
+				const approveResult = await contractHelper.invokeContract({
+					networkId: getNetworkId(),
+					contractAddress: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
+					method: "approve",
+					args: [networkConfig.CONTRACTS.WRAPPED_ROSE, amount],
+					abi: ABIS.WSTROSE,
+				});
+
+				elizaLogger.info("Approved token spending", {
+					hash: approveResult.status,
+					details: approveResult,
+				});
+			} catch (approveError) {
+				elizaLogger.error("Failed to approve token spending", {
+					error:
+						approveError instanceof Error
+							? {
+									message: approveError.message,
+									stack: approveError.stack,
+									name: approveError.name,
+								}
+							: approveError,
+				});
+				throw approveError;
+			}
 
 			// Now deposit into the wstROSE contract
-			const depositResult = await contractHelper.invokeContract({
-				networkId: getNetworkId(),
-				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
-				method: "deposit",
-				args: {
-					assets: amount,
-					receiver: targetReceiver,
-				},
-				abi: ABIS.WSTROSE,
+			elizaLogger.info("Preparing to deposit tokens", {
+				contract: networkConfig.CONTRACTS.WRAPPED_ROSE,
+				assets: amount,
+				receiver: targetReceiver,
 			});
 
-			const result: StakingResult = {
-				transactionHash: depositResult.transactionLink?.split("/").pop() || "",
-				stakedAmount: amount, // Note: This is input amount, not shares received
-				timestamp: Date.now(),
-			};
+			try {
+				elizaLogger.info("Invoking deposit on wstROSE contract");
+				const depositResult = await contractHelper.invokeContract({
+					networkId: getNetworkId(),
+					contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
+					method: "deposit",
+					args: [amount, targetReceiver],
+					abi: ABIS.WSTROSE,
+				});
 
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "stake",
-				event: "success",
-				data: result as unknown as Record<string, unknown>,
-			});
+				elizaLogger.info("Deposit completed", {
+					details: depositResult,
+				});
 
-			return result;
+				const result: StakingResult = {
+					transactionHash:
+						depositResult.transactionLink?.split("/").pop() || "",
+					stakedAmount: amount, // Note: This is input amount, not shares received
+					timestamp: Date.now(),
+				};
+
+				elizaLogger.info("Staking completed successfully", result);
+				return result;
+			} catch (depositError) {
+				elizaLogger.error("Failed to deposit tokens", {
+					error:
+						depositError instanceof Error
+							? {
+									message: depositError.message,
+									stack: depositError.stack,
+									name: depositError.name,
+								}
+							: depositError,
+				});
+				throw depositError;
+			}
 		} catch (error: unknown) {
 			const errorMessage =
 				error instanceof Error ? error.message : "Unknown error";
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "stake",
-				event: "error",
-				data: { error: errorMessage, amount, receiver } as unknown as Record<
-					string,
-					unknown
-				>,
-			});
 
-			elizaLogger.error("Staking failed", error);
+			elizaLogger.error("Staking failed", {
+				errorType:
+					error instanceof Error ? error.constructor.name : typeof error,
+				errorDetails:
+					error instanceof Error
+						? {
+								message: error.message,
+								stack: error.stack,
+								name: error.name,
+							}
+						: error,
+			});
 			throw new Error(`Staking failed: ${errorMessage}`);
 		}
 	};
@@ -180,13 +225,6 @@ export const accumulatedFinancePlugin = (
 		amount: string,
 		receiver?: string,
 	): Promise<TransactionReceipt> => {
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "unstake",
-			event: "requested",
-			data: { amount, receiver } as unknown as Record<string, unknown>,
-		});
-
 		try {
 			const targetReceiver =
 				receiver || (await getUserAddressString(runtime, getNetworkId()));
@@ -198,11 +236,7 @@ export const accumulatedFinancePlugin = (
 				networkId: getNetworkId(),
 				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
 				method: "withdraw",
-				args: {
-					assets: amount,
-					receiver: targetReceiver,
-					owner: ownerAddress, // The account initiating the withdrawal
-				},
+				args: [amount, targetReceiver, ownerAddress],
 				abi: ABIS.WSTROSE,
 			});
 
@@ -213,26 +247,10 @@ export const accumulatedFinancePlugin = (
 				events: {}, // TODO: Populate if available from result
 			};
 
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "unstake",
-				event: "success",
-				data: txReceipt as unknown as Record<string, unknown>,
-			});
-
 			return txReceipt;
 		} catch (error: unknown) {
 			const errorMessage =
 				error instanceof Error ? error.message : "Unknown error";
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "unstake",
-				event: "error",
-				data: { error: errorMessage, amount, receiver } as unknown as Record<
-					string,
-					unknown
-				>,
-			});
 			elizaLogger.error("Unstaking failed", error);
 			throw new Error(`Unstaking failed: ${errorMessage}`);
 		}
@@ -242,13 +260,6 @@ export const accumulatedFinancePlugin = (
 	 * Get staking rewards information by checking the price per share
 	 */
 	const getRewards = async (): Promise<RewardInfo> => {
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "rewards",
-			event: "requested",
-			data: {} as unknown as Record<string, unknown>,
-		});
-
 		try {
 			const ownerAddress = await getUserAddressString(runtime, getNetworkId());
 
@@ -257,7 +268,7 @@ export const accumulatedFinancePlugin = (
 				networkId: getNetworkId(),
 				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
 				method: "pricePerShare",
-				args: {},
+				args: [],
 				abi: ABIS.WSTROSE,
 			});
 
@@ -266,10 +277,8 @@ export const accumulatedFinancePlugin = (
 				networkId: getNetworkId(),
 				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
 				method: "balanceOf",
-				args: {
-					_owner: ownerAddress,
-				},
-				abi: ABIS.ERC20,
+				args: [ownerAddress],
+				abi: ABIS.WSTROSE,
 			});
 
 			const sharesBigInt = BigInt(shares);
@@ -293,25 +302,12 @@ export const accumulatedFinancePlugin = (
 				lastClaimTimestamp: Date.now(), // Placeholder, actual claim timestamp isn't tracked here
 			};
 
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "rewards",
-				event: "success",
-				data: rewardInfo as unknown as Record<string, unknown>,
-			});
-
 			return rewardInfo;
 		} catch (error: unknown) {
-			const errorMessage =
-				error instanceof Error ? error.message : "Unknown error";
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "rewards",
-				event: "error",
-				data: { error: errorMessage } as unknown as Record<string, unknown>,
-			});
 			elizaLogger.error("Failed to get rewards", error);
-			throw new Error(`Failed to get rewards: ${errorMessage}`);
+			throw new Error(
+				`Failed to get rewards: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
 		}
 	};
 
@@ -320,49 +316,27 @@ export const accumulatedFinancePlugin = (
 	 * Note: This doesn't transfer rewards directly but updates the contract's internal accounting.
 	 */
 	const claimRewards = async (): Promise<TransactionReceipt> => {
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "rewards",
-			event: "claim",
-			data: {} as unknown as Record<string, unknown>,
-		});
-
 		try {
 			// Call syncRewards to refresh the rewards accounting within the contract
 			const result = await contractHelper.invokeContract({
 				networkId: getNetworkId(),
 				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
 				method: "syncRewards",
-				args: {}, // No arguments needed
+				args: [], // No arguments needed
 				abi: ABIS.WSTROSE,
 			});
 
-			const txReceipt: TransactionReceipt = {
+			return {
 				transactionHash: result.transactionLink?.split("/").pop() || "",
 				status: result.status === "SUCCESS",
 				blockNumber: 0, // TODO: Populate if available
 				events: {}, // TODO: Populate if available
 			};
-
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "rewards",
-				event: "claim-success",
-				data: txReceipt as unknown as Record<string, unknown>,
-			});
-
-			return txReceipt;
 		} catch (error: unknown) {
-			const errorMessage =
-				error instanceof Error ? error.message : "Unknown error";
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "rewards",
-				event: "claim-error",
-				data: { error: errorMessage } as unknown as Record<string, unknown>,
-			});
 			elizaLogger.error("Failed to claim rewards", error);
-			throw new Error(`Failed to claim rewards: ${errorMessage}`);
+			throw new Error(
+				`Failed to claim rewards: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
 		}
 	};
 
@@ -371,13 +345,6 @@ export const accumulatedFinancePlugin = (
 	 * Since the contract only has one strategy, we'll return that
 	 */
 	const getStakingStrategies = async (): Promise<Strategy[]> => {
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "strategies",
-			event: "requested",
-			data: {} as unknown as Record<string, unknown>,
-		});
-
 		// The wstROSE contract represents a single staking strategy
 		return [
 			{
@@ -396,13 +363,6 @@ export const accumulatedFinancePlugin = (
 	 * Get staked balance by converting the wstROSE balance to the underlying asset (ROSE)
 	 */
 	const getStakedBalance = async (): Promise<string> => {
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "balance",
-			event: "requested",
-			data: {} as unknown as Record<string, unknown>,
-		});
-
 		try {
 			const userAddress = await getUserAddressString(runtime, getNetworkId());
 
@@ -411,8 +371,8 @@ export const accumulatedFinancePlugin = (
 				networkId: getNetworkId(),
 				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
 				method: "balanceOf",
-				args: { _owner: userAddress }, // Ensure argument name matches ABI (_owner vs owner)
-				abi: ABIS.ERC20, // Use standard ERC20 ABI for balanceOf
+				args: [userAddress],
+				abi: ABIS.WSTROSE,
 			});
 
 			// Convert wstROSE shares to underlying ROSE assets
@@ -420,31 +380,18 @@ export const accumulatedFinancePlugin = (
 				networkId: getNetworkId(),
 				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
 				method: "convertToAssets", // ERC4626 method to convert shares to assets
-				args: { shares: wstRoseBalance },
+				args: [wstRoseBalance],
 				abi: ABIS.WSTROSE, // Use the wstROSE ABI for this method
 			});
 
 			const balanceString = roseAmount.toString();
 
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "balance",
-				event: "success",
-				data: { balance: balanceString } as unknown as Record<string, unknown>,
-			});
-
 			return balanceString;
 		} catch (error: unknown) {
-			const errorMessage =
-				error instanceof Error ? error.message : "Unknown error";
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "balance",
-				event: "error",
-				data: { error: errorMessage } as unknown as Record<string, unknown>,
-			});
 			elizaLogger.error("Failed to get staked balance", error);
-			throw new Error(`Failed to get staked balance: ${errorMessage}`);
+			throw new Error(
+				`Failed to get staked balance: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
 		}
 	};
 
@@ -453,13 +400,6 @@ export const accumulatedFinancePlugin = (
 	 * This is functionally equivalent to staking in the wstROSE contract.
 	 */
 	const wrapRose = async (amount: string): Promise<TransactionReceipt> => {
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "wrap",
-			event: "requested",
-			data: { amount } as unknown as Record<string, unknown>,
-		});
-
 		try {
 			// Call stake function, as wrapping ROSE is depositing into the wstROSE vault
 			const stakeResult = await stake(amount);
@@ -472,30 +412,14 @@ export const accumulatedFinancePlugin = (
 				events: {}, // Not available from stakeResult
 			};
 
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "wrap",
-				event: "success",
-				data: txReceipt as unknown as Record<string, unknown>,
-			});
-
 			return txReceipt;
 		} catch (error: unknown) {
-			const errorMessage =
-				error instanceof Error ? error.message : "Unknown error";
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "wrap",
-				event: "error",
-				data: { error: errorMessage, amount } as unknown as Record<
-					string,
-					unknown
-				>,
-			});
 			elizaLogger.error("Failed to wrap ROSE", error);
 			throw error instanceof Error
 				? error
-				: new Error(`Failed to wrap ROSE: ${errorMessage}`);
+				: new Error(
+						`Failed to wrap ROSE: ${error instanceof Error ? error.message : "Unknown error"}`,
+					);
 		}
 	};
 
@@ -504,13 +428,6 @@ export const accumulatedFinancePlugin = (
 	 * This is functionally equivalent to unstaking (withdrawing assets) from the wstROSE contract.
 	 */
 	const unwrapRose = async (amount: string): Promise<TransactionReceipt> => {
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "unwrap",
-			event: "requested",
-			data: { amount } as unknown as Record<string, unknown>,
-		});
-
 		try {
 			// Call unstake function, providing the amount of ROSE (assets) to withdraw.
 			// `unstake` handles the `withdraw` call correctly based on asset amount.
@@ -519,30 +436,14 @@ export const accumulatedFinancePlugin = (
 			// Ensure txReceiptResult is correctly typed
 			const typedTxReceipt = txReceiptResult as TransactionReceipt; // Explicit cast
 
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "unwrap",
-				event: "success",
-				data: typedTxReceipt as unknown as Record<string, unknown>,
-			});
-
 			return typedTxReceipt; // Return cast result
 		} catch (error: unknown) {
-			const errorMessage =
-				error instanceof Error ? error.message : "Unknown error";
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "unwrap",
-				event: "error",
-				data: { error: errorMessage, amount } as unknown as Record<
-					string,
-					unknown
-				>,
-			});
 			elizaLogger.error("Failed to unwrap ROSE", error);
 			throw error instanceof Error
 				? error
-				: new Error(`Failed to unwrap ROSE: ${errorMessage}`);
+				: new Error(
+						`Failed to unwrap ROSE: ${error instanceof Error ? error.message : "Unknown error"}`,
+					);
 		}
 	};
 
@@ -600,94 +501,172 @@ export const stakeAction: Action = {
 	validate: async (runtime: IAgentRuntime) => {
 		// Basic validation: Check if ContractHelper can be initialized (implies Coinbase setup)
 		try {
+			elizaLogger.info("Validating stakeAction: Creating ContractHelper");
 			new ContractHelper(runtime); // Checks if runtime has necessary Coinbase settings implicitly
+			elizaLogger.info("Validation successful: ContractHelper created");
 			return true;
 		} catch (e) {
 			elizaLogger.error(
 				"Validation failed for stakeAction: Coinbase/ContractHelper setup missing",
-				e,
+				e instanceof Error
+					? {
+							message: e.message,
+							stack: e.stack,
+							name: e.name,
+						}
+					: e,
 			);
 			return false;
 		}
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory, // Assuming amount and optional receiver are in message.content
+		message: Memory,
 		state?: State,
-		options?: any, // Use options for amount/receiver if not in message
+		options?: any,
 		callback?: HandlerCallback,
 	): Promise<StakingResult> => {
-		const instrumentation = Instrumentation.getInstance();
-		const contractHelper = new ContractHelper(runtime);
-		const { networkConfig, networkId } = getConfigAndNetwork(runtime);
-		// TODO: Extract amount and receiver securely from message or options
-		const amount = options?.amount || "0"; // Replace with actual extraction logic
-		const receiver = options?.receiver; // Replace with actual extraction logic
-
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "stake",
-			event: "requested",
-			data: { amount, receiver } as unknown as Record<string, unknown>,
+		elizaLogger.info("stakeAction handler started", {
+			options,
+			runtimeDetails: {
+				has_settings: !!runtime.getSetting,
+			},
 		});
 
 		try {
-			const userAddress = await getUserAddressString(runtime, networkId);
-			const targetReceiver = receiver || userAddress;
+			elizaLogger.info("Creating ContractHelper in stakeAction handler");
+			const contractHelper = new ContractHelper(runtime);
+			elizaLogger.info("Successfully created ContractHelper");
 
-			// Approve
-			const approveResult = await contractHelper.invokeContract({
-				networkId: networkId,
-				contractAddress: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
-				method: "approve",
-				args: {
-					spender: networkConfig.CONTRACTS.WRAPPED_ROSE,
-					amount: amount,
+			const { networkConfig, networkId } = getConfigAndNetwork(runtime);
+			elizaLogger.info("Network configuration", {
+				networkId,
+				networkConfig: {
+					wrappedRose: networkConfig.CONTRACTS.WRAPPED_ROSE,
+					unwrappedRose: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
 				},
-				abi: ABIS.ERC20,
-			});
-			elizaLogger.info("Approved token spending", {
-				hash: approveResult.status,
 			});
 
-			// Deposit
-			const depositResult = await contractHelper.invokeContract({
-				networkId: networkId,
-				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
-				method: "deposit",
-				args: {
+			// TODO: Extract amount and receiver securely from message or options
+			const amount = options?.amount || "10"; // Default to 10 ROSE if not specified
+			const receiver = options?.receiver;
+			elizaLogger.info("Stake parameters", { amount, receiver });
+
+			try {
+				elizaLogger.info("Getting user address");
+				const userAddress = await getUserAddressString(runtime, networkId);
+				elizaLogger.info("User address retrieved", { userAddress });
+				const targetReceiver = receiver || userAddress;
+
+				// Approve
+				elizaLogger.info("Preparing to approve token spending", {
+					tokenContract: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
+					spender: networkConfig.CONTRACTS.WRAPPED_ROSE,
+					amount,
+				});
+
+				try {
+					const approveResult = await contractHelper.invokeContract({
+						networkId: networkId,
+						contractAddress: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
+						method: "approve",
+						args: [networkConfig.CONTRACTS.WRAPPED_ROSE, amount],
+						abi: ABIS.WSTROSE,
+					});
+
+					elizaLogger.info("Approved token spending", {
+						status: approveResult.status,
+						details: approveResult,
+					});
+				} catch (approveError) {
+					elizaLogger.error("Failed to approve token spending", {
+						error:
+							approveError instanceof Error
+								? {
+										message: approveError.message,
+										stack: approveError.stack,
+										name: approveError.name,
+									}
+								: approveError,
+					});
+					throw approveError;
+				}
+
+				// Deposit
+				elizaLogger.info("Preparing to deposit tokens", {
+					contract: networkConfig.CONTRACTS.WRAPPED_ROSE,
 					assets: amount,
 					receiver: targetReceiver,
-				},
-				abi: ABIS.WSTROSE,
-			});
-
-			const result: StakingResult = {
-				transactionHash: depositResult.transactionLink?.split("/").pop() || "",
-				stakedAmount: amount,
-				timestamp: Date.now(),
-			};
-
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "stake",
-				event: "success",
-				data: result as any,
-			});
-
-			if (callback)
-				callback({
-					text: `Staked ${amount} ROSE. Tx: ${result.transactionHash}`,
 				});
-			return result;
+
+				try {
+					const depositResult = await contractHelper.invokeContract({
+						networkId: networkId,
+						contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
+						method: "deposit",
+						args: [amount, targetReceiver],
+						abi: ABIS.WSTROSE,
+					});
+
+					elizaLogger.info("Deposit completed", {
+						status: depositResult.status,
+						details: depositResult,
+					});
+
+					const result: StakingResult = {
+						transactionHash:
+							depositResult.transactionLink?.split("/").pop() || "",
+						stakedAmount: amount,
+						timestamp: Date.now(),
+					};
+
+					elizaLogger.info("Staking action completed successfully", result);
+
+					if (callback)
+						callback({
+							text: `Staked ${amount} ROSE. Tx: ${result.transactionHash}`,
+						});
+					return result;
+				} catch (depositError) {
+					elizaLogger.error("Failed to deposit tokens", {
+						error:
+							depositError instanceof Error
+								? {
+										message: depositError.message,
+										stack: depositError.stack,
+										name: depositError.name,
+									}
+								: depositError,
+					});
+					throw depositError;
+				}
+			} catch (error) {
+				elizaLogger.error("Error in user address or contract operations", {
+					error:
+						error instanceof Error
+							? {
+									message: error.message,
+									stack: error.stack,
+									name: error.name,
+								}
+							: error,
+				});
+				throw error;
+			}
 		} catch (error: unknown) {
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "stake",
-				event: "error",
-				data: { error, amount, receiver } as any,
+			elizaLogger.error("Staking action failed", {
+				errorType:
+					error instanceof Error ? error.constructor.name : typeof error,
+				errorDetails:
+					error instanceof Error
+						? {
+								message: error.message,
+								stack: error.stack,
+								name: error.name,
+							}
+						: error,
 			});
-			elizaLogger.error("Staking failed", error);
+
 			if (callback && error instanceof Error) {
 				callback({ text: `Staking failed: ${error.message}` });
 			} else if (callback) {
@@ -718,18 +697,10 @@ export const unstakeAction: Action = {
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
-		const instrumentation = Instrumentation.getInstance();
 		const contractHelper = new ContractHelper(runtime);
 		const { networkConfig, networkId } = getConfigAndNetwork(runtime);
 		const amount = options?.amount || "0"; // Extract amount
 		const receiver = options?.receiver; // Extract receiver
-
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "unstake",
-			event: "requested",
-			data: { amount, receiver } as any,
-		});
 
 		try {
 			const userAddress = await getUserAddressString(runtime, networkId);
@@ -740,11 +711,7 @@ export const unstakeAction: Action = {
 				networkId: networkId,
 				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
 				method: "withdraw",
-				args: {
-					assets: amount,
-					receiver: targetReceiver,
-					owner: ownerAddress,
-				},
+				args: [amount, targetReceiver, ownerAddress],
 				abi: ABIS.WSTROSE,
 			});
 
@@ -755,25 +722,12 @@ export const unstakeAction: Action = {
 				events: {}, // TODO: Populate if available
 			};
 
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "unstake",
-				event: "success",
-				data: txReceipt as any,
-			});
-
 			if (callback)
 				callback({
 					text: `Unstake initiated for ${amount} ROSE. Tx: ${txReceipt.transactionHash}`,
 				});
 			return txReceipt;
 		} catch (error: unknown) {
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "unstake",
-				event: "error",
-				data: { error, amount, receiver } as any,
-			});
 			elizaLogger.error("Unstaking failed", error);
 			if (callback && error instanceof Error) {
 				callback({ text: `Unstaking failed: ${error.message}` });
@@ -805,16 +759,8 @@ export const getRewardsAction: Action = {
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<RewardInfo> => {
-		const instrumentation = Instrumentation.getInstance();
 		const contractHelper = new ContractHelper(runtime);
 		const { networkConfig, networkId } = getConfigAndNetwork(runtime);
-
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "rewards",
-			event: "requested",
-			data: {},
-		});
 
 		try {
 			const ownerAddress = await getUserAddressString(runtime, networkId);
@@ -823,7 +769,7 @@ export const getRewardsAction: Action = {
 				networkId: networkId,
 				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
 				method: "pricePerShare",
-				args: {},
+				args: [],
 				abi: ABIS.WSTROSE,
 			});
 
@@ -831,8 +777,8 @@ export const getRewardsAction: Action = {
 				networkId: networkId,
 				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
 				method: "balanceOf",
-				args: { _owner: ownerAddress },
-				abi: ABIS.ERC20,
+				args: [ownerAddress],
+				abi: ABIS.WSTROSE,
 			});
 
 			const sharesBigInt = BigInt(shares);
@@ -851,22 +797,10 @@ export const getRewardsAction: Action = {
 				lastClaimTimestamp: Date.now(),
 			};
 
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "rewards",
-				event: "success",
-				data: rewardInfo as any,
-			});
 			if (callback)
 				callback({ text: `Pending rewards: ${rewardInfo.pendingRewards}` });
 			return rewardInfo;
 		} catch (error: unknown) {
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "rewards",
-				event: "error",
-				data: { error } as any,
-			});
 			elizaLogger.error("Failed to get rewards", error);
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to get rewards: ${error.message}` });
@@ -898,16 +832,8 @@ export const claimRewardsAction: Action = {
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
-		const instrumentation = Instrumentation.getInstance();
 		const contractHelper = new ContractHelper(runtime);
 		const { networkConfig, networkId } = getConfigAndNetwork(runtime);
-
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "rewards",
-			event: "claim",
-			data: {},
-		});
 
 		try {
 			// Call syncRewards to refresh the rewards accounting within the contract
@@ -915,7 +841,7 @@ export const claimRewardsAction: Action = {
 				networkId: networkId,
 				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
 				method: "syncRewards",
-				args: {}, // No arguments needed
+				args: [], // No arguments needed
 				abi: ABIS.WSTROSE,
 			});
 
@@ -950,14 +876,6 @@ export const getStakingStrategiesAction: Action = {
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<Strategy[]> => {
-		const instrumentation = Instrumentation.getInstance();
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "strategies",
-			event: "requested",
-			data: {},
-		});
-
 		const strategies: Strategy[] = [
 			{
 				id: "default",
@@ -996,16 +914,8 @@ export const getStakedBalanceAction: Action = {
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<string> => {
-		const instrumentation = Instrumentation.getInstance();
 		const contractHelper = new ContractHelper(runtime);
 		const { networkConfig, networkId } = getConfigAndNetwork(runtime);
-
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "balance",
-			event: "requested",
-			data: {},
-		});
 
 		try {
 			const userAddress = await getUserAddressString(runtime, networkId);
@@ -1015,8 +925,8 @@ export const getStakedBalanceAction: Action = {
 				networkId: networkId,
 				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
 				method: "balanceOf",
-				args: { _owner: userAddress },
-				abi: ABIS.ERC20,
+				args: [userAddress],
+				abi: ABIS.WSTROSE,
 			});
 
 			// Convert wstROSE shares to underlying ROSE assets
@@ -1024,27 +934,15 @@ export const getStakedBalanceAction: Action = {
 				networkId: networkId,
 				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
 				method: "convertToAssets",
-				args: { shares: wstRoseBalance },
+				args: [wstRoseBalance],
 				abi: ABIS.WSTROSE,
 			});
 
 			const balanceString = roseAmount.toString();
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "balance",
-				event: "success",
-				data: { balance: balanceString },
-			});
 			if (callback)
 				callback({ text: `Your staked balance is ${balanceString} ROSE` });
 			return balanceString;
 		} catch (error: unknown) {
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "balance",
-				event: "error",
-				data: { error } as any,
-			});
 			elizaLogger.error("Failed to get staked balance", error);
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to get staked balance: ${error.message}` });
@@ -1072,15 +970,10 @@ export const wrapRoseAction: Action = {
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
-		const instrumentation = Instrumentation.getInstance();
 		const amount = options?.amount || "0";
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "wrap",
-			event: "requested",
-			data: { amount } as any,
-		});
+
 		try {
+			// Directly call stake handler logic
 			const stakeResult = await stakeAction.handler(
 				runtime,
 				message,
@@ -1089,32 +982,21 @@ export const wrapRoseAction: Action = {
 			);
 
 			// Ensure stakeResult is correctly typed before accessing properties
-			const typedStakeResult = stakeResult as StakingResult; // Explicit cast
+			const typedStakeResult = stakeResult as StakingResult;
 
 			const txReceipt: TransactionReceipt = {
-				transactionHash: typedStakeResult.transactionHash, // Use cast result
-				status: !!typedStakeResult.transactionHash, // Use cast result
+				transactionHash: typedStakeResult.transactionHash,
+				status: !!typedStakeResult.transactionHash,
 				blockNumber: 0,
 				events: {},
 			};
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "wrap",
-				event: "success",
-				data: txReceipt as any,
-			});
+
 			if (callback)
 				callback({
 					text: `Wrap ROSE initiated. Tx: ${txReceipt.transactionHash}`,
 				});
 			return txReceipt;
 		} catch (error: unknown) {
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "wrap",
-				event: "error",
-				data: { error, amount } as any,
-			});
 			elizaLogger.error("Failed to wrap ROSE", error);
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to wrap ROSE: ${error.message}` });
@@ -1139,15 +1021,10 @@ export const unwrapRoseAction: Action = {
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
-		const instrumentation = Instrumentation.getInstance();
 		const amount = options?.amount || "0";
-		instrumentation.logEvent({
-			stage: "accumulated-finance",
-			subStage: "unwrap",
-			event: "requested",
-			data: { amount } as any,
-		});
+
 		try {
+			// Directly call unstake handler
 			const txReceiptResult = await unstakeAction.handler(
 				runtime,
 				message,
@@ -1156,14 +1033,8 @@ export const unwrapRoseAction: Action = {
 			);
 
 			// Ensure txReceiptResult is correctly typed
-			const typedTxReceipt = txReceiptResult as TransactionReceipt; // Explicit cast
+			const typedTxReceipt = txReceiptResult as TransactionReceipt;
 
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "unwrap",
-				event: "success",
-				data: typedTxReceipt as unknown as Record<string, unknown>,
-			});
 			if (
 				callback &&
 				typedTxReceipt instanceof Object &&
@@ -1173,14 +1044,8 @@ export const unwrapRoseAction: Action = {
 					text: `Unwrap ROSE initiated. Tx: ${typedTxReceipt.transactionHash}`,
 				});
 			}
-			return typedTxReceipt; // Return cast result
+			return typedTxReceipt;
 		} catch (error: unknown) {
-			instrumentation.logEvent({
-				stage: "accumulated-finance",
-				subStage: "unwrap",
-				event: "error",
-				data: { error, amount } as any,
-			});
 			elizaLogger.error("Failed to unwrap ROSE", error);
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to unwrap ROSE: ${error.message}` });
