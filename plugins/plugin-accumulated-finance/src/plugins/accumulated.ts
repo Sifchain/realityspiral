@@ -1,21 +1,21 @@
 import {
-	type IAgentRuntime,
-	elizaLogger,
 	type Action,
+	type HandlerCallback,
+	type IAgentRuntime,
 	type Memory,
 	type State,
-	type HandlerCallback,
+	elizaLogger,
 } from "@elizaos/core";
+import { ContractHelper } from "@realityspiral/plugin-coinbase";
+import { ABIS, SAPPHIRE_MAINNET, SAPPHIRE_TESTNET } from "../constants";
 import {
-	type StakingResult,
-	type RewardInfo,
-	type Strategy,
-	type TransactionReceipt,
 	type PluginConfig,
 	PluginConfigSchema,
+	type RewardInfo,
+	type StakingResult,
+	type Strategy,
+	type TransactionReceipt,
 } from "../types";
-import { ABIS, SAPPHIRE_MAINNET, SAPPHIRE_TESTNET } from "../constants";
-import { ContractHelper } from "@realityspiral/plugin-coinbase";
 
 // Helper function to get user address via ContractHelper
 const getUserAddressString = async (
@@ -30,7 +30,7 @@ const getUserAddressString = async (
 		elizaLogger.info("Calling getUserAddress on ContractHelper", { networkId });
 		const walletAddress = await contractHelper.getUserAddress(networkId);
 		elizaLogger.info("Received wallet address", { walletAddress });
-		
+
 		const addressString = walletAddress as unknown as `0x${string}`;
 		if (!addressString) {
 			throw new Error(
@@ -497,7 +497,36 @@ export const stakeAction: Action = {
 	name: "ACCUMULATED_FINANCE_STAKE",
 	description: "Stake ROSE tokens on Accumulated Finance",
 	similes: ["STAKE_ON_ACCUMULATED", "DEPOSIT_ROSE_ACCUMULATED"],
-	examples: [],
+	examples: [
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "I want to stake 10 ROSE tokens on Accumulated Finance",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Staked 10 ROSE. Tx: 0x3a8d706eed54b7b13f53e2a1639e0fff35ad5458c62af97d629b4bfcdb42e1a9",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Stake 50 ROSE to earn rewards",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Staked 50 ROSE. Tx: 0x8c76a1137d31a3b7f5ccc29aa31f91436745e27d8865acc0cd4cdcb8ae34368f",
+				},
+			},
+		],
+	],
 	validate: async (runtime: IAgentRuntime) => {
 		// Basic validation: Check if ContractHelper can be initialized (implies Coinbase setup)
 		try {
@@ -681,7 +710,36 @@ export const unstakeAction: Action = {
 	name: "ACCUMULATED_FINANCE_UNSTAKE",
 	description: "Unstake ROSE tokens from Accumulated Finance",
 	similes: ["UNSTAKE_FROM_ACCUMULATED", "WITHDRAW_ROSE_ACCUMULATED"],
-	examples: [],
+	examples: [
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "I want to unstake 20 ROSE tokens",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Unstake initiated for 20 ROSE. Tx: 0x2d83f2c812a6d8d7707733782e13e767a79f24fbce0dbcd9d5115ffc8a9daed0",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Withdraw all my staked ROSE",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Unstake initiated for 100 ROSE. Tx: 0xc4e76828390784983d67594e6a256983c543f334a7bef7931f982ba55095551f",
+				},
+			},
+		],
+	],
 	validate: async (runtime: IAgentRuntime) => {
 		try {
 			new ContractHelper(runtime);
@@ -743,7 +801,36 @@ export const getRewardsAction: Action = {
 	name: "ACCUMULATED_FINANCE_GET_REWARDS",
 	description: "Get accumulated staking rewards from Accumulated Finance",
 	similes: ["CHECK_ACCUMULATED_REWARDS"],
-	examples: [],
+	examples: [
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Check my ROSE staking rewards",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Pending rewards: 2.35 ROSE",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "How much have I earned from staking ROSE?",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Pending rewards: 1.87 ROSE",
+				},
+			},
+		],
+	],
 	validate: async (runtime: IAgentRuntime) => {
 		try {
 			new ContractHelper(runtime);
@@ -816,7 +903,36 @@ export const claimRewardsAction: Action = {
 	name: "ACCUMULATED_FINANCE_CLAIM_REWARDS",
 	description: "Claim staking rewards from Accumulated Finance (syncs rewards)",
 	similes: ["CLAIM_ACCUMULATED_REWARDS", "SYNC_ACCUMULATED_REWARDS"],
-	examples: [],
+	examples: [
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Claim my ROSE staking rewards",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Successfully claimed rewards. Tx: 0x7b1a3c5e2d8f4b6d9e0c1d2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "I want to harvest my ROSE staking rewards",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Successfully claimed rewards. Tx: 0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+				},
+			},
+		],
+	],
 	validate: async (runtime: IAgentRuntime) => {
 		try {
 			new ContractHelper(runtime);
@@ -867,7 +983,36 @@ export const getStakingStrategiesAction: Action = {
 	name: "ACCUMULATED_FINANCE_GET_STRATEGIES",
 	description: "Get available staking strategies for Accumulated Finance",
 	similes: ["LIST_ACCUMULATED_STRATEGIES"],
-	examples: [],
+	examples: [
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "What staking strategies are available for ROSE?",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Available strategy: Accumulated Finance ROSE Staking",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Tell me about the staking options for ROSE",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Available strategy: Accumulated Finance ROSE Staking. This strategy allows you to stake ROSE tokens into the wstROSE ERC4626 vault to earn staking rewards with an estimated APY of 8-10% and no lockup period.",
+				},
+			},
+		],
+	],
 	validate: async () => true,
 	handler: async (
 		runtime: IAgentRuntime,
@@ -898,7 +1043,36 @@ export const getStakedBalanceAction: Action = {
 	name: "ACCUMULATED_FINANCE_GET_STAKED_BALANCE",
 	description: "Get the staked ROSE balance from Accumulated Finance",
 	similes: ["CHECK_ACCUMULATED_BALANCE"],
-	examples: [],
+	examples: [
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "How much ROSE do I have staked?",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Your staked balance is 150 ROSE",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Check my Accumulated Finance stake",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Your staked balance is 75.5 ROSE",
+				},
+			},
+		],
+	],
 	validate: async (runtime: IAgentRuntime) => {
 		try {
 			new ContractHelper(runtime);
@@ -961,7 +1135,36 @@ export const wrapRoseAction: Action = {
 	name: "ACCUMULATED_FINANCE_WRAP_ROSE",
 	description: "Wrap native ROSE into wstROSE (equivalent to staking)",
 	similes: ["WRAP_ROSE_ACCUMULATED"],
-	examples: [],
+	examples: [
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Wrap 10 ROSE into wstROSE",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Wrap ROSE initiated. Tx: 0x3a8d706eed54b7b13f53e2a1639e0fff35ad5458c62af97d629b4bfcdb42e1a9",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Convert 25 ROSE to wrapped tokens",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Wrap ROSE initiated. Tx: 0x8c76a1137d31a3b7f5ccc29aa31f91436745e27d8865acc0cd4cdcb8ae34368f",
+				},
+			},
+		],
+	],
 	validate: stakeAction.validate,
 	handler: async (
 		runtime: IAgentRuntime,
@@ -1012,7 +1215,36 @@ export const unwrapRoseAction: Action = {
 	name: "ACCUMULATED_FINANCE_UNWRAP_ROSE",
 	description: "Unwrap wstROSE back to native ROSE (equivalent to unstaking)",
 	similes: ["UNWRAP_ROSE_ACCUMULATED"],
-	examples: [],
+	examples: [
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Unwrap my wstROSE tokens",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Unwrap ROSE initiated. Tx: 0x2d83f2c812a6d8d7707733782e13e767a79f24fbce0dbcd9d5115ffc8a9daed0",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Convert 5 wstROSE back to ROSE",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Unwrap ROSE initiated. Tx: 0xc4e76828390784983d67594e6a256983c543f334a7bef7931f982ba55095551f",
+				},
+			},
+		],
+	],
 	validate: unstakeAction.validate,
 	handler: async (
 		runtime: IAgentRuntime,
