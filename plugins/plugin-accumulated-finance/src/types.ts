@@ -1,5 +1,5 @@
-import { z } from "zod";
 import type { IAgentRuntime } from "@elizaos/core";
+import { z } from "zod";
 
 /**
  * Result of a staking operation
@@ -76,4 +76,4 @@ export interface AccumulatedFinancePluginType {
 export type AccumulatedFinancePluginFactory = (
 	runtime: IAgentRuntime,
 	config?: Partial<PluginConfig>,
-) => AccumulatedFinancePluginType; 
+) => AccumulatedFinancePluginType;

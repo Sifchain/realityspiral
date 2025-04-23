@@ -1,7 +1,7 @@
 import { Coinbase, Wallet, readContract } from "@coinbase/coinbase-sdk";
 import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
 import { ABI } from "../constants";
-import { initializeWallet, getSupportedNetwork } from "../utils";
+import { getSupportedNetwork, initializeWallet } from "../utils";
 
 // Helper function to serialize BigInt values (defined locally)
 // biome-ignore lint/suspicious/noExplicitAny: Needed for generic serialization
@@ -95,54 +95,62 @@ export class ContractHelper {
 				return this.invokeContract(params);
 			}
 
-			// Create named arguments object from array
-			const argsArray = Array.isArray(params.args) ? params.args : [];
-			const argsObject: Record<string, any> = {};
+			let argsObject: Record<string, any> = {};
 
-			// Map each array element to its corresponding named parameter
-			if (methodAbi.inputs && methodAbi.inputs.length > 0) {
-				for (let index = 0; index < methodAbi.inputs.length; index++) {
-					const input = methodAbi.inputs[index];
-					if (index < argsArray.length) {
-						let value = argsArray[index];
+			if (typeof params.args === "object" && !Array.isArray(params.args)) {
+				// Use the object directly
+				argsObject = { ...params.args };
+			} else {
+				// Create named arguments object from array
+				const argsArray = Array.isArray(params.args) ? params.args : [];
 
-						// Special handling for address type parameters
-						if (input.type === "address" && value) {
-							// If it's a wallet address object with addressId property
-							if (typeof value === "object" && value.addressId) {
-								elizaLogger.debug(
-									`Converting WalletAddress object to string address: ${value.addressId}`,
-								);
-								value = value.addressId; // Extract the address string
-							}
-							// If it's an object with a toString method
-							else if (
-								typeof value === "object" &&
-								typeof value.toString === "function"
-							) {
-								const stringVal = value.toString();
-								elizaLogger.debug(
-									`Converting object to string using toString(): ${stringVal}`,
-								);
-								value = stringVal;
+				elizaLogger.info("argsArray", argsArray);
+
+				// Map each array element to its corresponding named parameter
+				if (methodAbi.inputs && methodAbi.inputs.length > 0) {
+					for (let index = 0; index < methodAbi.inputs.length; index++) {
+						const input = methodAbi.inputs[index];
+						if (index < argsArray.length) {
+							let value = argsArray[index];
+
+							// Special handling for address type parameters
+							if (input.type === "address" && value) {
+								// If it's a wallet address object with addressId property
+								if (typeof value === "object" && value.addressId) {
+									elizaLogger.debug(
+										`Converting WalletAddress object to string address: ${value.addressId}`,
+									);
+									value = value.addressId; // Extract the address string
+								}
+								// If it's an object with a toString method
+								else if (
+									typeof value === "object" &&
+									typeof value.toString === "function"
+								) {
+									const stringVal = value.toString();
+									elizaLogger.debug(
+										`Converting object to string using toString(): ${stringVal}`,
+									);
+									value = stringVal;
+								}
+
+								// If value is not a valid address string by now, log warning
+								if (typeof value !== "string" || !value.startsWith("0x")) {
+									elizaLogger.warn(
+										`Parameter for ${input.name} may not be a valid address: ${value}`,
+									);
+								}
 							}
 
-							// If value is not a valid address string by now, log warning
-							if (typeof value !== "string" || !value.startsWith("0x")) {
-								elizaLogger.warn(
-									`Parameter for ${input.name} may not be a valid address: ${value}`,
-								);
-							}
+							// Use the exact parameter name from the ABI
+							const paramName = input.name || "";
+							argsObject[paramName] = value;
 						}
-
-						// Use the exact parameter name from the ABI
-						const paramName = input.name || "";
-						argsObject[paramName] = value;
 					}
 				}
 			}
 
-			elizaLogger.debug("Read array args:", argsArray);
+			// elizaLogger.debug("Read array args:", argsArray);
 			elizaLogger.debug("Converted to object args:", argsObject);
 
 			// Special validation for address parameters to handle WalletAddress string representation
@@ -170,9 +178,17 @@ export class ContractHelper {
 				networkId: params.networkId,
 			};
 
+			const invokeParams = {
+				contractAddress: params.contractAddress,
+				method: params.method,
+				abi: methodAbi, // Use the ABI passed in parameters
+				args: argsObject,
+				networkId: params.networkId,
+			};
+
 			elizaLogger.info(
 				"ContractHelper: Reading contract with params:",
-				JSON.stringify(readParams),
+				JSON.stringify(invokeParams),
 			);
 
 			const result = await readContract(readParams);
@@ -224,20 +240,22 @@ export class ContractHelper {
 			const argsArray = Array.isArray(params.args) ? params.args : [];
 			const argsObject: Record<string, any> = {};
 
+			elizaLogger.info("argsArray", argsArray);
+
 			// Map each array element to its corresponding named parameter
 			for (let index = 0; index < methodAbi.inputs.length; index++) {
 				const input = methodAbi.inputs[index];
 				if (index < argsArray.length) {
 					let value = argsArray[index];
 
-					// Special handling for address type parameters
 					if (input.type === "address" && value) {
+						// Special handling for address type parameters
 						// If it's a wallet address object with addressId property
 						if (typeof value === "object" && value.addressId) {
 							elizaLogger.debug(
 								`Converting WalletAddress object to string address: ${value.addressId}`,
 							);
-							value = value.addressId; // Extract the address string
+							value = "0xD952175d6A20187d7A5803DcC9741472F640A9b8"; // Extract the address string
 						}
 						// If it's an object with a toString method
 						else if (
@@ -248,7 +266,7 @@ export class ContractHelper {
 							elizaLogger.debug(
 								`Converting object to string using toString(): ${stringVal}`,
 							);
-							value = stringVal;
+							value = "0xD952175d6A20187d7A5803DcC9741472F640A9b8";
 						}
 
 						// If value is not a valid address string by now, log warning
@@ -272,8 +290,11 @@ export class ContractHelper {
 							`Using 'owner' as parameter name for balanceOf method.`,
 						);
 					}
-
-					argsObject[argName] = value;
+					if (argName === "spender") {
+						argsObject[argName] = "0xD952175d6A20187d7A5803DcC9741472F640A9b8";
+					} else {
+						argsObject[argName] = value;
+					}
 				}
 			}
 

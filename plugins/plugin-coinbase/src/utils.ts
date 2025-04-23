@@ -37,22 +37,47 @@ const NETWORK_ID_MAP: Record<string, string> = {
 	// Add more mappings as needed
 };
 
+// Map string network identifiers to Coinbase network identifiers
+const NETWORK_NAME_MAP: Record<string, string> = {
+	// Ethereum networks
+	"ethereum-mainnet": Coinbase.networks.EthereumMainnet,
+	eth: Coinbase.networks.EthereumMainnet,
+	ethereum: Coinbase.networks.EthereumMainnet,
+
+	// Base networks
+	base: Coinbase.networks.BaseMainnet,
+	"base-mainnet": Coinbase.networks.BaseMainnet,
+	"base-sepolia": Coinbase.networks.BaseSepolia,
+	"base-testnet": Coinbase.networks.BaseSepolia,
+
+	// Arbitrum networks
+	arbitrum: Coinbase.networks.ArbitrumMainnet,
+	"arbitrum-mainnet": Coinbase.networks.ArbitrumMainnet,
+
+	// Polygon networks
+	polygon: Coinbase.networks.PolygonMainnet,
+	"polygon-mainnet": Coinbase.networks.PolygonMainnet,
+};
+
 // Function to convert numeric network ID to a supported Coinbase network name
-export const getSupportedNetwork = (networkId: string): string => {
-	// Check if we have a mapping for this network ID
+export function getSupportedNetwork(networkId: string): string {
+	// Check if it's a numeric chain ID
 	if (NETWORK_ID_MAP[networkId]) {
-		elizaLogger.info(
-			`Mapped network ID ${networkId} to ${NETWORK_ID_MAP[networkId]}`,
-		);
 		return NETWORK_ID_MAP[networkId];
 	}
 
-	// Default to Base Sepolia testnet if no mapping exists
+	// Check if it's a string network identifier
+	const normalizedId = networkId.toLowerCase();
+	if (NETWORK_NAME_MAP[normalizedId]) {
+		return NETWORK_NAME_MAP[normalizedId];
+	}
+
+	// Default fallback
 	elizaLogger.warn(
 		`No mapping found for network ID ${networkId}, defaulting to Base Sepolia testnet`,
 	);
 	return Coinbase.networks.BaseSepolia;
-};
+}
 
 export async function initializeWallet(
 	runtime: IAgentRuntime,

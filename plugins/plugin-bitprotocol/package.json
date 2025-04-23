@@ -1,0 +1,42 @@
+{
+  "name": "@realityspiral/plugin-bitprotocol",
+  "version": "0.1.0",
+  "description": "Eliza plugin for privacy-preserving stablecoin swaps on Oasis using BitProtocol",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "@realityspiral/source": "./src/index.ts",
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@elizaos/core": "^0.1.9",
+    "@oasisprotocol/client": "latest",
+    "@realityspiral/plugin-instrumentation": "workspace:*",
+    "zod": "3.23.8",
+    "ethers": "^6.0.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0", // Assuming tsup is used, adjust version if needed
+    "typescript": "^5.0.0", // Adjust version if needed
+    "@types/node": "^20.0.0"
+  },
+  "scripts": {
+    "build": "tsup --format esm --dts",
+    "dev": "tsup --format esm --dts --watch",
+    "clean": "rm -rf dist"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+} 

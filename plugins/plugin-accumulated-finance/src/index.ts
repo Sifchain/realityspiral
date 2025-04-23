@@ -1,13 +1,16 @@
 import type { Plugin } from "@elizaos/core";
 import {
+	approveAction,
+	claimRewardsAction,
+	getRewardsAction,
+	getStakedBalanceAction,
+	getStakingStrategiesAction,
+	mintAction,
+	redeemAction,
 	stakeAction,
 	unstakeAction,
-	getRewardsAction,
-	claimRewardsAction,
-	getStakingStrategiesAction,
-	getStakedBalanceAction,
-	wrapRoseAction,
 	unwrapRoseAction,
+	wrapRoseAction,
 } from "./plugins/accumulated";
 
 // Export the plugin in the format expected by the agent
@@ -24,6 +27,9 @@ export const accumulatedFinancePlugin: Plugin = {
 		getStakedBalanceAction,
 		wrapRoseAction,
 		unwrapRoseAction,
+		mintAction,
+		approveAction,
+		redeemAction,
 	],
 	providers: [], // No providers defined yet
 };
@@ -34,4 +40,3 @@ export * from "./constants";
 
 // Re-export ContractHelper from plugin-coinbase for convenience, if still desired
 // export { ContractHelper } from "@realityspiral/plugin-coinbase"; // Optional
-

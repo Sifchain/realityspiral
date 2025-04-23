@@ -6,7 +6,7 @@ export const SAPPHIRE_MAINNET = {
 	CONTRACTS: {
 		// UNSTAKE: "0x04faf6897cf5de4ab9f1052fa16ec9256c3ea44a", // Removed - Not used in current implementation
 		WRAPPED_ROSE: "0x3cabbe76ea8b4e7a2c0a69812cbe671800379ec8", // wstROSE contract (wrapped staked ROSE)
-		UNWRAPPED_ROSE: "0xed57966f1566de1a90042d07403021ea52ad4724", // Native ROSE token
+		UNWRAPPED_ROSE: "0x3cabbe76ea8b4e7a2c0a69812cbe671800379ec8", // Native ROSE token
 	},
 };
 
@@ -97,6 +97,22 @@ export const WSTROSE_ABI = [
 	{
 		inputs: [
 			{
+				internalType: "contract ERC20",
+				name: "_underlying",
+				type: "address",
+			},
+			{
+				internalType: "uint32",
+				name: "_rewardsCycleLength",
+				type: "uint32",
+			},
+		],
+		stateMutability: "nonpayable",
+		type: "constructor",
+	},
+	{
+		inputs: [
+			{
 				internalType: "address",
 				name: "receiver",
 				type: "address",
@@ -179,6 +195,11 @@ export const WSTROSE_ABI = [
 		type: "error",
 	},
 	{
+		inputs: [],
+		name: "SyncError",
+		type: "error",
+	},
+	{
 		anonymous: false,
 		inputs: [
 			{
@@ -232,6 +253,25 @@ export const WSTROSE_ABI = [
 			},
 		],
 		name: "Deposit",
+		type: "event",
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{
+				indexed: true,
+				internalType: "uint32",
+				name: "cycleEnd",
+				type: "uint32",
+			},
+			{
+				indexed: false,
+				internalType: "uint256",
+				name: "rewardAmount",
+				type: "uint256",
+			},
+		],
+		name: "NewRewardsCycle",
 		type: "event",
 	},
 	{
@@ -462,6 +502,81 @@ export const WSTROSE_ABI = [
 			},
 		],
 		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{
+				internalType: "uint256",
+				name: "assets",
+				type: "uint256",
+			},
+			{
+				internalType: "address",
+				name: "receiver",
+				type: "address",
+			},
+			{
+				internalType: "uint256",
+				name: "deadline",
+				type: "uint256",
+			},
+			{
+				internalType: "bool",
+				name: "approveMax",
+				type: "bool",
+			},
+			{
+				internalType: "uint8",
+				name: "v",
+				type: "uint8",
+			},
+			{
+				internalType: "bytes32",
+				name: "r",
+				type: "bytes32",
+			},
+			{
+				internalType: "bytes32",
+				name: "s",
+				type: "bytes32",
+			},
+		],
+		name: "depositWithSignature",
+		outputs: [
+			{
+				internalType: "uint256",
+				name: "shares",
+				type: "uint256",
+			},
+		],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "lastRewardAmount",
+		outputs: [
+			{
+				internalType: "uint192",
+				name: "",
+				type: "uint192",
+			},
+		],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "lastSync",
+		outputs: [
+			{
+				internalType: "uint32",
+				name: "",
+				type: "uint32",
+			},
+		],
+		stateMutability: "view",
 		type: "function",
 	},
 	{
@@ -716,6 +831,19 @@ export const WSTROSE_ABI = [
 		type: "function",
 	},
 	{
+		inputs: [],
+		name: "pricePerShare",
+		outputs: [
+			{
+				internalType: "uint256",
+				name: "",
+				type: "uint256",
+			},
+		],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
 		inputs: [
 			{
 				internalType: "uint256",
@@ -746,6 +874,32 @@ export const WSTROSE_ABI = [
 	},
 	{
 		inputs: [],
+		name: "rewardsCycleEnd",
+		outputs: [
+			{
+				internalType: "uint32",
+				name: "",
+				type: "uint32",
+			},
+		],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "rewardsCycleLength",
+		outputs: [
+			{
+				internalType: "uint32",
+				name: "",
+				type: "uint32",
+			},
+		],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
 		name: "symbol",
 		outputs: [
 			{
@@ -755,6 +909,13 @@ export const WSTROSE_ABI = [
 			},
 		],
 		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "syncRewards",
+		outputs: [],
+		stateMutability: "nonpayable",
 		type: "function",
 	},
 	{
@@ -871,4 +1032,4 @@ export const WSTROSE_ABI = [
 export const ABIS = {
 	WSTROSE: WSTROSE_ABI,
 	ERC20: ERC20_ABI,
-}; 
+};

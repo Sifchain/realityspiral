@@ -465,6 +465,7 @@ export const readContractAction: Action = {
 			}
 
 			const { contractAddress, method, args, networkId } = readDetails.object;
+			elizaLogger.info("Reading contract:", args);
 			const result = await contractHelper.readContract({
 				// Pass parameters as a single object
 				networkId,

@@ -447,6 +447,230 @@ export const accumulatedFinancePlugin = (
 		}
 	};
 
+	/**
+	 * Mint a specific number of wstROSE shares
+	 * This implements the ERC4626 mint standard
+	 */
+	const mint = async (
+		sharesAmount: string,
+		receiver?: string,
+	): Promise<StakingResult> => {
+		try {
+			elizaLogger.info("Minting wstROSE shares", { sharesAmount, receiver });
+			const targetReceiver =
+				receiver || (await getUserAddressString(runtime, getNetworkId()));
+			elizaLogger.info("Target receiver address", { targetReceiver });
+
+			// Get the asset amount required for minting the specified shares
+			const assetsRequired = await contractHelper.readContract({
+				networkId: getNetworkId(),
+				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
+				method: "previewMint",
+				args: [sharesAmount],
+				abi: ABIS.WSTROSE,
+			});
+
+			elizaLogger.info("Assets required for mint", { assetsRequired });
+
+			// First, approve the wstROSE contract to spend the required assets
+			elizaLogger.info("Preparing to approve token spending", {
+				tokenContract: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
+				spender: networkConfig.CONTRACTS.WRAPPED_ROSE,
+				amount: assetsRequired.toString(),
+			});
+
+			try {
+				elizaLogger.info("Invoking approve on token contract");
+				const approveResult = await contractHelper.invokeContract({
+					networkId: getNetworkId(),
+					contractAddress: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
+					method: "approve",
+					args: [
+						networkConfig.CONTRACTS.WRAPPED_ROSE,
+						assetsRequired.toString(),
+					],
+					abi: ABIS.WSTROSE,
+				});
+
+				elizaLogger.info("Approved token spending", {
+					hash: approveResult.status,
+					details: approveResult,
+				});
+			} catch (approveError) {
+				elizaLogger.error("Failed to approve token spending", {
+					error:
+						approveError instanceof Error
+							? {
+									message: approveError.message,
+									stack: approveError.stack,
+									name: approveError.name,
+								}
+							: approveError,
+				});
+				throw approveError;
+			}
+
+			// Now mint the shares
+			elizaLogger.info("Preparing to mint shares", {
+				contract: networkConfig.CONTRACTS.WRAPPED_ROSE,
+				shares: sharesAmount,
+				receiver: targetReceiver,
+			});
+
+			try {
+				elizaLogger.info("Invoking mint on wstROSE contract");
+				const mintResult = await contractHelper.invokeContract({
+					networkId: getNetworkId(),
+					contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
+					method: "mint",
+					args: [sharesAmount, targetReceiver],
+					abi: ABIS.WSTROSE,
+				});
+
+				elizaLogger.info("Mint completed", {
+					details: mintResult,
+				});
+
+				const result: StakingResult = {
+					transactionHash: mintResult.transactionLink?.split("/").pop() || "",
+					stakedAmount: assetsRequired.toString(),
+					timestamp: Date.now(),
+				};
+
+				elizaLogger.info("Minting completed successfully", result);
+				return result;
+			} catch (mintError) {
+				elizaLogger.error("Failed to mint shares", {
+					error:
+						mintError instanceof Error
+							? {
+									message: mintError.message,
+									stack: mintError.stack,
+									name: mintError.name,
+								}
+							: mintError,
+				});
+				throw mintError;
+			}
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error ? error.message : "Unknown error";
+
+			elizaLogger.error("Minting failed", {
+				errorType:
+					error instanceof Error ? error.constructor.name : typeof error,
+				errorDetails:
+					error instanceof Error
+						? {
+								message: error.message,
+								stack: error.stack,
+								name: error.name,
+							}
+						: error,
+			});
+			throw new Error(`Minting failed: ${errorMessage}`);
+		}
+	};
+
+	/**
+	 * Approve token spending for a specific contract
+	 */
+	const approve = async (
+		tokenAddress: string,
+		spenderAddress: string,
+		amount: string,
+	): Promise<TransactionReceipt> => {
+		try {
+			elizaLogger.info("Approving token spending", {
+				tokenAddress,
+				spenderAddress,
+				amount,
+			});
+
+			const result = await contractHelper.invokeContract({
+				networkId: getNetworkId(),
+				contractAddress: tokenAddress,
+				method: "approve",
+				args: [spenderAddress, amount],
+				abi: ABIS.ERC20,
+			});
+
+			elizaLogger.info("Approval completed", {
+				details: result,
+			});
+
+			const txReceipt: TransactionReceipt = {
+				transactionHash: result.transactionLink?.split("/").pop() || "",
+				status: result.status === "SUCCESS",
+				blockNumber: 0,
+				events: {},
+			};
+
+			return txReceipt;
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error ? error.message : "Unknown error";
+			elizaLogger.error("Approval failed", error);
+			throw new Error(`Approval failed: ${errorMessage}`);
+		}
+	};
+
+	/**
+	 * Redeem a specific number of shares to receive underlying assets (ROSE)
+	 * This implements the ERC4626 redeem standard
+	 */
+	const redeem = async (
+		shares: string,
+		receiver?: string,
+		owner?: string,
+	): Promise<TransactionReceipt> => {
+		try {
+			elizaLogger.info("Redeeming wstROSE shares for ROSE", {
+				shares,
+				receiver,
+				owner,
+			});
+
+			const targetReceiver =
+				receiver || (await getUserAddressString(runtime, getNetworkId()));
+			const shareOwner =
+				owner || (await getUserAddressString(runtime, getNetworkId()));
+
+			elizaLogger.info("Redeem parameters", {
+				shares,
+				receiver: targetReceiver,
+				owner: shareOwner,
+			});
+
+			// Call the redeem function on the wstROSE contract
+			const result = await contractHelper.invokeContract({
+				networkId: getNetworkId(),
+				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
+				method: "redeem",
+				args: [shares, targetReceiver, shareOwner],
+				abi: ABIS.WSTROSE,
+			});
+
+			elizaLogger.info("Redeem completed", {
+				details: result,
+			});
+
+			const txReceipt: TransactionReceipt = {
+				transactionHash: result.transactionLink?.split("/").pop() || "",
+				status: result.status === "SUCCESS",
+				blockNumber: 0,
+				events: {},
+			};
+
+			return txReceipt;
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error ? error.message : "Unknown error";
+			elizaLogger.error("Redeem operation failed", error);
+			throw new Error(`Failed to redeem shares: ${errorMessage}`);
+		}
+	};
+
 	// Expose plugin functions
 	return {
 		stake,
@@ -457,6 +681,13 @@ export const accumulatedFinancePlugin = (
 		getStakedBalance,
 		wrapRose,
 		unwrapRose,
+		mint,
+		approve,
+		redeem,
+
+		// Add explicit standard ERC4626 naming aliases
+		deposit: stake,
+		withdraw: unstake,
 	};
 };
 
@@ -1283,6 +1514,469 @@ export const unwrapRoseAction: Action = {
 				callback({ text: `Failed to unwrap ROSE: ${error.message}` });
 			} else if (callback) {
 				callback({ text: `Failed to unwrap ROSE: Unknown error` });
+			}
+			throw error;
+		}
+	},
+};
+
+export const mintAction: Action = {
+	name: "ACCUMULATED_FINANCE_MINT",
+	description:
+		"Mint a specific number of wstROSE shares on Accumulated Finance",
+	similes: ["MINT_WSTROSE_ACCUMULATED", "MINT_SHARES_ACCUMULATED"],
+	examples: [
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "I want to mint 5 wstROSE shares",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Minted 5 wstROSE shares. Tx: 0x3a8d706eed54b7b13f53e2a1639e0fff35ad5458c62af97d629b4bfcdb42e1a9",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Mint 10 shares of wstROSE",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Minted 10 wstROSE shares. Tx: 0x8c76a1137d31a3b7f5ccc29aa31f91436745e27d8865acc0cd4cdcb8ae34368f",
+				},
+			},
+		],
+	],
+	validate: async (runtime: IAgentRuntime) => {
+		// Basic validation: Check if ContractHelper can be initialized
+		try {
+			elizaLogger.info("Validating mintAction: Creating ContractHelper");
+			new ContractHelper(runtime);
+			elizaLogger.info("Validation successful: ContractHelper created");
+			return true;
+		} catch (e) {
+			elizaLogger.error(
+				"Validation failed for mintAction: Coinbase/ContractHelper setup missing",
+				e instanceof Error
+					? {
+							message: e.message,
+							stack: e.stack,
+							name: e.name,
+						}
+					: e,
+			);
+			return false;
+		}
+	},
+	handler: async (
+		runtime: IAgentRuntime,
+		message: Memory,
+		state?: State,
+		options?: any,
+		callback?: HandlerCallback,
+	): Promise<StakingResult> => {
+		elizaLogger.info("mintAction handler started", {
+			options,
+			runtimeDetails: {
+				has_settings: !!runtime.getSetting,
+			},
+		});
+
+		try {
+			elizaLogger.info("Creating ContractHelper in mintAction handler");
+			const contractHelper = new ContractHelper(runtime);
+			elizaLogger.info("Successfully created ContractHelper");
+
+			const { networkConfig, networkId } = getConfigAndNetwork(runtime);
+			elizaLogger.info("Network configuration", {
+				networkId,
+				networkConfig: {
+					wrappedRose: networkConfig.CONTRACTS.WRAPPED_ROSE,
+					unwrappedRose: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
+				},
+			});
+
+			const sharesAmount = options?.sharesAmount || "1"; // Default to 1 share if not specified
+			const receiver = options?.receiver;
+			elizaLogger.info("Mint parameters", { sharesAmount, receiver });
+
+			try {
+				elizaLogger.info("Getting user address");
+				const userAddress = await getUserAddressString(runtime, networkId);
+				elizaLogger.info("User address retrieved", { userAddress });
+				const targetReceiver = receiver || userAddress;
+
+				// Get asset amount required for minting
+				const assetsRequired = await contractHelper.readContract({
+					networkId: networkId,
+					contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
+					method: "previewMint",
+					args: [sharesAmount],
+					abi: ABIS.WSTROSE,
+				});
+
+				// Approve
+				elizaLogger.info("Preparing to approve token spending", {
+					tokenContract: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
+					spender: networkConfig.CONTRACTS.WRAPPED_ROSE,
+					amount: assetsRequired.toString(),
+				});
+
+				try {
+					const approveResult = await contractHelper.invokeContract({
+						networkId: networkId,
+						contractAddress: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
+						method: "approve",
+						args: [
+							networkConfig.CONTRACTS.WRAPPED_ROSE,
+							assetsRequired.toString(),
+						],
+						abi: ABIS.WSTROSE,
+					});
+
+					elizaLogger.info("Approved token spending", {
+						status: approveResult.status,
+						details: approveResult,
+					});
+				} catch (approveError) {
+					elizaLogger.error("Failed to approve token spending", {
+						error:
+							approveError instanceof Error
+								? {
+										message: approveError.message,
+										stack: approveError.stack,
+										name: approveError.name,
+									}
+								: approveError,
+					});
+					throw approveError;
+				}
+
+				// Mint
+				elizaLogger.info("Preparing to mint shares", {
+					contract: networkConfig.CONTRACTS.WRAPPED_ROSE,
+					shares: sharesAmount,
+					receiver: targetReceiver,
+				});
+
+				try {
+					const mintResult = await contractHelper.invokeContract({
+						networkId: networkId,
+						contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
+						method: "mint",
+						args: [sharesAmount, targetReceiver],
+						abi: ABIS.WSTROSE,
+					});
+
+					elizaLogger.info("Mint completed", {
+						status: mintResult.status,
+						details: mintResult,
+					});
+
+					const result: StakingResult = {
+						transactionHash: mintResult.transactionLink?.split("/").pop() || "",
+						stakedAmount: assetsRequired.toString(),
+						timestamp: Date.now(),
+					};
+
+					elizaLogger.info("Mint action completed successfully", result);
+
+					if (callback)
+						callback({
+							text: `Minted ${sharesAmount} wstROSE shares. Tx: ${result.transactionHash}`,
+						});
+					return result;
+				} catch (mintError) {
+					elizaLogger.error("Failed to mint shares", {
+						error:
+							mintError instanceof Error
+								? {
+										message: mintError.message,
+										stack: mintError.stack,
+										name: mintError.name,
+									}
+								: mintError,
+					});
+					throw mintError;
+				}
+			} catch (error) {
+				elizaLogger.error("Error in user address or contract operations", {
+					error:
+						error instanceof Error
+							? {
+									message: error.message,
+									stack: error.stack,
+									name: error.name,
+								}
+							: error,
+				});
+				throw error;
+			}
+		} catch (error: unknown) {
+			elizaLogger.error("Mint action failed", {
+				errorType:
+					error instanceof Error ? error.constructor.name : typeof error,
+				errorDetails:
+					error instanceof Error
+						? {
+								message: error.message,
+								stack: error.stack,
+								name: error.name,
+							}
+						: error,
+			});
+
+			if (callback && error instanceof Error) {
+				callback({ text: `Minting failed: ${error.message}` });
+			} else if (callback) {
+				callback({ text: `Minting failed: Unknown error` });
+			}
+			throw error;
+		}
+	},
+};
+
+export const approveAction: Action = {
+	name: "ACCUMULATED_FINANCE_APPROVE",
+	description: "Approve token spending for the Accumulated Finance contract",
+	similes: ["APPROVE_TOKEN_SPENDING", "ALLOW_TOKEN_SPENDING"],
+	examples: [
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Approve 50 ROSE to be spent by the wstROSE contract",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Approved 50 ROSE to be spent by the wstROSE contract. Tx: 0x3a8d706eed54b7b13f53e2a1639e0fff35ad5458c62af97d629b4bfcdb42e1a9",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "I want to authorize the Accumulated Finance contract to use my ROSE tokens",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Approved 100 ROSE to be spent by the wstROSE contract. Tx: 0x8c76a1137d31a3b7f5ccc29aa31f91436745e27d8865acc0cd4cdcb8ae34368f",
+				},
+			},
+		],
+	],
+	validate: async (runtime: IAgentRuntime) => {
+		try {
+			new ContractHelper(runtime);
+			return true;
+		} catch (e) {
+			return false;
+		}
+	},
+	handler: async (
+		runtime: IAgentRuntime,
+		message: Memory,
+		state?: State,
+		options?: any,
+		callback?: HandlerCallback,
+	): Promise<TransactionReceipt> => {
+		elizaLogger.info("approveAction handler started", { options });
+
+		try {
+			const contractHelper = new ContractHelper(runtime);
+			const { networkConfig, networkId } = getConfigAndNetwork(runtime);
+
+			// Extract parameters
+			const amount = options?.amount || "0";
+			const spender = options?.spender || networkConfig.CONTRACTS.WRAPPED_ROSE;
+			const token = options?.token || networkConfig.CONTRACTS.UNWRAPPED_ROSE;
+
+			elizaLogger.info("Approval parameters", {
+				token,
+				spender,
+				amount,
+			});
+
+			const result = await contractHelper.invokeContract({
+				networkId: networkId,
+				contractAddress: token,
+				method: "approve",
+				args: [spender, amount],
+				abi: ABIS.ERC20,
+			});
+
+			const txReceipt: TransactionReceipt = {
+				transactionHash: result.transactionLink?.split("/").pop() || "",
+				status: result.status === "SUCCESS",
+				blockNumber: 0,
+				events: {},
+			};
+
+			if (callback) {
+				// Create a human-readable message
+				const tokenName =
+					token === networkConfig.CONTRACTS.UNWRAPPED_ROSE ? "ROSE" : "token";
+				const spenderName =
+					spender === networkConfig.CONTRACTS.WRAPPED_ROSE
+						? "wstROSE contract"
+						: spender;
+				callback({
+					text: `Approved ${amount} ${tokenName} to be spent by the ${spenderName}. Tx: ${txReceipt.transactionHash}`,
+				});
+			}
+
+			return txReceipt;
+		} catch (error: unknown) {
+			elizaLogger.error("Approval action failed", error);
+			if (callback && error instanceof Error) {
+				callback({ text: `Approval failed: ${error.message}` });
+			} else if (callback) {
+				callback({ text: `Approval failed: Unknown error` });
+			}
+			throw error;
+		}
+	},
+};
+
+export const redeemAction: Action = {
+	name: "ACCUMULATED_FINANCE_REDEEM",
+	description: "Redeem wstROSE shares to receive underlying ROSE tokens",
+	similes: ["BURN_SHARES_ACCUMULATED", "EXCHANGE_SHARES_FOR_ROSE"],
+	examples: [
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "I want to redeem 5 wstROSE shares for ROSE",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Redeemed 5 wstROSE shares for ROSE. Tx: 0x3a8d706eed54b7b13f53e2a1639e0fff35ad5458c62af97d629b4bfcdb42e1a9",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Convert my wstROSE shares back to ROSE tokens",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Redeemed your wstROSE shares for ROSE. Tx: 0x8c76a1137d31a3b7f5ccc29aa31f91436745e27d8865acc0cd4cdcb8ae34368f",
+				},
+			},
+		],
+	],
+	validate: async (runtime: IAgentRuntime) => {
+		try {
+			new ContractHelper(runtime);
+			return true;
+		} catch (e) {
+			return false;
+		}
+	},
+	handler: async (
+		runtime: IAgentRuntime,
+		message: Memory,
+		state?: State,
+		options?: any,
+		callback?: HandlerCallback,
+	): Promise<TransactionReceipt> => {
+		elizaLogger.info("redeemAction handler started", { options });
+
+		try {
+			const contractHelper = new ContractHelper(runtime);
+			const { networkConfig, networkId } = getConfigAndNetwork(runtime);
+
+			// Extract parameters
+			const shares = options?.shares || "0";
+			const receiver = options?.receiver;
+			const owner = options?.owner;
+
+			elizaLogger.info("Redeem parameters", { shares, receiver, owner });
+
+			try {
+				// Get addresses if not provided
+				const userAddress = await getUserAddressString(runtime, networkId);
+				const targetReceiver = receiver || userAddress;
+				const shareOwner = owner || userAddress;
+
+				// Call the redeem function on the contract
+				const result = await contractHelper.invokeContract({
+					networkId: networkId,
+					contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
+					method: "redeem",
+					args: [shares, targetReceiver, shareOwner],
+					abi: ABIS.WSTROSE,
+				});
+
+				elizaLogger.info("Redeem completed", {
+					status: result.status,
+					details: result,
+				});
+
+				const txReceipt: TransactionReceipt = {
+					transactionHash: result.transactionLink?.split("/").pop() || "",
+					status: result.status === "SUCCESS",
+					blockNumber: 0,
+					events: {},
+				};
+
+				if (callback)
+					callback({
+						text: `Redeemed ${shares} wstROSE shares for ROSE. Tx: ${txReceipt.transactionHash}`,
+					});
+
+				return txReceipt;
+			} catch (error) {
+				elizaLogger.error("Error in redeem operation", {
+					error:
+						error instanceof Error
+							? {
+									message: error.message,
+									stack: error.stack,
+									name: error.name,
+								}
+							: error,
+				});
+				throw error;
+			}
+		} catch (error: unknown) {
+			elizaLogger.error("Redeem action failed", {
+				errorType:
+					error instanceof Error ? error.constructor.name : typeof error,
+				errorDetails:
+					error instanceof Error
+						? {
+								message: error.message,
+								stack: error.stack,
+								name: error.name,
+							}
+						: error,
+			});
+
+			if (callback && error instanceof Error) {
+				callback({ text: `Failed to redeem shares: ${error.message}` });
+			} else if (callback) {
+				callback({ text: `Failed to redeem shares: Unknown error` });
 			}
 			throw error;
 		}
