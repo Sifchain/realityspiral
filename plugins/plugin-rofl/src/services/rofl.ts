@@ -1,8 +1,8 @@
-import type { GenerateKeyPayload, GenerateKeyResponse } from "../types";
-import axios from "axios";
 import net from "node:net";
 import { elizaLogger } from "@elizaos/core";
 import { captureError } from "@realityspiral/sentry";
+import axios from "axios";
+import type { GenerateKeyPayload, GenerateKeyResponse } from "../types";
 
 const DEFAULT_SOCKET_PATH = "/run/rofl-appd.sock";
 

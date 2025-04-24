@@ -55,8 +55,8 @@ import {
 	type RuntimeInstrumentation,
 	getRuntimeInstrumentation,
 } from "@realityspiral/plugin-instrumentation";
-import synfuturesPlugin from "@realityspiral/plugin-synfutures";
 import { roflPlugin } from "@realityspiral/plugin-rofl";
+import synfuturesPlugin from "@realityspiral/plugin-synfutures";
 import Database from "better-sqlite3";
 import yargs from "yargs";
 import { z } from "zod";

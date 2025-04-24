@@ -7,10 +7,10 @@ import {
 	type State,
 	elizaLogger,
 } from "@elizaos/core";
-import { captureError } from "@realityspiral/sentry";
 import { composeContext } from "@realityspiral/plugin-instrumentation";
-import type { KeyKind } from "../types";
+import { captureError } from "@realityspiral/sentry";
 import { RoflService } from "../services/rofl";
+import type { KeyKind } from "../types";
 
 const roflService = new RoflService();
 
