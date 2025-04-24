@@ -1,9 +1,9 @@
 import type { Plugin } from "@elizaos/core";
 import {
-	swapAction,
-	monitorPriceStabilityAction,
 	getOptimalSwapPathAction,
+	monitorPriceStabilityAction,
 	privateSwapAction,
+	swapAction,
 } from "./plugins/bitprotocol";
 
 export const bitProtocolPlugin: Plugin = {
@@ -22,4 +22,3 @@ export const bitProtocolPlugin: Plugin = {
 };
 
 export * from "./types";
-// export * from "./constants"; // Decide if constants need exporting

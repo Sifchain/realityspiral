@@ -1,39 +1,39 @@
-import { z } from "zod";
 import {
 	type Action,
+	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
 	type State,
-	type HandlerCallback,
 	elizaLogger,
 } from "@elizaos/core";
+import { ContractHelper } from "@realityspiral/plugin-coinbase";
+
 import {
 	BITPROTOCOL_CONTRACTS,
-	ERC20_ABI,
 	BORROWER_OPERATIONS_ABI,
-	PRICE_FEED_ABI,
-	STABILITY_POOL_ABI,
-	TROVE_MANAGER_ABI,
-	ROUTER_ABI,
-	TOKEN_ADDRESSES,
 	COLLATERAL_TOKENS,
-	PRIVACY_CONFIG,
+	ERC20_ABI,
 	NETWORK_CONFIG,
+	PRICE_FEED_ABI,
+	PRIVACY_CONFIG,
+	ROUTER_ABI,
+	STABILITY_POOL_ABI,
+	TOKEN_ADDRESSES,
+	TROVE_MANAGER_ABI,
 } from "../constants";
-import { parseTokenAmount, formatTokenAmount } from "../utils";
-import { ContractHelper } from "@realityspiral/plugin-coinbase";
 // Import types and schemas
 import {
-	SwapInputSchema,
-	type SwapInput,
-	type SwapResult,
-	type PriceStabilityInfo,
-	GetOptimalSwapPathInputSchema,
 	type GetOptimalSwapPathInput,
-	type SwapPath,
-	PrivateSwapInputSchema,
+	GetOptimalSwapPathInputSchema,
+	type PriceStabilityInfo,
 	type PrivateSwapInput,
+	PrivateSwapInputSchema,
+	type SwapInput,
+	SwapInputSchema,
+	type SwapPath,
+	type SwapResult,
 } from "../types";
+import { formatTokenAmount, parseTokenAmount } from "../utils";
 
 // --- Internal Configuration Helper --- //
 

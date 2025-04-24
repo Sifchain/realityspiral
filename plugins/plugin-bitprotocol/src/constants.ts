@@ -1,5 +1,3 @@
-// Remove ethers import as we're no longer using it
-
 // Contract addresses from official BitProtocol documentation
 // Source: https://bitprotocol.gitbook.io/bitprotocol/resources/contracts
 export const BITPROTOCOL_CONTRACTS = {

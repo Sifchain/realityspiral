@@ -46,5 +46,3 @@ export interface SwapPath {
 	fromSymbol?: string;
 	toSymbol?: string;
 }
-
-

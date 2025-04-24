@@ -31,7 +31,6 @@ import { normalizeCharacter } from "@elizaos/plugin-di";
 import { CoinbaseClientInterface } from "@realityspiral/client-coinbase";
 import { DirectClient } from "@realityspiral/client-direct";
 import { GitHubClientInterface } from "@realityspiral/client-github";
-import { accumulatedFinancePlugin } from "@realityspiral/plugin-accumulated-finance";
 import {
 	advancedTradePlugin,
 	coinbaseCommercePlugin,
@@ -565,7 +564,6 @@ export async function createAgent(
 			getSecret(character, "COINBASE_COMMERCE_KEY")
 				? coinbaseCommercePlugin
 				: null,
-			character.name === "Prosper" ? accumulatedFinancePlugin : null,
 			...(getSecret(character, "COINBASE_API_KEY") &&
 			getSecret(character, "COINBASE_PRIVATE_KEY")
 				? [

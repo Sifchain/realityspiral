@@ -124,6 +124,3 @@ export async function formatTokenAmount(
 		return amount.toString();
 	}
 }
-
-// TODO: Add utility function for handling Oasis-specific confidential transactions if needed
-// This might involve interacting with the @oasisprotocol/client library or specific ContractHelper features
