@@ -19,17 +19,17 @@ import {
 import { parse } from "csv-parse/sync";
 import { createArrayCsvWriter } from "csv-writer";
 import {
-	STRATEGY_CSV_FILE_PATH,
-	THORN_DEFAULT_API_URL,
-	OASIS_NETWORKS,
-	THORN_CONTRACTS,
-	TOKEN_ADDRESSES,
-	PRIVACY_LEVEL_VALUES,
 	ABIS,
+	OASIS_NETWORKS,
+	PRIVACY_LEVEL_VALUES,
+	STRATEGY_CSV_FILE_PATH,
+	THORN_CONTRACTS,
+	THORN_DEFAULT_API_URL,
+	TOKEN_ADDRESSES,
 } from "../constants";
-import { StrategySchema, isStrategyContent } from "../types";
-import { strategyTemplate } from "../templates";
 import { createContractHelper, getNetworkId } from "../helpers/contractUtils";
+import { strategyTemplate } from "../templates";
+import { StrategySchema, isStrategyContent } from "../types";
 
 /**
  * Provider for retrieving swap strategy information
@@ -758,4 +758,4 @@ export const thornStrategyPlugin: Plugin = {
 	description: "Automated swap strategies for Thorn Protocol",
 	actions: [setupStrategyAction, executeStrategyAction],
 	providers: [strategyProvider],
-}; 
+};

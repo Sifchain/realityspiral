@@ -1,7 +1,7 @@
 import "dotenv/config"; // Load .env file
+import fs from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { SpyInstance } from "vitest";
-import fs from "node:fs";
 
 // Define the ElizaRuntime type inline to avoid importing it
 type ElizaRuntime = {
@@ -21,12 +21,12 @@ import {
 	THORN_CONTRACTS,
 	TOKEN_ADDRESSES,
 } from "../src/constants";
+import { createContractHelper } from "../src/helpers/contractUtils";
 import {
 	executeSwapAction,
 	swapProvider,
 	thornSwapPlugin,
 } from "../src/plugins/swap";
-import { createContractHelper } from "../src/helpers/contractUtils";
 
 // Mock fs
 vi.mock("node:fs", () => ({
@@ -236,4 +236,4 @@ describe("Thorn Swap Plugin Tests", () => {
 			}
 		});
 	});
-}); 
+});

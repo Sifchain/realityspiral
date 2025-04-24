@@ -1,6 +1,6 @@
 import "dotenv/config"; // Load .env file
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Define the ElizaRuntime type inline
 type ElizaRuntime = {
@@ -16,12 +16,12 @@ type ElizaRuntime = {
 
 // Import the modules to test
 import { OASIS_NETWORKS } from "../src/constants";
+import { createContractHelper } from "../src/helpers/contractUtils";
 import {
 	monitorPriceStabilityAction,
 	priceStabilityProvider,
 	thornPriceMonitorPlugin,
 } from "../src/plugins/priceMonitor";
-import { createContractHelper } from "../src/helpers/contractUtils";
 
 // Mock fs
 vi.mock("node:fs", () => ({
@@ -224,4 +224,4 @@ describe("Thorn Price Monitor Plugin Tests", () => {
 			}
 		});
 	});
-}); 
+});

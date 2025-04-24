@@ -16,6 +16,17 @@ export const STABLECOIN_TOKENS = [
 // Privacy levels for swap operations
 export const PRIVACY_LEVELS = ["low", "medium", "high"] as const;
 
+// Plugin configuration schema for validation
+export const PluginConfigSchema = z.object({
+	network: z.enum(["mainnet", "testnet"]).default("mainnet"),
+	privateKey: z.string().optional(),
+	walletAddress: z.string().optional(),
+	privacyLevel: z.enum(PRIVACY_LEVELS).default("high"),
+	slippage: z.number().min(0).max(5).default(0.5),
+});
+
+export type PluginConfig = z.infer<typeof PluginConfigSchema>;
+
 // Swap schema for validation
 export const SwapSchema = z.object({
 	fromToken: z.enum(STABLECOIN_TOKENS),
@@ -128,4 +139,4 @@ export interface LiquidityPool {
 	reserve1: string;
 	fee: string;
 	privacyLevel: (typeof PRIVACY_LEVELS)[number];
-} 
+}

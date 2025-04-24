@@ -1,8 +1,12 @@
 {
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
-		"rootDir": "src",
-		"paths": {}
+		"paths": {
+			"@realityspiral/plugin-instrumentation": [
+				"../plugin-instrumentation/src"
+			],
+			"@realityspiral/plugin-coinbase": ["../plugin-coinbase/src"]
+		}
 	},
 	"exclude": ["**/__tests__/**"]
-} 
+}

@@ -871,4 +871,4 @@ export const WSTROSE_ABI = [
 export const ABIS = {
 	WSTROSE: WSTROSE_ABI,
 	ERC20: ERC20_ABI,
-}; 
+};

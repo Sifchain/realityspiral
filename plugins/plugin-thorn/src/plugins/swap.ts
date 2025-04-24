@@ -20,21 +20,21 @@ import {
 import { parse } from "csv-parse/sync";
 import { createArrayCsvWriter } from "csv-writer";
 import {
-	SWAP_CSV_FILE_PATH,
-	THORN_DEFAULT_API_URL,
-	OASIS_NETWORKS,
-	THORN_CONTRACTS,
-	TOKEN_ADDRESSES,
-	PRIVACY_LEVEL_VALUES,
 	ABIS,
+	OASIS_NETWORKS,
+	PRIVACY_LEVEL_VALUES,
+	SWAP_CSV_FILE_PATH,
+	THORN_CONTRACTS,
+	THORN_DEFAULT_API_URL,
+	TOKEN_ADDRESSES,
 } from "../constants";
-import { SwapSchema, isSwapContent } from "../types";
-import { swapTemplate } from "../templates";
 import {
 	createContractHelper,
 	getNetworkId,
 	getUserAddressString,
 } from "../helpers/contractUtils";
+import { swapTemplate } from "../templates";
+import { SwapSchema, isSwapContent } from "../types";
 
 /**
  * Provider for retrieving swap history and information
@@ -628,4 +628,4 @@ function calculateMinimumOut(amount: string, slippage: number): string {
 	const amountBN = BigInt(amount);
 	const slippageFactor = 1000 - Math.floor(slippage * 10); // Convert percentage to basis points (e.g., 0.5% -> 995)
 	return ((amountBN * BigInt(slippageFactor)) / BigInt(1000)).toString();
-} 
+}

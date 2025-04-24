@@ -132,4 +132,4 @@ describe("Contract Utilities", () => {
 			expect(result).toHaveProperty("hash");
 		});
 	});
-}); 
+});

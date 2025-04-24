@@ -1,24 +1,12 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-	entry: ["src/index.ts"],
-	outDir: "dist",
-	sourcemap: true,
-	clean: true,
+	entry: ["./src/index.ts"],
 	format: ["esm"],
-	dts: {
-		resolve: true,
-		// Only output .d.ts for entry points
-		entry: "./src/index.ts",
-		// Avoid TS rootDir issues
-		compilerOptions: {
-			skipLibCheck: true,
-			skipDefaultLibCheck: true,
-		},
-	},
-	splitting: false,
-	bundle: true,
+	dts: true,
+	clean: true,
 	minify: false,
+	sourcemap: true,
 	external: [
 		"@elizaos/core",
 		"@oasisprotocol/client",
@@ -39,12 +27,7 @@ export default defineConfig({
 		"fs/promises",
 		"dotenv",
 	],
-	platform: "node",
-	target: "node18",
-	treeshake: true,
 	esbuildOptions(options) {
-		options.bundle = true;
-		options.platform = "node";
-		options.target = "node18";
+		options.target = ["es2020"];
 	},
-}); 
+});

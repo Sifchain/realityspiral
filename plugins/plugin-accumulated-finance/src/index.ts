@@ -1,13 +1,13 @@
 import type { Plugin } from "@elizaos/core";
 import {
+	claimRewardsAction,
+	getRewardsAction,
+	getStakedBalanceAction,
+	getStakingStrategiesAction,
 	stakeAction,
 	unstakeAction,
-	getRewardsAction,
-	claimRewardsAction,
-	getStakingStrategiesAction,
-	getStakedBalanceAction,
-	wrapRoseAction,
 	unwrapRoseAction,
+	wrapRoseAction,
 } from "./plugins/accumulated";
 
 // Export the plugin in the format expected by the agent
@@ -34,4 +34,3 @@ export * from "./constants";
 
 // Re-export ContractHelper from plugin-coinbase for convenience, if still desired
 // export { ContractHelper } from "@realityspiral/plugin-coinbase"; // Optional
-

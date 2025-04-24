@@ -56,4 +56,4 @@ export interface ContractAction {
 	functionName: string;
 	args: any[];
 	value?: string;
-} 
+}

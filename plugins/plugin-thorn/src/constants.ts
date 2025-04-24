@@ -606,6 +606,61 @@ export const ABIS = {
 			type: "receive",
 		},
 	],
+	STRATEGY_FACTORY: [
+		{
+			inputs: [
+				{ internalType: "string", name: "name", type: "string" },
+				{ internalType: "address", name: "targetToken", type: "address" },
+				{ internalType: "address[]", name: "sourceTokens", type: "address[]" },
+				{ internalType: "uint256", name: "budget", type: "uint256" },
+				{ internalType: "uint256", name: "maxSlippage", type: "uint256" },
+				{ internalType: "uint256", name: "triggerThreshold", type: "uint256" },
+				{ internalType: "bool", name: "isActive", type: "bool" },
+				{ internalType: "uint256", name: "timeBetweenTrades", type: "uint256" },
+			],
+			name: "createStrategy",
+			outputs: [{ internalType: "address", name: "", type: "address" }],
+			stateMutability: "nonpayable",
+			type: "function",
+		},
+		{
+			inputs: [{ internalType: "address", name: "user", type: "address" }],
+			name: "getUserStrategyCount",
+			outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+			stateMutability: "view",
+			type: "function",
+		},
+		{
+			inputs: [
+				{ internalType: "address", name: "user", type: "address" },
+				{ internalType: "uint256", name: "index", type: "uint256" },
+			],
+			name: "userStrategies",
+			outputs: [{ internalType: "address", name: "", type: "address" }],
+			stateMutability: "view",
+			type: "function",
+		},
+	],
+	STRATEGY_CONTRACT: [
+		{
+			inputs: [],
+			name: "getStrategyDetails",
+			outputs: [
+				{ internalType: "string", name: "name", type: "string" },
+				{ internalType: "address", name: "targetToken", type: "address" },
+				{ internalType: "address[]", name: "sourceTokens", type: "address[]" },
+				{ internalType: "uint256", name: "budget", type: "uint256" },
+				{ internalType: "uint256", name: "maxSlippage", type: "uint256" },
+				{ internalType: "uint256", name: "triggerThreshold", type: "uint256" },
+				{ internalType: "bool", name: "isActive", type: "bool" },
+				{ internalType: "uint256", name: "nextExecutionTime", type: "uint256" },
+				{ internalType: "uint256", name: "executionCount", type: "uint256" },
+				{ internalType: "address", name: "owner", type: "address" },
+			],
+			stateMutability: "view",
+			type: "function",
+		},
+	],
 };
 
 // Oasis Network constants
@@ -642,16 +697,18 @@ export const DEFAULT_GAS_PRICE = ethers.parseUnits("10", "gwei").toString();
 // Thorn Protocol Core Infrastructure Contracts
 export const THORN_CONTRACTS = {
 	MAINNET: {
-		STABLE_SWAP_FACTORY: "0x888099De8EA8068D92bB04b47A743B82195c4aD2",
-		STABLE_SWAP_ROUTER: "0xbfdcE45a9241870E7cF338BAaa3185972A550922",
-		STABLE_SWAP_INFO: "0xe50516bCC168B67b5391e15E877c6a4cc3e75f00",
-		SMART_ROUTER_HELPER: "0x68968cdE2fe5b61cEC87Ae6fdCB2fc39271893c2",
+		STABLE_SWAP_FACTORY: "0x5d41EA151C5929F3DCe8d392AB976E2960B4E5D6",
+		STABLE_SWAP_ROUTER: "0xEf1A6269D0Cb79096F6C596A352D6e3E12c26db8",
+		STABLE_SWAP_INFO: "0xf669F70fFd79a20A9622a6C2c7f13C2F3Bd5595D",
+		SMART_ROUTER_HELPER: "0x5cAD84695d142B7F8Ad12C37164D3dE1B2eB3DD8",
+		STRATEGY_FACTORY: "0x4D73A4771352Ec383Bb9A94C8F67bB76b47F9bD5",
 	},
 	TESTNET: {
-		STABLE_SWAP_FACTORY: "0x888099De8EA8068D92bB04b47A743B82195c4aD2", // Use same as mainnet for now
-		STABLE_SWAP_ROUTER: "0xbfdcE45a9241870E7cF338BAaa3185972A550922", // Use same as mainnet for now
-		STABLE_SWAP_INFO: "0xe50516bCC168B67b5391e15E877c6a4cc3e75f00", // Use same as mainnet for now
-		SMART_ROUTER_HELPER: "0x68968cdE2fe5b61cEC87Ae6fdCB2fc39271893c2", // Use same as mainnet for now
+		STABLE_SWAP_FACTORY: "0x00cEAaE12A697E96de86e97497C4337C39e558eB",
+		STABLE_SWAP_ROUTER: "0x6BF1e398e7D638BBBC32576D9C3703CE5A4c1B8C",
+		STABLE_SWAP_INFO: "0xfAA0FA42d4E2e5B12BD0114298A3CBF1B582117B",
+		SMART_ROUTER_HELPER: "0x20a6bDAc661367e8e2fb36ac50431d8A5cB39929",
+		STRATEGY_FACTORY: "0x58D594BB0B8d0755A8A42Fe2c4434C84C61a2d0e",
 	},
 };
 
@@ -678,4 +735,4 @@ export const PRIVACY_LEVEL_VALUES = {
 	low: 1,
 	medium: 2,
 	high: 3,
-}; 
+};

@@ -1,4 +1,4 @@
-import { elizaLogger, type IAgentRuntime } from "@elizaos/core";
+import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
 import { ContractHelper } from "@realityspiral/plugin-coinbase";
 import { OASIS_NETWORKS, OASIS_NETWORK_IDS } from "../constants";
 
@@ -70,4 +70,4 @@ export const createContractHelper = (
 ): ContractHelper => {
 	elizaLogger.info("Creating ContractHelper");
 	return new ContractHelper(runtime);
-}; 
+};

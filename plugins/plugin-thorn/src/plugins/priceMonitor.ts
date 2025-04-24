@@ -19,15 +19,15 @@ import {
 import { parse } from "csv-parse/sync";
 import { createArrayCsvWriter } from "csv-writer";
 import {
-	PRICE_MONITOR_CSV_FILE_PATH,
-	THORN_DEFAULT_API_URL,
 	OASIS_NETWORKS,
+	PRICE_MONITOR_CSV_FILE_PATH,
 	THORN_CONTRACTS,
+	THORN_DEFAULT_API_URL,
 	TOKEN_ADDRESSES,
 } from "../constants";
-import { PriceMonitorSchema, isPriceMonitorContent } from "../types";
-import { priceMonitorTemplate } from "../templates";
 import { createContractHelper, getNetworkId } from "../helpers/contractUtils";
+import { priceMonitorTemplate } from "../templates";
+import { PriceMonitorSchema, isPriceMonitorContent } from "../types";
 
 /**
  * Provider for retrieving price stability information
@@ -329,4 +329,4 @@ export const thornPriceMonitorPlugin: Plugin = {
 	description: "Monitor stablecoin price stability on Thorn Protocol",
 	actions: [monitorPriceStabilityAction],
 	providers: [priceStabilityProvider],
-}; 
+};

@@ -18,4 +18,4 @@ export default defineConfig({
 	esbuildOptions(options) {
 		options.target = ["es2020"];
 	},
-}); 
+});

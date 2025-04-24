@@ -9,4 +9,4 @@ import {
 export * from "./contracts";
 
 // Re-export types from constants
-export { PrivacyLevel, SwapContent, SwapSchema, isSwapContent }; 
+export { PrivacyLevel, SwapContent, SwapSchema, isSwapContent };

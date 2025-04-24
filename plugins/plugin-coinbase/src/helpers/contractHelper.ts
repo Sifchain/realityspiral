@@ -1,7 +1,7 @@
 import { Coinbase, Wallet, readContract } from "@coinbase/coinbase-sdk";
 import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
 import { ABI } from "../constants";
-import { initializeWallet, getSupportedNetwork } from "../utils";
+import { getSupportedNetwork, initializeWallet } from "../utils";
 
 // Helper function to serialize BigInt values (defined locally)
 // biome-ignore lint/suspicious/noExplicitAny: Needed for generic serialization
