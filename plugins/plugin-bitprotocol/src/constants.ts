@@ -52,69 +52,215 @@ export const NETWORK_CONFIG = {
 // Standard ERC20 ABI for token operations
 export const ERC20_ABI = [
 	{
-		constant: true,
-		inputs: [{ name: "_owner", type: "address" }],
-		name: "balanceOf",
-		outputs: [{ name: "balance", type: "uint256" }],
-		type: "function",
-	},
-	{
-		constant: false,
 		inputs: [
-			{ name: "_to", type: "address" },
-			{ name: "_value", type: "uint256" },
+			{ internalType: "address", name: "_bitCore", type: "address" },
+			{ internalType: "string", name: "name_", type: "string" },
+			{ internalType: "string", name: "symbol_", type: "string" },
 		],
-		name: "transfer",
-		outputs: [{ name: "", type: "bool" }],
-		type: "function",
+		stateMutability: "nonpayable",
+		type: "constructor",
 	},
 	{
-		constant: false,
 		inputs: [
-			{ name: "_spender", type: "address" },
-			{ name: "_value", type: "uint256" },
+			{ internalType: "address", name: "spender", type: "address" },
+			{ internalType: "uint256", name: "currentAllowance", type: "uint256" },
+			{ internalType: "uint256", name: "value", type: "uint256" },
 		],
-		name: "approve",
-		outputs: [{ name: "", type: "bool" }],
-		type: "function",
+		name: "ERC20InsufficientAllowance",
+		type: "error",
 	},
 	{
-		constant: true,
-		inputs: [],
-		name: "decimals",
-		outputs: [{ name: "", type: "uint8" }],
-		type: "function",
-	},
-	{
-		constant: true,
-		inputs: [],
-		name: "totalSupply",
-		outputs: [{ name: "", type: "uint256" }],
-		type: "function",
-	},
-	{
-		constant: true,
 		inputs: [
-			{ name: "_owner", type: "address" },
-			{ name: "_spender", type: "address" },
+			{ internalType: "address", name: "account", type: "address" },
+			{ internalType: "uint256", name: "balance", type: "uint256" },
+			{ internalType: "uint256", name: "value", type: "uint256" },
+		],
+		name: "ERC20InsufficientBalance",
+		type: "error",
+	},
+	{
+		inputs: [{ internalType: "address", name: "approver", type: "address" }],
+		name: "ERC20InvalidApprover",
+		type: "error",
+	},
+	{
+		inputs: [{ internalType: "address", name: "receiver", type: "address" }],
+		name: "ERC20InvalidReceiver",
+		type: "error",
+	},
+	{
+		inputs: [{ internalType: "address", name: "sender", type: "address" }],
+		name: "ERC20InvalidSender",
+		type: "error",
+	},
+	{
+		inputs: [{ internalType: "address", name: "spender", type: "address" }],
+		name: "ERC20InvalidSpender",
+		type: "error",
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{
+				indexed: true,
+				internalType: "address",
+				name: "owner",
+				type: "address",
+			},
+			{
+				indexed: true,
+				internalType: "address",
+				name: "spender",
+				type: "address",
+			},
+			{
+				indexed: false,
+				internalType: "uint256",
+				name: "value",
+				type: "uint256",
+			},
+		],
+		name: "Approval",
+		type: "event",
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{ indexed: true, internalType: "address", name: "from", type: "address" },
+			{ indexed: true, internalType: "address", name: "to", type: "address" },
+			{
+				indexed: false,
+				internalType: "uint256",
+				name: "value",
+				type: "uint256",
+			},
+		],
+		name: "Transfer",
+		type: "event",
+	},
+	{
+		inputs: [
+			{ internalType: "address", name: "owner", type: "address" },
+			{ internalType: "address", name: "spender", type: "address" },
 		],
 		name: "allowance",
-		outputs: [{ name: "", type: "uint256" }],
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
 		type: "function",
 	},
 	{
-		constant: false,
 		inputs: [
-			{ name: "owner", type: "address" },
-			{ name: "spender", type: "address" },
-			{ name: "value", type: "uint256" },
-			{ name: "deadline", type: "uint256" },
-			{ name: "v", type: "uint8" },
-			{ name: "r", type: "bytes32" },
-			{ name: "s", type: "bytes32" },
+			{ internalType: "address", name: "spender", type: "address" },
+			{ internalType: "uint256", name: "value", type: "uint256" },
 		],
-		name: "permit",
+		name: "approve",
+		outputs: [{ internalType: "bool", name: "", type: "bool" }],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [{ internalType: "address", name: "account", type: "address" }],
+		name: "balanceOf",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [
+			{
+				components: [
+					{ internalType: "address", name: "user", type: "address" },
+					{ internalType: "uint256", name: "timestamp", type: "uint256" },
+					{ internalType: "bytes", name: "signature", type: "bytes" },
+				],
+				internalType: "struct BitSignature.SignIn",
+				name: "auth",
+				type: "tuple",
+			},
+		],
+		name: "checkBalanceOf",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "decimals",
+		outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [{ internalType: "address", name: "", type: "address" }],
+		name: "lookers",
+		outputs: [{ internalType: "bool", name: "", type: "bool" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "name",
+		outputs: [{ internalType: "string", name: "", type: "string" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "secrecy",
+		outputs: [{ internalType: "bool", name: "", type: "bool" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ internalType: "address[]", name: "_lookers", type: "address[]" },
+			{ internalType: "bool[]", name: "_bools", type: "bool[]" },
+		],
+		name: "setLookers",
 		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [{ internalType: "bool", name: "_bool", type: "bool" }],
+		name: "setSecrecy",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "symbol",
+		outputs: [{ internalType: "string", name: "", type: "string" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "totalSupply",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ internalType: "address", name: "to", type: "address" },
+			{ internalType: "uint256", name: "value", type: "uint256" },
+		],
+		name: "transfer",
+		outputs: [{ internalType: "bool", name: "", type: "bool" }],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ internalType: "address", name: "from", type: "address" },
+			{ internalType: "address", name: "to", type: "address" },
+			{ internalType: "uint256", name: "value", type: "uint256" },
+		],
+		name: "transferFrom",
+		outputs: [{ internalType: "bool", name: "", type: "bool" }],
+		stateMutability: "nonpayable",
 		type: "function",
 	},
 ];
@@ -122,17 +268,172 @@ export const ERC20_ABI = [
 // Price Feed ABI - for price stability monitoring
 export const PRICE_FEED_ABI = [
 	{
+		inputs: [
+			{ internalType: "address", name: "_bitCore", type: "address" },
+			{
+				components: [
+					{ internalType: "address", name: "token", type: "address" },
+					{ internalType: "address", name: "band", type: "address" },
+					{ internalType: "string", name: "base", type: "string" },
+					{ internalType: "string", name: "quote", type: "string" },
+					{ internalType: "uint32", name: "heartbeat", type: "uint32" },
+				],
+				internalType: "struct PriceFeed.OracleSetup[]",
+				name: "oracles",
+				type: "tuple[]",
+			},
+		],
+		stateMutability: "nonpayable",
+		type: "constructor",
+	},
+	{
+		inputs: [{ internalType: "address", name: "token", type: "address" }],
+		name: "PriceFeed__FeedFrozenError",
+		type: "error",
+	},
+	{
 		inputs: [],
-		name: "lastGoodPrice",
-		outputs: [{ type: "uint256" }],
+		name: "PriceFeed__HeartbeatOutOfBoundsError",
+		type: "error",
+	},
+	{
+		inputs: [{ internalType: "address", name: "token", type: "address" }],
+		name: "PriceFeed__InvalidFeedResponseError",
+		type: "error",
+	},
+	{
+		inputs: [{ internalType: "address", name: "token", type: "address" }],
+		name: "PriceFeed__UnknownFeedError",
+		type: "error",
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{
+				indexed: false,
+				internalType: "address",
+				name: "token",
+				type: "address",
+			},
+			{
+				indexed: false,
+				internalType: "address",
+				name: "bandAggregator",
+				type: "address",
+			},
+		],
+		name: "NewOracleRegistered",
+		type: "event",
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{
+				indexed: true,
+				internalType: "address",
+				name: "token",
+				type: "address",
+			},
+			{
+				indexed: false,
+				internalType: "uint256",
+				name: "_price",
+				type: "uint256",
+			},
+		],
+		name: "PriceRecordUpdated",
+		type: "event",
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{
+				indexed: false,
+				internalType: "address",
+				name: "token",
+				type: "address",
+			},
+			{
+				indexed: false,
+				internalType: "address",
+				name: "oracle",
+				type: "address",
+			},
+			{ indexed: false, internalType: "bool", name: "isWorking", type: "bool" },
+		],
+		name: "PriceFeedStatusUpdated",
+		type: "event",
+	},
+	{
+		inputs: [],
+		name: "MAX_PRICE_DEVIATION_FROM_PREVIOUS_ROUND",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
 		stateMutability: "view",
 		type: "function",
 	},
 	{
 		inputs: [],
+		name: "RESPONSE_TIMEOUT_BUFFER",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [{ internalType: "address", name: "_token", type: "address" }],
 		name: "fetchPrice",
-		outputs: [{ type: "uint256" }],
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
 		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [{ internalType: "address", name: "_token", type: "address" }],
+		name: "loadPrice",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [{ internalType: "address", name: "", type: "address" }],
+		name: "oracleRecords",
+		outputs: [
+			{ internalType: "address", name: "bandOracle", type: "address" },
+			{ internalType: "string", name: "base", type: "string" },
+			{ internalType: "string", name: "quote", type: "string" },
+			{ internalType: "uint32", name: "heartbeat", type: "uint32" },
+			{ internalType: "bool", name: "isFeedWorking", type: "bool" },
+		],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [{ internalType: "address", name: "", type: "address" }],
+		name: "priceRecords",
+		outputs: [
+			{ internalType: "uint96", name: "price", type: "uint96" },
+			{ internalType: "uint32", name: "timestamp", type: "uint32" },
+			{ internalType: "uint32", name: "lastUpdated", type: "uint32" },
+		],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ internalType: "address", name: "_token", type: "address" },
+			{ internalType: "address", name: "_bandOracle", type: "address" },
+			{ internalType: "string", name: "_base", type: "string" },
+			{ internalType: "string", name: "_quote", type: "string" },
+			{ internalType: "uint32", name: "_heartbeat", type: "uint32" },
+		],
+		name: "setOracle",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "lastGoodPrice",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
 		type: "function",
 	},
 ];
@@ -140,101 +441,943 @@ export const PRICE_FEED_ABI = [
 // Borrower Operations ABI - for stablecoin swapping functionality
 export const BORROWER_OPERATIONS_ABI = [
 	{
+		inputs: [{ internalType: "uint256", name: "_minNetDebt", type: "uint256" }],
+		name: "setMinNetDebt",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
 		inputs: [
-			{ name: "_tokenAddress", type: "address" },
-			{ name: "_tokenAmount", type: "uint256" },
-			{ name: "_maxFee", type: "uint256" },
-			{ name: "_BitUSDAmt", type: "uint256" },
-			{ name: "_upperHint", type: "address" },
-			{ name: "_lowerHint", type: "address" },
+			{ internalType: "address", name: "to", type: "address" },
+			{ internalType: "uint256", name: "amount", type: "uint256" },
+		],
+		name: "sendRose",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ internalType: "address", name: "troveManager", type: "address" },
+			{ internalType: "address", name: "collateralToken", type: "address" },
+		],
+		name: "configureCollateral",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ internalType: "address", name: "troveManager", type: "address" },
+		],
+		name: "removeTroveManager",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "getTCR",
+		outputs: [
+			{
+				internalType: "uint256",
+				name: "globalTotalCollateralRatio",
+				type: "uint256",
+			},
+		],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "fetchBalances",
+		outputs: [
+			{
+				components: [
+					{ internalType: "uint256[]", name: "collaterals", type: "uint256[]" },
+					{ internalType: "uint256[]", name: "debts", type: "uint256[]" },
+					{ internalType: "uint256[]", name: "prices", type: "uint256[]" },
+				],
+				internalType: "struct BorrowerOperations.SystemBalances",
+				name: "balances",
+				type: "tuple",
+			},
+		],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [{ internalType: "uint256", name: "TCR", type: "uint256" }],
+		name: "checkRecoveryMode",
+		outputs: [{ internalType: "bool", name: "", type: "bool" }],
+		stateMutability: "pure",
+		type: "function",
+	},
+	{
+		inputs: [{ internalType: "uint256", name: "_debt", type: "uint256" }],
+		name: "getCompositeDebt",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ internalType: "address", name: "troveManager", type: "address" },
+			{ internalType: "address", name: "account", type: "address" },
+			{ internalType: "uint256", name: "_maxFeePercentage", type: "uint256" },
+			{ internalType: "uint256", name: "_collateralAmount", type: "uint256" },
+			{ internalType: "uint256", name: "_debtAmount", type: "uint256" },
+			{ internalType: "address", name: "_upperHint", type: "address" },
+			{ internalType: "address", name: "_lowerHint", type: "address" },
 		],
 		name: "openTrove",
 		outputs: [],
-		stateMutability: "nonpayable",
+		stateMutability: "payable",
 		type: "function",
 	},
 	{
 		inputs: [
-			{ name: "_tokenAddress", type: "address" },
-			{ name: "_tokenAmount", type: "uint256" },
-			{ name: "_maxFee", type: "uint256" },
-			{ name: "_BitUSDAmt", type: "uint256" },
-			{ name: "_upperHint", type: "address" },
-			{ name: "_lowerHint", type: "address" },
+			{ internalType: "address", name: "troveManager", type: "address" },
+			{ internalType: "address", name: "account", type: "address" },
+			{ internalType: "uint256", name: "_collateralAmount", type: "uint256" },
+			{ internalType: "address", name: "_upperHint", type: "address" },
+			{ internalType: "address", name: "_lowerHint", type: "address" },
 		],
-		name: "adjustTrove",
+		name: "addColl",
+		outputs: [],
+		stateMutability: "payable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ internalType: "address", name: "troveManager", type: "address" },
+			{ internalType: "address", name: "account", type: "address" },
+			{ internalType: "uint256", name: "_collWithdrawal", type: "uint256" },
+			{ internalType: "address", name: "_upperHint", type: "address" },
+			{ internalType: "address", name: "_lowerHint", type: "address" },
+		],
+		name: "withdrawColl",
 		outputs: [],
 		stateMutability: "nonpayable",
 		type: "function",
 	},
 	{
 		inputs: [
-			{ name: "_tokenAddress", type: "address" },
-			{ name: "_BitUSDAmt", type: "uint256" },
-			{ name: "_upperHint", type: "address" },
-			{ name: "_lowerHint", type: "address" },
+			{ internalType: "address", name: "troveManager", type: "address" },
+			{ internalType: "address", name: "account", type: "address" },
+			{ internalType: "uint256", name: "_maxFeePercentage", type: "uint256" },
+			{ internalType: "uint256", name: "_debtAmount", type: "uint256" },
+			{ internalType: "address", name: "_upperHint", type: "address" },
+			{ internalType: "address", name: "_lowerHint", type: "address" },
+		],
+		name: "withdrawDebt",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ internalType: "address", name: "troveManager", type: "address" },
+			{ internalType: "address", name: "account", type: "address" },
+			{ internalType: "uint256", name: "_debtAmount", type: "uint256" },
+			{ internalType: "address", name: "_upperHint", type: "address" },
+			{ internalType: "address", name: "_lowerHint", type: "address" },
+		],
+		name: "repayDebt",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ internalType: "address", name: "troveManager", type: "address" },
+			{ internalType: "address", name: "account", type: "address" },
+			{ internalType: "uint256", name: "_maxFeePercentage", type: "uint256" },
+			{ internalType: "uint256", name: "_collDeposit", type: "uint256" },
+			{ internalType: "uint256", name: "_collWithdrawal", type: "uint256" },
+			{ internalType: "uint256", name: "_debtChange", type: "uint256" },
+			{ internalType: "bool", name: "_isDebtIncrease", type: "bool" },
+			{ internalType: "address", name: "_upperHint", type: "address" },
+			{ internalType: "address", name: "_lowerHint", type: "address" },
+		],
+		name: "adjustTrove",
+		outputs: [],
+		stateMutability: "payable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ internalType: "address", name: "troveManager", type: "address" },
+			{ internalType: "address", name: "account", type: "address" },
 		],
 		name: "closeTrove",
 		outputs: [],
 		stateMutability: "nonpayable",
 		type: "function",
 	},
-	// For confidential swaps
 	{
-		inputs: [
-			{ name: "_tokenAddress", type: "address" },
-			{ name: "_BitUSDAmt", type: "uint256" },
-			{ name: "_recipient", type: "address" },
-			{ name: "_nonce", type: "uint256" },
+		inputs: [],
+		name: "getGlobalSystemBalances",
+		outputs: [
+			{
+				internalType: "uint256",
+				name: "totalPricedCollateral",
+				type: "uint256",
+			},
+			{ internalType: "uint256", name: "totalDebt", type: "uint256" },
 		],
-		name: "confidentialSwap",
-		outputs: [{ name: "success", type: "bool" }],
 		stateMutability: "nonpayable",
 		type: "function",
 	},
+	{
+		anonymous: false,
+		inputs: [
+			{
+				indexed: true,
+				internalType: "address",
+				name: "borrower",
+				type: "address",
+			},
+			{
+				indexed: false,
+				internalType: "address",
+				name: "collateralToken",
+				type: "address",
+			},
+			{
+				indexed: false,
+				internalType: "uint256",
+				name: "amount",
+				type: "uint256",
+			},
+		],
+		name: "BorrowingFeePaid",
+		type: "event",
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{
+				indexed: false,
+				internalType: "address",
+				name: "troveManager",
+				type: "address",
+			},
+			{
+				indexed: false,
+				internalType: "address",
+				name: "collateralToken",
+				type: "address",
+			},
+		],
+		name: "CollateralConfigured",
+		type: "event",
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{
+				indexed: false,
+				internalType: "address",
+				name: "troveManager",
+				type: "address",
+			},
+		],
+		name: "TroveManagerRemoved",
+		type: "event",
+	},
 ];
+
 
 // Stability Pool ABI - for automated swap strategies
 export const STABILITY_POOL_ABI = [
 	{
-		inputs: [{ name: "_amount", type: "uint256" }],
-		name: "provideToSP",
+	  "inputs": [
+		{"internalType": "address", "name": "_bitCore", "type": "address"},
+		{"internalType": "address", "name": "_debtTokenAddress", "type": "address"},
+		{"internalType": "address", "name": "_factory", "type": "address"}
+	  ],
+	  "stateMutability": "nonpayable",
+	  "type": "constructor"
+	},
+	{
+	  "inputs": [],
+	  "name": "DECIMAL_PRECISION",
+	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "REWARD_DURATION",
+	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "SCALE_FACTOR",
+	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "SUNSET_DURATION",
+	  "outputs": [{"internalType": "uint128", "name": "", "type": "uint128"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "address", "name": "", "type": "address"}
+	  ],
+	  "name": "accountDeposits",
+	  "outputs": [
+		{"internalType": "uint128", "name": "amount", "type": "uint128"},
+		{"internalType": "uint128", "name": "timestamp", "type": "uint128"}
+	  ],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "address", "name": "recipient", "type": "address"},
+		{"internalType": "uint256[]", "name": "collateralIndexes", "type": "uint256[]"}
+	  ],
+	  "name": "claimCollateralGains",
+	  "outputs": [],
+	  "stateMutability": "nonpayable",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "address", "name": "recipient", "type": "address"}
+	  ],
+	  "name": "claimReward",
+	  "outputs": [{"internalType": "uint256", "name": "amount", "type": "uint256"}],
+	  "stateMutability": "nonpayable",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "address", "name": "_depositor", "type": "address"}
+	  ],
+	  "name": "claimableReward",
+	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "address", "name": "depositor", "type": "address"},
+		{"internalType": "uint256", "name": "", "type": "uint256"}
+	  ],
+	  "name": "collateralGainsByDepositor",
+	  "outputs": [{"internalType": "uint80", "name": "", "type": "uint80"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "uint256", "name": "", "type": "uint256"}
+	  ],
+	  "name": "collateralTokens",
+	  "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "currentEpoch",
+	  "outputs": [{"internalType": "uint128", "name": "", "type": "uint128"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "currentScale",
+	  "outputs": [{"internalType": "uint128", "name": "", "type": "uint128"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "debtToken",
+	  "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "address", "name": "", "type": "address"},
+		{"internalType": "uint256", "name": "", "type": "uint256"}
+	  ],
+	  "name": "depositSums",
+	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "address", "name": "", "type": "address"}
+	  ],
+	  "name": "depositSnapshots",
+	  "outputs": [
+		{"internalType": "uint256", "name": "P", "type": "uint256"},
+		{"internalType": "uint256", "name": "G", "type": "uint256"},
+		{"internalType": "uint128", "name": "scale", "type": "uint128"},
+		{"internalType": "uint128", "name": "epoch", "type": "uint128"}
+	  ],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "address", "name": "_collateral", "type": "address"}
+	  ],
+	  "name": "enableCollateral",
+	  "outputs": [],
+	  "stateMutability": "nonpayable",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "emissionId",
+	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "uint128", "name": "", "type": "uint128"},
+		{"internalType": "uint128", "name": "", "type": "uint128"}
+	  ],
+	  "name": "epochToScaleToG",
+	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "uint128", "name": "", "type": "uint128"},
+		{"internalType": "uint128", "name": "", "type": "uint128"},
+		{"internalType": "uint256", "name": "", "type": "uint256"}
+	  ],
+	  "name": "epochToScaleToSums",
+	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "factory",
+	  "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "address", "name": "_depositor", "type": "address"}
+	  ],
+	  "name": "getCompoundedDebtDeposit",
+	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "address", "name": "_depositor", "type": "address"}
+	  ],
+	  "name": "getDepositorCollateralGain",
+	  "outputs": [{"internalType": "uint256[]", "name": "collateralGains", "type": "uint256[]"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "getTotalDebtTokenDeposits",
+	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "address", "name": "", "type": "address"}
+	  ],
+	  "name": "indexByCollateral",
+	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "lastBitError",
+	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "uint256", "name": "", "type": "uint256"}
+	  ],
+	  "name": "lastCollateralError_Offset",
+	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "lastDebtLossError_Offset",
+	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "lastUpdate",
+	  "outputs": [{"internalType": "uint32", "name": "", "type": "uint32"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "liquidationManager",
+	  "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "address", "name": "collateral", "type": "address"},
+		{"internalType": "uint256", "name": "_debtToOffset", "type": "uint256"},
+		{"internalType": "uint256", "name": "_collToAdd", "type": "uint256"}
+	  ],
+	  "name": "offset",
+	  "outputs": [],
+	  "stateMutability": "nonpayable",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "P",
+	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "periodFinish",
+	  "outputs": [{"internalType": "uint32", "name": "", "type": "uint32"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "uint256", "name": "_amount", "type": "uint256"}
+	  ],
+	  "name": "provideToSP",
+	  "outputs": [],
+	  "stateMutability": "nonpayable",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "rewardRate",
+	  "outputs": [{"internalType": "uint128", "name": "", "type": "uint128"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "address", "name": "_vault", "type": "address"},
+		{"internalType": "address", "name": "_liquidationManager", "type": "address"}
+	  ],
+	  "name": "setInitialParameters",
+	  "outputs": [],
+	  "stateMutability": "nonpayable",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "address", "name": "collateral", "type": "address"}
+	  ],
+	  "name": "startCollateralSunset",
+	  "outputs": [],
+	  "stateMutability": "nonpayable",
+	  "type": "function"
+	},
+	{
+	  "inputs": [],
+	  "name": "vault",
+	  "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+	  "stateMutability": "view",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "address", "name": "claimant", "type": "address"},
+		{"internalType": "address", "name": "", "type": "address"}
+	  ],
+	  "name": "vaultClaimReward",
+	  "outputs": [{"internalType": "uint256", "name": "amount", "type": "uint256"}],
+	  "stateMutability": "nonpayable",
+	  "type": "function"
+	},
+	{
+	  "inputs": [
+		{"internalType": "uint256", "name": "_amount", "type": "uint256"}
+	  ],
+	  "name": "withdrawFromSP",
+	  "outputs": [],
+	  "stateMutability": "nonpayable",
+	  "type": "function"
+	},
+	{
+	  "anonymous": false,
+	  "inputs": [
+		{"indexed": false, "internalType": "address", "name": "oldCollateral", "type": "address"},
+		{"indexed": false, "internalType": "address", "name": "newCollateral", "type": "address"}
+	  ],
+	  "name": "CollateralOverwritten",
+	  "type": "event"
+	},
+	{
+	  "anonymous": false,
+	  "inputs": [
+		{"indexed": true, "internalType": "address", "name": "_depositor", "type": "address"},
+		{"indexed": false, "internalType": "uint256[]", "name": "_collateral", "type": "uint256[]"}
+	  ],
+	  "name": "CollateralGainWithdrawn",
+	  "type": "event"
+	},
+	{
+	  "anonymous": false,
+	  "inputs": [
+		{"indexed": true, "internalType": "address", "name": "_depositor", "type": "address"},
+		{"indexed": false, "internalType": "uint256", "name": "_P", "type": "uint256"},
+		{"indexed": false, "internalType": "uint256", "name": "_G", "type": "uint256"}
+	  ],
+	  "name": "DepositSnapshotUpdated",
+	  "type": "event"
+	},
+	{
+	  "anonymous": false,
+	  "inputs": [
+		{"indexed": false, "internalType": "uint128", "name": "_currentEpoch", "type": "uint128"}
+	  ],
+	  "name": "EpochUpdated",
+	  "type": "event"
+	},
+	{
+	  "anonymous": false,
+	  "inputs": [
+		{"indexed": false, "internalType": "uint256", "name": "_G", "type": "uint256"},
+		{"indexed": false, "internalType": "uint128", "name": "_epoch", "type": "uint128"},
+		{"indexed": false, "internalType": "uint128", "name": "_scale", "type": "uint128"}
+	  ],
+	  "name": "G_Updated",
+	  "type": "event"
+	},
+	{
+	  "anonymous": false,
+	  "inputs": [
+		{"indexed": false, "internalType": "uint256", "name": "_P", "type": "uint256"}
+	  ],
+	  "name": "P_Updated",
+	  "type": "event"
+	},
+	{
+	  "anonymous": false,
+	  "inputs": [
+		{"indexed": true, "internalType": "address", "name": "account", "type": "address"},
+		{"indexed": true, "internalType": "address", "name": "recipient", "type": "address"},
+		{"indexed": false, "internalType": "uint256", "name": "claimed", "type": "uint256"}
+	  ],
+	  "name": "RewardClaimed",
+	  "type": "event"
+	},
+	{
+	  "anonymous": false,
+	  "inputs": [
+		{"indexed": false, "internalType": "uint256", "name": "idx", "type": "uint256"},
+		{"indexed": false, "internalType": "uint256", "name": "_S", "type": "uint256"},
+		{"indexed": false, "internalType": "uint128", "name": "_epoch", "type": "uint128"},
+		{"indexed": false, "internalType": "uint128", "name": "_scale", "type": "uint128"}
+	  ],
+	  "name": "S_Updated",
+	  "type": "event"
+	},
+	{
+	  "anonymous": false,
+	  "inputs": [
+		{"indexed": false, "internalType": "uint128", "name": "_currentScale", "type": "uint128"}
+	  ],
+	  "name": "ScaleUpdated",
+	  "type": "event"
+	},
+	{
+	  "anonymous": false,
+	  "inputs": [
+		{"indexed": false, "internalType": "uint256", "name": "_newBalance", "type": "uint256"}
+	  ],
+	  "name": "StabilityPoolDebtBalanceUpdated",
+	  "type": "event"
+	},
+	{
+	  "anonymous": false,
+	  "inputs": [
+		{"indexed": true, "internalType": "address", "name": "_depositor", "type": "address"},
+		{"indexed": false, "internalType": "uint256", "name": "_newDeposit", "type": "uint256"}
+	  ],
+	  "name": "UserDepositChanged",
+	  "type": "event"
+	},
+	{
+	  "stateMutability": "payable",
+	  "type": "receive"
+	}
+  ];
+
+// Trove Manager ABI - for managing troves in swap strategies
+export const TROVE_MANAGER_ABI = [
+	// Constructor
+	{
+		inputs: [
+			{ name: "_bitCore", type: "address" },
+			{ name: "_gasPoolAddress", type: "address" },
+			{ name: "_debtTokenAddress", type: "address" },
+			{ name: "_borrowerOperationsAddress", type: "address" },
+			{ name: "_vault", type: "address" },
+			{ name: "_liquidationManager", type: "address" },
+			{ name: "_gasCompensation", type: "uint256" },
+		],
+		stateMutability: "nonpayable",
+		type: "constructor",
+	},
+
+	// Events
+	{
+		anonymous: false,
+		inputs: [{ indexed: false, name: "_baseRate", type: "uint256" }],
+		name: "BaseRateUpdated",
+		type: "event",
+	},
+	{
+		anonymous: false,
+		inputs: [{ indexed: false, name: "_lastFeeOpTime", type: "uint256" }],
+		name: "LastFeeOpTimeUpdated",
+		type: "event",
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{ indexed: false, name: "_totalStakesSnapshot", type: "uint256" },
+			{ indexed: false, name: "_totalCollateralSnapshot", type: "uint256" },
+		],
+		name: "SystemSnapshotsUpdated",
+		type: "event",
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{ indexed: false, name: "_L_collateral", type: "uint256" },
+			{ indexed: false, name: "_L_debt", type: "uint256" },
+		],
+		name: "LTermsUpdated",
+		type: "event",
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{ indexed: false, name: "_L_collateral", type: "uint256" },
+			{ indexed: false, name: "_L_debt", type: "uint256" },
+		],
+		name: "TroveSnapshotsUpdated",
+		type: "event",
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{ indexed: false, name: "_borrower", type: "address" },
+			{ indexed: false, name: "_newIndex", type: "uint256" },
+		],
+		name: "TroveIndexUpdated",
+		type: "event",
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{ indexed: false, name: "_to", type: "address" },
+			{ indexed: false, name: "_amount", type: "uint256" },
+		],
+		name: "CollateralSent",
+		type: "event",
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{ indexed: true, name: "account", type: "address" },
+			{ indexed: true, name: "recipient", type: "address" },
+			{ indexed: false, name: "claimed", type: "uint256" },
+		],
+		name: "RewardClaimed",
+		type: "event",
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{ indexed: false, name: "_attemptedDebtAmount", type: "uint256" },
+			{ indexed: false, name: "_actualDebtAmount", type: "uint256" },
+			{ indexed: false, name: "_collateralSent", type: "uint256" },
+			{ indexed: false, name: "_collateralFee", type: "uint256" },
+		],
+		name: "Redemption",
+		type: "event",
+	},
+
+	// External and Public Functions
+	{
+		inputs: [
+			{ name: "_priceFeedAddress", type: "address" },
+			{ name: "_sortedTrovesAddress", type: "address" },
+			{ name: "_collateralToken", type: "address" },
+		],
+		name: "setAddresses",
 		outputs: [],
 		stateMutability: "nonpayable",
 		type: "function",
 	},
 	{
-		inputs: [{ name: "_amount", type: "uint256" }],
-		name: "withdrawFromSP",
+		inputs: [{ name: "_assignedIds", type: "uint256[]" }],
+		name: "notifyRegisteredId",
+		outputs: [{ name: "", type: "bool" }],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "_paused", type: "bool" }],
+		name: "setPaused",
 		outputs: [],
 		stateMutability: "nonpayable",
 		type: "function",
 	},
 	{
-		inputs: [{ name: "_depositor", type: "address" }],
-		name: "getDepositorBitUSDLoss",
+		inputs: [
+			{ name: "_priceFeedAddress", type: "address" },
+			{ name: "_lpChecker", type: "address" },
+		],
+		name: "setPriceFeed",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ name: "_lookers", type: "address[]" },
+			{ name: "_bools", type: "bool[]" },
+		],
+		name: "setLookers",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "startSunset",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ name: "_minuteDecayFactor", type: "uint256" },
+			{ name: "_redemptionFeeFloor", type: "uint256" },
+			{ name: "_maxRedemptionFee", type: "uint256" },
+			{ name: "_borrowingFeeFloor", type: "uint256" },
+			{ name: "_maxBorrowingFee", type: "uint256" },
+			{ name: "_interestRateInBPS", type: "uint256" },
+			{ name: "_maxSystemDebt", type: "uint256" },
+			{ name: "_MCR", type: "uint256" },
+		],
+		name: "setParameters",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "collectInterests",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "fetchPrice",
 		outputs: [{ name: "", type: "uint256" }],
-		stateMutability: "view",
+		stateMutability: "nonpayable",
 		type: "function",
 	},
 	{
-		inputs: [{ name: "_depositor", type: "address" }],
-		name: "getDepositorGain",
+		inputs: [],
+		name: "loadPrice",
 		outputs: [{ name: "", type: "uint256" }],
 		stateMutability: "view",
 		type: "function",
 	},
 	{
 		inputs: [],
-		name: "getCompoundedBitUSDDeposit",
+		name: "getWeekAndDay",
+		outputs: [
+			{ name: "", type: "uint256" },
+			{ name: "", type: "uint256" },
+		],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "week", type: "uint256" }],
+		name: "getTotalMints",
+		outputs: [{ name: "", type: "uint32[7]" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "getTroveOwnersCount",
 		outputs: [{ name: "", type: "uint256" }],
 		stateMutability: "view",
 		type: "function",
 	},
-];
-
-// Trove Manager ABI - for managing troves in swap strategies
-export const TROVE_MANAGER_ABI = [
+	{
+		inputs: [{ name: "_index", type: "uint256" }],
+		name: "getTroveFromTroveOwnersArray",
+		outputs: [{ name: "", type: "address" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "_borrower", type: "address" }],
+		name: "getTrove",
+		outputs: [
+			{
+				components: [
+					{ name: "debt", type: "uint256" },
+					{ name: "coll", type: "uint256" },
+					{ name: "stake", type: "uint256" },
+					{ name: "status", type: "uint8" },
+					{ name: "arrayIndex", type: "uint128" },
+					{ name: "activeInterestIndex", type: "uint256" },
+				],
+				name: "",
+				type: "tuple",
+			},
+		],
+		stateMutability: "view",
+		type: "function",
+	},
 	{
 		inputs: [{ name: "_borrower", type: "address" }],
 		name: "getTroveStatus",
@@ -244,16 +1387,334 @@ export const TROVE_MANAGER_ABI = [
 	},
 	{
 		inputs: [{ name: "_borrower", type: "address" }],
-		name: "getTroveDebt",
+		name: "getTroveStake",
 		outputs: [{ name: "", type: "uint256" }],
 		stateMutability: "view",
 		type: "function",
 	},
 	{
 		inputs: [{ name: "_borrower", type: "address" }],
-		name: "getTroveColl",
+		name: "getTroveCollAndDebt",
+		outputs: [
+			{ name: "coll", type: "uint256" },
+			{ name: "debt", type: "uint256" },
+		],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "_borrower", type: "address" }],
+		name: "getEntireDebtAndColl",
+		outputs: [
+			{ name: "debt", type: "uint256" },
+			{ name: "coll", type: "uint256" },
+			{ name: "pendingDebtReward", type: "uint256" },
+			{ name: "pendingCollateralReward", type: "uint256" },
+		],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "getEntireSystemColl",
 		outputs: [{ name: "", type: "uint256" }],
 		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "getEntireSystemDebt",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "getEntireSystemBalances",
+		outputs: [
+			{ name: "", type: "uint256" },
+			{ name: "", type: "uint256" },
+			{ name: "", type: "uint256" },
+		],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "_borrower", type: "address" }],
+		name: "getNominalICR",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ name: "_borrower", type: "address" },
+			{ name: "_price", type: "uint256" },
+		],
+		name: "getCurrentICR",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "getTotalActiveCollateral",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "getTotalActiveDebt",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "_borrower", type: "address" }],
+		name: "getPendingCollAndDebtRewards",
+		outputs: [
+			{ name: "", type: "uint256" },
+			{ name: "", type: "uint256" },
+		],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "_borrower", type: "address" }],
+		name: "hasPendingRewards",
+		outputs: [{ name: "", type: "bool" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "getRedemptionRate",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "getRedemptionRateWithDecay",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "_collateralDrawn", type: "uint256" }],
+		name: "getRedemptionFeeWithDecay",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "getBorrowingRate",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "getBorrowingRateWithDecay",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "_debt", type: "uint256" }],
+		name: "getBorrowingFee",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "_debt", type: "uint256" }],
+		name: "getBorrowingFeeWithDecay",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ name: "_debtAmount", type: "uint256" },
+			{ name: "_firstRedemptionHint", type: "address" },
+			{ name: "_upperPartialRedemptionHint", type: "address" },
+			{ name: "_lowerPartialRedemptionHint", type: "address" },
+			{ name: "_partialRedemptionHintNICR", type: "uint256" },
+			{ name: "_maxIterations", type: "uint256" },
+			{ name: "_maxFeePercentage", type: "uint256" },
+		],
+		name: "redeemCollateral",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "_receiver", type: "address" }],
+		name: "claimCollateral",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "receiver", type: "address" }],
+		name: "claimReward",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ name: "claimant", type: "address" },
+			{ name: "", type: "address" },
+		],
+		name: "vaultClaimReward",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "account", type: "address" }],
+		name: "storePendingReward",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "account", type: "address" }],
+		name: "claimableReward",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ name: "_borrower", type: "address" },
+			{ name: "_collateralAmount", type: "uint256" },
+			{ name: "_compositeDebt", type: "uint256" },
+			{ name: "NICR", type: "uint256" },
+			{ name: "_upperHint", type: "address" },
+			{ name: "_lowerHint", type: "address" },
+			{ name: "_isRecoveryMode", type: "bool" },
+		],
+		name: "openTrove",
+		outputs: [
+			{ name: "stake", type: "uint256" },
+			{ name: "arrayIndex", type: "uint256" },
+		],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ name: "_isRecoveryMode", type: "bool" },
+			{ name: "_isDebtIncrease", type: "bool" },
+			{ name: "_debtChange", type: "uint256" },
+			{ name: "_netDebtChange", type: "uint256" },
+			{ name: "_isCollIncrease", type: "bool" },
+			{ name: "_collChange", type: "uint256" },
+			{ name: "_upperHint", type: "address" },
+			{ name: "_lowerHint", type: "address" },
+			{ name: "_borrower", type: "address" },
+			{ name: "_receiver", type: "address" },
+		],
+		name: "updateTroveFromAdjustment",
+		outputs: [
+			{ name: "", type: "uint256" },
+			{ name: "", type: "uint256" },
+			{ name: "", type: "uint256" },
+		],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ name: "_borrower", type: "address" },
+			{ name: "_receiver", type: "address" },
+			{ name: "collAmount", type: "uint256" },
+			{ name: "debtAmount", type: "uint256" },
+		],
+		name: "closeTrove",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "_debt", type: "uint256" }],
+		name: "decayBaseRateAndGetBorrowingFee",
+		outputs: [{ name: "", type: "uint256" }],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "_borrower", type: "address" }],
+		name: "applyPendingRewards",
+		outputs: [
+			{ name: "coll", type: "uint256" },
+			{ name: "debt", type: "uint256" },
+		],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [{ name: "_borrower", type: "address" }],
+		name: "closeTroveByLiquidation",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ name: "_debt", type: "uint256" },
+			{ name: "_collateral", type: "uint256" },
+		],
+		name: "movePendingTroveRewardsToActiveBalances",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ name: "borrower", type: "address" },
+			{ name: "collSurplus", type: "uint256" },
+		],
+		name: "addCollateralSurplus",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ name: "_liquidator", type: "address" },
+			{ name: "_debt", type: "uint256" },
+			{ name: "_coll", type: "uint256" },
+			{ name: "_collSurplus", type: "uint256" },
+			{ name: "_debtGasComp", type: "uint256" },
+			{ name: "_collGasComp", type: "uint256" },
+		],
+		name: "finalizeLiquidation",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ name: "account", type: "address" },
+			{ name: "debt", type: "uint256" },
+			{ name: "coll", type: "uint256" },
+		],
+		name: "decreaseDebtAndSendCollateral",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "updateBalances",
+		outputs: [],
+		stateMutability: "nonpayable",
 		type: "function",
 	},
 ];
@@ -357,3 +1818,4 @@ export const ABIS = {
 	TROVE_MANAGER: TROVE_MANAGER_ABI,
 	ROUTER: ROUTER_ABI,
 };
+

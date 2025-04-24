@@ -10,7 +10,12 @@ export const SwapInputSchema = z.object({
 });
 export type SwapInput = z.infer<typeof SwapInputSchema>;
 
-export const PrivateSwapInputSchema = SwapInputSchema;
+export const PrivateSwapInputSchema = z.object({
+	fromTokenSymbol: z.string(),
+	toTokenSymbol: z.string(),
+	amountStr: z.string(),
+	slippage: z.number().optional(),
+});
 export type PrivateSwapInput = z.infer<typeof PrivateSwapInputSchema>;
 
 export const GetOptimalSwapPathInputSchema = z.object({
