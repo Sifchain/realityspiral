@@ -80,202 +80,206 @@ export function getSupportedNetwork(networkId: string): string {
 }
 
 export async function initializeWallet(
-	runtime: IAgentRuntime,
-	networkId: string = Coinbase.networks.BaseMainnet,
-	walletType: WalletType = "short_term_trading",
-): Promise<CoinbaseWallet> {
-	let wallet: Wallet;
-	let seed: string;
-	let storedSeed: string;
-	let walletId: string;
-	// get working
-	switch (walletType) {
-		case "short_term_trading":
-			storedSeed =
-				runtime.getSetting("COINBASE_SHORT_TERM_TRADING_WALLET_SEED") ??
-				process.env.COINBASE_SHORT_TERM_TRADING_WALLET_SEED;
-			if (storedSeed !== null) {
-				seed = storedSeed;
-			}
-			walletId =
-				runtime.getSetting("COINBASE_SHORT_TERM_TRADING_WALLET_ID") ??
-				process.env.COINBASE_SHORT_TERM_TRADING_WALLET_ID;
-			break;
-		case "long_term_trading":
-			storedSeed =
-				runtime.getSetting("COINBASE_LONG_TERM_TRADING_WALLET_SEED") ??
-				process.env.COINBASE_LONG_TERM_TRADING_WALLET_SEED;
-			if (storedSeed !== null) {
-				seed = storedSeed;
-			}
-			walletId =
-				runtime.getSetting("COINBASE_LONG_TERM_TRADING_WALLET_ID") ??
-				process.env.COINBASE_LONG_TERM_TRADING_WALLET_ID;
-			break;
-		case "dry_powder":
-			seed =
-				runtime.getSetting("COINBASE_DRY_POWDER_WALLET_SEED") ??
-				process.env.COINBASE_DRY_POWDER_WALLET_SEED;
-			if (storedSeed !== null) {
-				seed = storedSeed;
-			}
-			walletId =
-				runtime.getSetting("COINBASE_DRY_POWDER_WALLET_ID") ??
-				process.env.COINBASE_DRY_POWDER_WALLET_ID;
-			break;
-		case "operational_capital":
-			seed =
-				runtime.getSetting("COINBASE_OPERATIONAL_CAPITAL_WALLET_SEED") ??
-				process.env.COINBASE_OPERATIONAL_CAPITAL_WALLET_SEED;
-			if (storedSeed !== null) {
-				seed = storedSeed;
-			}
-			walletId =
-				runtime.getSetting("COINBASE_OPERATIONAL_CAPITAL_WALLET_ID") ??
-				process.env.COINBASE_OPERATIONAL_CAPITAL_WALLET_ID;
-			break;
-		default:
-			elizaLogger.error("Invalid wallet type provided.");
-			throw new Error("Invalid wallet type");
-	}
-
-	// Convert numeric network ID to a supported network name
-	const supportedNetworkId = getSupportedNetwork(networkId);
-	elizaLogger.info("Using supported network for Coinbase SDK:", {
-		originalNetworkId: networkId,
-		supportedNetworkId: supportedNetworkId,
-	});
-
-	elizaLogger.info(
-		"Importing existing wallet using stored seed and wallet ID:",
-		{
-			seed,
-			walletId,
-			walletType,
-			networkId: supportedNetworkId,
-		},
-	);
-	const sanitizedCharacterName = runtime.character.name.match(/[A-Z][a-z]+/g)
-		? runtime.character.name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase()
-		: runtime.character.name.toLowerCase();
-	if (!seed || seed === "") {
-		// No stored seed or wallet ID, creating a new wallet
-		wallet = await Wallet.create({ networkId: supportedNetworkId });
-		elizaLogger.log("Created new wallet:", wallet.getId());
-		// Export wallet data directly
-		const walletData: WalletData = wallet.export();
-		const walletAddress = await wallet.getDefaultAddress();
-		try {
-			const characterFilePath = `characters/${sanitizedCharacterName}.character.json`;
-			const walletIDSave = await updateCharacterSecrets(
-				characterFilePath,
-				`COINBASE_${walletType.toUpperCase()}_WALLET_ID`,
-				walletId,
-			);
-			const seedSave = await updateCharacterSecrets(
-				characterFilePath,
-				`COINBASE_${walletType.toUpperCase()}_WALLET_SEED`,
-				walletData.seed,
-			);
-			if (walletIDSave && seedSave) {
-				elizaLogger.log("Successfully updated character secrets.");
-			} else {
-				const seedFilePath = `/tmp/${sanitizedCharacterName}-seed.txt`;
-				elizaLogger.error(
-					`Failed to update character secrets so adding gitignored ${seedFilePath} file please add it your env or character file and delete:`,
-				);
-				// save it to gitignored file
-				wallet.saveSeedToFile(seedFilePath);
-			}
-			elizaLogger.log("Wallet created and stored new wallet:", walletAddress);
-		} catch (error) {
-			elizaLogger.error("Error updating character secrets:", error);
-			throw error;
+		runtime: IAgentRuntime,
+		networkId: string = Coinbase.networks.EthereumMainnet,
+		walletType: WalletType = "short_term_trading",
+	): Promise<CoinbaseWallet> {
+		let wallet: Wallet;
+		let seed: string;
+		let storedSeed: string;
+		let walletId: string;
+		// get working
+		switch (walletType) {
+			case "short_term_trading":
+				storedSeed =
+					runtime.getSetting("COINBASE_SHORT_TERM_TRADING_WALLET_SEED") ??
+					process.env.COINBASE_SHORT_TERM_TRADING_WALLET_SEED;
+				if (storedSeed !== null) {
+					seed = storedSeed;
+				}
+				walletId =
+					runtime.getSetting("COINBASE_SHORT_TERM_TRADING_WALLET_ID") ??
+					process.env.COINBASE_SHORT_TERM_TRADING_WALLET_ID;
+				break;
+			case "long_term_trading":
+				storedSeed =
+					runtime.getSetting("COINBASE_LONG_TERM_TRADING_WALLET_SEED") ??
+					process.env.COINBASE_LONG_TERM_TRADING_WALLET_SEED;
+				if (storedSeed !== null) {
+					seed = storedSeed;
+				}
+				walletId =
+					runtime.getSetting("COINBASE_LONG_TERM_TRADING_WALLET_ID") ??
+					process.env.COINBASE_LONG_TERM_TRADING_WALLET_ID;
+				break;
+			case "dry_powder":
+				seed =
+					runtime.getSetting("COINBASE_DRY_POWDER_WALLET_SEED") ??
+					process.env.COINBASE_DRY_POWDER_WALLET_SEED;
+				if (storedSeed !== null) {
+					seed = storedSeed;
+				}
+				walletId =
+					runtime.getSetting("COINBASE_DRY_POWDER_WALLET_ID") ??
+					process.env.COINBASE_DRY_POWDER_WALLET_ID;
+				break;
+			case "operational_capital":
+				seed =
+					runtime.getSetting("COINBASE_OPERATIONAL_CAPITAL_WALLET_SEED") ??
+					process.env.COINBASE_OPERATIONAL_CAPITAL_WALLET_SEED;
+				if (storedSeed !== null) {
+					seed = storedSeed;
+				}
+				walletId =
+					runtime.getSetting("COINBASE_OPERATIONAL_CAPITAL_WALLET_ID") ??
+					process.env.COINBASE_OPERATIONAL_CAPITAL_WALLET_ID;
+				break;
+			default:
+				elizaLogger.error("Invalid wallet type provided.");
+				throw new Error("Invalid wallet type");
 		}
 
-		// Logging wallet creation
-		elizaLogger.log("Created and stored new wallet:", walletAddress);
-	} else {
-		// We have a stored seed (private key) and possibly a wallet ID
-		elizaLogger.info("Attempting to initialize wallet with stored credentials");
+		// Convert numeric network ID to a supported network name
+		const supportedNetworkId = getSupportedNetwork(networkId);
+		elizaLogger.info("Using supported network for Coinbase SDK:", {
+			originalNetworkId: networkId,
+			supportedNetworkId: supportedNetworkId,
+		});
 
-		try {
-			if (walletId) {
-				// If we have a wallet ID, fetch the existing wallet
-				elizaLogger.info(`Fetching wallet with ID: ${walletId}`);
-				wallet = await Wallet.fetch(walletId);
-				elizaLogger.info("Successfully fetched wallet by ID");
-
-				// Set the seed (private key) for signing
-				if (seed) {
-					elizaLogger.info("Setting seed for fetched wallet to enable signing");
-					wallet.setSeed(seed);
-				}
-			} else {
-				// No wallet ID, create a new wallet with the seed if available
-				if (seed) {
-					elizaLogger.info("Creating a new wallet with the provided seed");
-					wallet = await Wallet.createWithSeed({
-						seed: seed,
-						networkId: supportedNetworkId, // Use supported network ID
-					});
-					elizaLogger.info("Created new wallet with provided seed");
-				} else {
-					// No wallet ID, no seed, create entirely new wallet
-					elizaLogger.info(
-						"No wallet ID or seed available, creating a brand new wallet",
-					);
-					wallet = await Wallet.create({
-						networkId: supportedNetworkId, // Use supported network ID
-					});
-					elizaLogger.info("Created new wallet with random seed");
-				}
-				elizaLogger.info(
-					"New wallet address:",
-					await wallet.getDefaultAddress(),
-				);
-			}
-		} catch (walletError) {
-			elizaLogger.error("Failed to initialize wallet", {
-				error:
-					walletError instanceof Error
-						? {
-								message: walletError.message,
-								stack: walletError.stack,
-								name: walletError.name,
-							}
-						: walletError,
+		elizaLogger.info(
+			"Importing existing wallet using stored seed and wallet ID:",
+			{
+				seed,
 				walletId,
+				walletType,
 				networkId: supportedNetworkId,
-			});
-			// Rethrow or handle appropriately
-			throw walletError;
-		}
-
-		if (!walletId) {
+			},
+		);
+		const sanitizedCharacterName = runtime.character.name.match(/[A-Z][a-z]+/g)
+			? runtime.character.name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase()
+			: runtime.character.name.toLowerCase();
+		if (!seed || seed === "") {
+			// No stored seed or wallet ID, creating a new wallet
+			wallet = await Wallet.create({ networkId: supportedNetworkId });
+			elizaLogger.log("Created new wallet:", wallet.getId());
+			// Export wallet data directly
+			const walletData: WalletData = wallet.export();
+			const walletAddress = await wallet.getDefaultAddress();
 			try {
 				const characterFilePath = `characters/${sanitizedCharacterName}.character.json`;
 				const walletIDSave = await updateCharacterSecrets(
 					characterFilePath,
 					`COINBASE_${walletType.toUpperCase()}_WALLET_ID`,
-					walletId || wallet.getId(),
+					walletId,
 				);
-				if (walletIDSave) {
+				const seedSave = await updateCharacterSecrets(
+					characterFilePath,
+					`COINBASE_${walletType.toUpperCase()}_WALLET_SEED`,
+					walletData.seed,
+				);
+				if (walletIDSave && seedSave) {
 					elizaLogger.log("Successfully updated character secrets.");
+				} else {
+					const seedFilePath = `/tmp/${sanitizedCharacterName}-seed.txt`;
+					elizaLogger.error(
+						`Failed to update character secrets so adding gitignored ${seedFilePath} file please add it your env or character file and delete:`,
+					);
+					// save it to gitignored file
+					wallet.saveSeedToFile(seedFilePath);
 				}
+				elizaLogger.log("Wallet created and stored new wallet:", walletAddress);
 			} catch (error) {
-				elizaLogger.error("Error updating character wallet id", error);
+				elizaLogger.error("Error updating character secrets:", error);
 				throw error;
 			}
+
+			// Logging wallet creation
+			elizaLogger.log("Created and stored new wallet:", walletAddress);
+		} else {
+			// We have a stored seed (private key) and possibly a wallet ID
+			elizaLogger.info(
+				"Attempting to initialize wallet with stored credentials",
+			);
+
+			try {
+				if (walletId) {
+					// If we have a wallet ID, fetch the existing wallet
+					elizaLogger.info(`Fetching wallet with ID: ${walletId}`);
+					wallet = await Wallet.fetch(walletId);
+					elizaLogger.info("Successfully fetched wallet by ID");
+
+					// Set the seed (private key) for signing
+					if (seed) {
+						elizaLogger.info(
+							"Setting seed for fetched wallet to enable signing",
+						);
+						wallet.setSeed(seed);
+					}
+				} else {
+					// No wallet ID, create a new wallet with the seed if available
+					if (seed) {
+						elizaLogger.info("Creating a new wallet with the provided seed");
+						wallet = await Wallet.createWithSeed({
+							seed: seed,
+							networkId: supportedNetworkId, // Use supported network ID
+						});
+						elizaLogger.info("Created new wallet with provided seed");
+					} else {
+						// No wallet ID, no seed, create entirely new wallet
+						elizaLogger.info(
+							"No wallet ID or seed available, creating a brand new wallet",
+						);
+						wallet = await Wallet.create({
+							networkId: supportedNetworkId, // Use supported network ID
+						});
+						elizaLogger.info("Created new wallet with random seed");
+					}
+					elizaLogger.info(
+						"New wallet address:",
+						await wallet.getDefaultAddress(),
+					);
+				}
+			} catch (walletError) {
+				elizaLogger.error("Failed to initialize wallet", {
+					error:
+						walletError instanceof Error
+							? {
+									message: walletError.message,
+									stack: walletError.stack,
+									name: walletError.name,
+								}
+							: walletError,
+					walletId,
+					networkId: supportedNetworkId,
+				});
+				// Rethrow or handle appropriately
+				throw walletError;
+			}
+
+			if (!walletId) {
+				try {
+					const characterFilePath = `characters/${sanitizedCharacterName}.character.json`;
+					const walletIDSave = await updateCharacterSecrets(
+						characterFilePath,
+						`COINBASE_${walletType.toUpperCase()}_WALLET_ID`,
+						walletId || wallet.getId(),
+					);
+					if (walletIDSave) {
+						elizaLogger.log("Successfully updated character secrets.");
+					}
+				} catch (error) {
+					elizaLogger.error("Error updating character wallet id", error);
+					throw error;
+				}
+			}
+			elizaLogger.log("Wallet initialized for network:", supportedNetworkId);
+
+			// Logging wallet info
+			elizaLogger.log("Wallet address:", await wallet.getDefaultAddress());
 		}
-		elizaLogger.log("Wallet initialized for network:", supportedNetworkId);
 
-		// Logging wallet info
-		elizaLogger.log("Wallet address:", await wallet.getDefaultAddress());
+		return { wallet, walletType };
 	}
-
-	return { wallet, walletType };
-}
 
 /**
  * Executes a trade and a charity transfer.
