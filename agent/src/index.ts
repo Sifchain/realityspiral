@@ -56,6 +56,7 @@ import {
 	getRuntimeInstrumentation,
 } from "@realityspiral/plugin-instrumentation";
 import synfuturesPlugin from "@realityspiral/plugin-synfutures";
+import { roflPlugin } from "@realityspiral/plugin-rofl";
 import Database from "better-sqlite3";
 import yargs from "yargs";
 import { z } from "zod";
@@ -583,6 +584,9 @@ export async function createAgent(
 						githubInteractWithPRPlugin,
 						githubOrchestratePlugin,
 					]
+				: []),
+			...(getSecret(character, "ROFL_PLUGIN_ENABLED") === "true"
+				? [roflPlugin]
 				: []),
 		]
 			.flat()

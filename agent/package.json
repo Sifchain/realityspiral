@@ -10,7 +10,9 @@
 		"test": "jest"
 	},
 	"nodemonConfig": {
-		"watch": ["src"],
+		"watch": [
+			"src"
+		],
 		"ext": "ts,json",
 		"exec": "node --enable-source-maps --loader ts-node/esm src/index.ts"
 	},
@@ -30,6 +32,7 @@
 		"@realityspiral/plugin-email": "workspace:*",
 		"@realityspiral/plugin-github": "workspace:*",
 		"@realityspiral/plugin-instrumentation": "workspace:*",
+		"@realityspiral/plugin-rofl": "workspace:*",
 		"@realityspiral/plugin-twitter": "workspace:*",
 		"better-sqlite3": "11.6.0",
 		"dotenv": "16.4.5",

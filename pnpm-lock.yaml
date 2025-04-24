@@ -117,6 +117,9 @@ importers:
       '@realityspiral/plugin-instrumentation':
         specifier: workspace:*
         version: link:../plugins/plugin-instrumentation
+      '@realityspiral/plugin-rofl':
+        specifier: workspace:*
+        version: link:../plugins/plugin-rofl
       '@realityspiral/plugin-synfutures':
         specifier: workspace:*
         version: link:../plugins/plugin-synfutures
@@ -598,6 +601,40 @@ importers:
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
+
+  plugins/plugin-rofl:
+    dependencies:
+      '@elizaos/core':
+        specifier: ^0.1.9
+        version: 0.1.9(@google-cloud/vertexai@1.9.3(encoding@0.1.13))(@langchain/core@0.3.42(openai@4.87.3(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.23.8)))(axios@1.8.3)(encoding@0.1.13)(react@19.0.0)(sswr@2.2.0(svelte@5.23.0))(svelte@5.23.0)(vue@3.5.13(typescript@5.7.3))(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+      '@realityspiral/plugin-instrumentation':
+        specifier: workspace:*
+        version: link:../plugin-instrumentation
+      '@realityspiral/sentry':
+        specifier: workspace:*
+        version: link:../../packages/sentry
+      viem:
+        specifier: 2.21.58
+        version: 2.21.58(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.23.8)
+      whatwg-url:
+        specifier: 7.1.0
+        version: 7.1.0
+      zod:
+        specifier: 3.23.8
+        version: 3.23.8
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 1.5.3
+        version: 1.5.3
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.17.24
+      tsup:
+        specifier: ^8.0.1
+        version: 8.3.5(@swc/core@1.11.9(@swc/helpers@0.5.15))(jiti@1.21.7)(postcss@8.5.3)(typescript@5.7.3)(yaml@2.7.0)
+      vitest:
+        specifier: ^2.1.5
+        version: 2.1.9(@types/node@20.17.24)
 
   plugins/plugin-synfutures:
     dependencies:
