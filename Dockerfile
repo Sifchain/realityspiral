@@ -26,6 +26,7 @@ COPY plugins/plugin-coinbase/advanced-sdk-ts/package.json ./plugins/plugin-coinb
 COPY plugins/plugin-email/package.json ./plugins/plugin-email/
 COPY plugins/plugin-github/package.json ./plugins/plugin-github/
 COPY plugins/plugin-instrumentation/package.json ./plugins/plugin-instrumentation/
+COPY plugins/plugin-rofl/package.json ./plugins/plugin-rofl/
 COPY plugins/plugin-synfutures/package.json ./plugins/plugin-synfutures/
 COPY plugins/plugin-twitter/package.json ./plugins/plugin-twitter/
 COPY agent/package.json ./agent/
