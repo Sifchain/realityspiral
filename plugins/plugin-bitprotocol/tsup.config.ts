@@ -9,11 +9,10 @@ export default defineConfig({
 	sourcemap: true,
 	external: [
 		"@elizaos/core",
-		"@oasisprotocol/client",
+		"@oasisprotocol/client", // Keep specific dependency
+		"zod", // Keep specific dependency
 		"@realityspiral/plugin-instrumentation",
-		"@realityspiral/plugin-coinbase",
-		"@coinbase/coinbase-sdk",
-		"zod",
+		"@realityspiral/plugin-coinbase", // Keep dependency needed for ContractHelper
 	],
 	esbuildOptions(options) {
 		options.target = ["es2020"];

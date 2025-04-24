@@ -1,135 +1,129 @@
-import { ethers } from "ethers";
 import { elizaLogger } from "@elizaos/core";
+import type { ContractHelper } from "@realityspiral/plugin-coinbase";
 
-// Type definition matching the Zod schema in index.ts
-interface BitProtocolConfig {
-	oasisNetwork: string;
-	rpcUrl: string;
-	privateKey: string; // Assuming private key is passed directly for now
-	// Add other config fields if needed by utils
-}
+const DEFAULT_DECIMALS = 18;
+const minimalErc20AbiForDecimals = [
+	{
+		constant: true,
+		inputs: [],
+		name: "decimals",
+		outputs: [{ type: "uint8" }],
+		type: "function",
+	},
+];
 
 /**
- * Initializes ethers provider and signer based on plugin configuration.
+ * Fetches token decimals using ContractHelper, falling back to a default.
  */
-export function initializeEthers(config: BitProtocolConfig): {
-	provider: ethers.JsonRpcProvider;
-	signer: ethers.Wallet;
-} {
+async function getTokenDecimals(
+	tokenAddress: string,
+	contractHelper: ContractHelper,
+	networkId: string,
+): Promise<number> {
 	try {
-		elizaLogger.info(
-			`Initializing ethers for Oasis network: ${config.oasisNetwork} via RPC: ${config.rpcUrl}`,
+		elizaLogger.debug(
+			`Fetching decimals for token ${tokenAddress} on network ${networkId}`,
 		);
-
-		const provider = new ethers.JsonRpcProvider(config.rpcUrl);
-
-		// IMPORTANT: Handle private keys securely. In a real scenario,
-		// this key should come from a secure source (e.g., TEE secret management,
-		// environment variable managed by a secure process, or IAgentRuntime settings).
-		// Passing it directly in config might be insecure depending on how config is populated.
-		if (!config.privateKey) {
-			throw new Error("Private key is missing in configuration.");
+		const decimalsResult = await contractHelper.readContract({
+			networkId: networkId,
+			contractAddress: tokenAddress,
+			method: "decimals",
+			args: [],
+			abi: minimalErc20AbiForDecimals,
+		});
+		const decimals = Number(decimalsResult);
+		elizaLogger.debug(`Token ${tokenAddress} decimals: ${decimals}`);
+		// Check if decimals is a valid number, otherwise fallback
+		if (isNaN(decimals) || decimals < 0 || decimals > 255) {
+			elizaLogger.warn(
+				`Invalid decimals value (${decimalsResult}) received for token ${tokenAddress}. Falling back.`,
+			);
+			return DEFAULT_DECIMALS;
 		}
-		// Ensure private key has the 0x prefix
-		const pk = config.privateKey.startsWith("0x")
-			? config.privateKey
-			: `0x${config.privateKey}`;
-		const signer = new ethers.Wallet(pk, provider);
-
-		elizaLogger.info(
-			`Ethers signer initialized for address: ${signer.address}`,
-		);
-
-		return { provider, signer };
-	} catch (error: any) {
-		elizaLogger.error("Failed to initialize ethers provider/signer:", error);
-		throw new Error(`Ethers initialization failed: ${error.message}`);
-	}
-}
-
-/**
- * Helper function to get a contract instance.
- */
-export function getContract(
-	address: string,
-	abi: ethers.InterfaceAbi,
-	signerOrProvider: ethers.Signer | ethers.Provider,
-): ethers.Contract {
-	try {
-		return new ethers.Contract(address, abi, signerOrProvider);
-	} catch (error: any) {
+		return decimals;
+	} catch (error: unknown) {
 		elizaLogger.error(
-			`Failed to create contract instance for address ${address}:`,
+			`Failed to get decimals via ContractHelper for token ${tokenAddress}:`,
 			error,
 		);
-		throw new Error(`Contract initialization failed: ${error.message}`);
+		elizaLogger.warn(
+			`Falling back to default decimals (${DEFAULT_DECIMALS}) for token ${tokenAddress}`,
+		);
+		return DEFAULT_DECIMALS;
 	}
 }
 
 /**
- * Parses a token amount string into its BigInt representation based on decimals.
+ * Parses a token amount string into its BigInt representation based on decimals,
+ * fetching decimals using ContractHelper.
  */
 export async function parseTokenAmount(
 	amount: string,
 	tokenAddress: string,
-	provider: ethers.Provider,
+	contractHelper: ContractHelper,
+	networkId: string,
 ): Promise<bigint> {
-	// Use a minimal ERC20 ABI just for decimals
-	const minimalErc20Abi = ["function decimals() view returns (uint8)"];
-	const tokenContract = new ethers.Contract(
-		tokenAddress,
-		minimalErc20Abi,
-		provider,
-	);
 	try {
-		const decimals = await tokenContract.decimals();
-		return ethers.parseUnits(amount, Number(decimals));
+		const decimals = await getTokenDecimals(
+			tokenAddress,
+			contractHelper,
+			networkId,
+		);
+		const [whole, fraction = ""] = amount.split(".");
+		// Ensure fraction does not exceed decimals precision
+		const trimmedFraction = fraction.slice(0, decimals);
+		const paddedFraction = trimmedFraction.padEnd(decimals, "0");
+		const wei =
+			BigInt(whole) * BigInt(10) ** BigInt(decimals) +
+			BigInt(paddedFraction || "0");
+		return wei;
 	} catch (error) {
-		elizaLogger.error(
-			`Failed to get decimals for token ${tokenAddress} or parse amount ${amount}:`,
-			error,
-		);
-		// Fallback to default decimals if unable to fetch
-		elizaLogger.warn(
-			`Falling back to default decimals (18) for token ${tokenAddress}`,
-		);
-		const DEFAULT_DECIMALS = 18;
-		return ethers.parseUnits(amount, DEFAULT_DECIMALS);
+		elizaLogger.error(`Failed to parse token amount ${amount}:`, error);
+		throw new Error(`Invalid token amount format or parsing error: ${amount}`);
 	}
 }
 
 /**
- * Formats a BigInt token amount into a string based on decimals.
+ * Formats a BigInt token amount into a string based on decimals,
+ * fetching decimals using ContractHelper.
  */
 export async function formatTokenAmount(
 	amount: bigint,
 	tokenAddress: string,
-	provider: ethers.Provider,
+	contractHelper: ContractHelper,
+	networkId: string,
 ): Promise<string> {
-	// Use a minimal ERC20 ABI just for decimals
-	const minimalErc20Abi = ["function decimals() view returns (uint8)"];
-	const tokenContract = new ethers.Contract(
-		tokenAddress,
-		minimalErc20Abi,
-		provider,
-	);
 	try {
-		const decimals = await tokenContract.decimals();
-		return ethers.formatUnits(amount, Number(decimals));
+		const decimals = await getTokenDecimals(
+			tokenAddress,
+			contractHelper,
+			networkId,
+		);
+
+		const divisor = BigInt(10) ** BigInt(decimals);
+		const integerPart = amount / divisor;
+		const fractionalPart = amount % divisor;
+
+		let formattedAmount = integerPart.toString();
+
+		if (fractionalPart > BigInt(0)) {
+			let fractionalStr = fractionalPart.toString().padStart(decimals, "0");
+			fractionalStr = fractionalStr.replace(/0+$/, ""); // Remove trailing zeros
+			if (fractionalStr.length > 0) {
+				formattedAmount += "." + fractionalStr;
+			}
+		}
+
+		return formattedAmount;
 	} catch (error) {
 		elizaLogger.error(
-			`Failed to get decimals for token ${tokenAddress} or format amount ${amount}:`,
+			`Failed to format token amount ${amount.toString()}:`,
 			error,
 		);
-		// Fallback to default decimals if unable to fetch
-		elizaLogger.warn(
-			`Falling back to default decimals (18) for token ${tokenAddress}`,
-		);
-		const DEFAULT_DECIMALS = 18;
-		return ethers.formatUnits(amount, DEFAULT_DECIMALS);
+		// Fallback: return the raw amount as a string if formatting fails
+		return amount.toString();
 	}
 }
 
 // TODO: Add utility function for handling Oasis-specific confidential transactions if needed
-// This might involve interacting with the @oasisprotocol/client library
-// export async function sendConfidentialTx(...) { ... } 
+// This might involve interacting with the @oasisprotocol/client library or specific ContractHelper features
