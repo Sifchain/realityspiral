@@ -83,6 +83,7 @@ export const accumulatedFinancePlugin = (
 		contractAddresses: {
 			wrappedRose: networkConfig.CONTRACTS.WRAPPED_ROSE,
 			unwrappedRose: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
+			strose: networkConfig.CONTRACTS.STROSE,
 		},
 	});
 
@@ -461,79 +462,34 @@ export const accumulatedFinancePlugin = (
 				receiver || (await getUserAddressString(runtime, getNetworkId()));
 			elizaLogger.info("Target receiver address", { targetReceiver });
 
-			// Get the asset amount required for minting the specified shares
-			const assetsRequired = await contractHelper.readContract({
-				networkId: getNetworkId(),
-				contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
-				method: "previewMint",
-				args: [sharesAmount],
-				abi: ABIS.WSTROSE,
-			});
-
-			elizaLogger.info("Assets required for mint", { assetsRequired });
-
-			// First, approve the wstROSE contract to spend the required assets
-			elizaLogger.info("Preparing to approve token spending", {
-				tokenContract: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
-				spender: networkConfig.CONTRACTS.WRAPPED_ROSE,
-				amount: assetsRequired.toString(),
-			});
-
-			try {
-				elizaLogger.info("Invoking approve on token contract");
-				const approveResult = await contractHelper.invokeContract({
-					networkId: getNetworkId(),
-					contractAddress: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
-					method: "approve",
-					args: [
-						networkConfig.CONTRACTS.WRAPPED_ROSE,
-						assetsRequired.toString(),
-					],
-					abi: ABIS.WSTROSE,
-				});
-
-				elizaLogger.info("Approved token spending", {
-					hash: approveResult.status,
-					details: approveResult,
-				});
-			} catch (approveError) {
-				elizaLogger.error("Failed to approve token spending", {
-					error:
-						approveError instanceof Error
-							? {
-									message: approveError.message,
-									stack: approveError.stack,
-									name: approveError.name,
-								}
-							: approveError,
-				});
-				throw approveError;
-			}
-
 			// Now mint the shares
 			elizaLogger.info("Preparing to mint shares", {
-				contract: networkConfig.CONTRACTS.WRAPPED_ROSE,
+				contract: networkConfig.CONTRACTS.UNSTAKED_ROSE,
 				shares: sharesAmount,
 				receiver: targetReceiver,
 			});
 
 			try {
 				elizaLogger.info("Invoking mint on wstROSE contract");
-				const mintResult = await contractHelper.invokeContract({
+				const depositResult = await contractHelper.invokeContract({
 					networkId: getNetworkId(),
-					contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
-					method: "mint",
-					args: [sharesAmount, targetReceiver],
-					abi: ABIS.WSTROSE,
+					contractAddress: networkConfig.CONTRACTS.UNSTAKED_ROSE,
+					method: "deposit",
+					args: [targetReceiver],
+					amount: sharesAmount,
+					assetId: "0x0000000000000000000000000000000000000000",
+					abi: ABIS.STROSE,
 				});
 
-				elizaLogger.info("Mint completed", {
-					details: mintResult,
+				elizaLogger.info("Deposit completed", {
+					status: depositResult.status,
+					details: depositResult,
 				});
 
 				const result: StakingResult = {
-					transactionHash: mintResult.transactionLink?.split("/").pop() || "",
-					stakedAmount: assetsRequired.toString(),
+					transactionHash:
+						depositResult.transactionLink?.split("/").pop() || "",
+					stakedAmount: sharesAmount.toString(),
 					timestamp: Date.now(),
 				};
 
@@ -807,7 +763,6 @@ export const stakeAction: Action = {
 				},
 			});
 
-			// TODO: Extract amount and receiver securely from message or options
 			const amount = options?.amount || "10"; // Default to 10 ROSE if not specified
 			const receiver = options?.receiver;
 			elizaLogger.info("Stake parameters", { amount, receiver });
@@ -1007,8 +962,8 @@ export const unstakeAction: Action = {
 			const txReceipt: TransactionReceipt = {
 				transactionHash: result.transactionLink?.split("/").pop() || "",
 				status: result.status === "SUCCESS",
-				blockNumber: 0, // TODO: Populate if available
-				events: {}, // TODO: Populate if available
+				blockNumber: 0,
+				events: {},
 			};
 
 			if (callback)
@@ -1195,8 +1150,8 @@ export const claimRewardsAction: Action = {
 			return {
 				transactionHash: result.transactionLink?.split("/").pop() || "",
 				status: result.status === "SUCCESS",
-				blockNumber: 0, // TODO: Populate if available
-				events: {}, // TODO: Populate if available
+				blockNumber: 0,
+				events: {},
 			};
 		} catch (error: unknown) {
 			elizaLogger.error("Failed to claim rewards", error);
@@ -1668,22 +1623,25 @@ export const mintAction: Action = {
 				});
 
 				try {
-					const mintResult = await contractHelper.invokeContract({
-						networkId: networkId,
-						contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
-						method: "mint",
-						args: [sharesAmount, targetReceiver],
-						abi: ABIS.WSTROSE,
+					const depositResult = await contractHelper.invokeContract({
+						networkId: getNetworkId(),
+						contractAddress: networkConfig.CONTRACTS.UNSTAKED_ROSE,
+						method: "deposit",
+						args: [targetReceiver],
+						amount: sharesAmount,
+						assetId: "0x0000000000000000000000000000000000000000",
+						abi: ABIS.STROSE,
 					});
 
-					elizaLogger.info("Mint completed", {
-						status: mintResult.status,
-						details: mintResult,
+					elizaLogger.info("Deposit completed", {
+						status: depositResult.status,
+						details: depositResult,
 					});
 
 					const result: StakingResult = {
-						transactionHash: mintResult.transactionLink?.split("/").pop() || "",
-						stakedAmount: assetsRequired.toString(),
+						transactionHash:
+							depositResult.transactionLink?.split("/").pop() || "",
+						stakedAmount: sharesAmount.toString(),
 						timestamp: Date.now(),
 					};
 
@@ -1815,7 +1773,7 @@ export const approveAction: Action = {
 				contractAddress: token,
 				method: "approve",
 				args: [spender, amount],
-				abi: ABIS.ERC20,
+				abi: ABIS.WSTROSE,
 			});
 
 			const txReceipt: TransactionReceipt = {

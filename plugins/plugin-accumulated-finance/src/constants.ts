@@ -4,7 +4,7 @@ export const SAPPHIRE_MAINNET = {
 	CHAIN_ID: 0x5afe,
 	EXPLORER_URL: "https://explorer.oasis.io/mainnet/sapphire",
 	CONTRACTS: {
-		// UNSTAKE: "0x04faf6897cf5de4ab9f1052fa16ec9256c3ea44a", // Removed - Not used in current implementation
+		UNSTAKED_ROSE: "0x04faf6897cf5de4ab9f1052fa16ec9256c3ea44a",
 		WRAPPED_ROSE: "0x3cabbe76ea8b4e7a2c0a69812cbe671800379ec8", // wstROSE contract (wrapped staked ROSE)
 		UNWRAPPED_ROSE: "0x3cabbe76ea8b4e7a2c0a69812cbe671800379ec8", // Native ROSE token
 	},
@@ -16,7 +16,7 @@ export const SAPPHIRE_TESTNET = {
 	CHAIN_ID: 0x5aff,
 	EXPLORER_URL: "https://explorer.oasis.io/testnet/sapphire",
 	CONTRACTS: {
-		// UNSTAKE: "", // Removed - Not used in current implementation
+		UNSTAKED_ROSE: "", // Removed - Not used in current implementation
 		WRAPPED_ROSE: "", // TODO: Replace with testnet address when available
 		UNWRAPPED_ROSE: "", // TODO: Replace with testnet address when available
 	},
@@ -1028,8 +1028,32 @@ export const WSTROSE_ABI = [
 	},
 ];
 
+// stROSE contract ABI based on the contract source code
+export const STROSE_ABI = [
+	{
+		name: "deposit",
+		inputs: [
+			{
+				internalType: "address",
+				name: "receiver",
+				type: "address",
+			},
+		],
+		outputs: [
+			{
+				internalType: "uint256",
+				name: "value",
+				type: "uint256",
+			},
+		],
+		stateMutability: "payable",
+		type: "function",
+	},
+];
+
 // Combined ABIs for easy access
 export const ABIS = {
 	WSTROSE: WSTROSE_ABI,
 	ERC20: ERC20_ABI,
+	STROSE: STROSE_ABI,
 };
