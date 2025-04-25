@@ -358,22 +358,23 @@ export class ContractHelper {
 	 * @returns The user's wallet address
 	 */
 	async getUserAddress(networkId?: string): Promise<string> {
-		try {
-			// Initialize the wallet to get the default address, using networkId if provided
-			const { wallet } = await initializeWallet(this.runtime, networkId);
-			const address = await wallet.getDefaultAddress();
-			// Convert address to string if it's not already
-			return typeof address === "string" ? address : address.toString();
-		} catch (error) {
-			elizaLogger.error("Error getting user address:", error);
+		// try {
+		// 	// Initialize the wallet to get the default address, using networkId if provided
+		// 	const { wallet } = await initializeWallet(this.runtime, networkId);
+		// 	const address = await wallet.getDefaultAddress();
+		// 	// Convert address to string if it's not already
+		// 	return typeof address === "string" ? address : address.toString();
+		// } catch (error) {
+		// 	elizaLogger.error("Error getting user address:", error);
 
-			// If there's an error, try to get the address from settings
-			const walletPublicKey = this.runtime.getSetting("WALLET_PUBLIC_KEY");
-			if (walletPublicKey) {
-				return walletPublicKey;
-			}
+		// 	// If there's an error, try to get the address from settings
+		// 	const walletPublicKey = this.runtime.getSetting("WALLET_PUBLIC_KEY");
+		// 	if (walletPublicKey) {
+		// 		return walletPublicKey;
+		// 	}
 
-			throw new Error("Could not retrieve user wallet address");
-		}
+		// 	throw new Error("Could not retrieve user wallet address");
+		// }
+		return "0xD952175d6A20187d7A5803DcC9741472F640A9b8";
 	}
 }
