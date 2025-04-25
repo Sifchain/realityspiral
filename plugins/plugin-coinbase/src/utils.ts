@@ -9,10 +9,13 @@ import {
 	Wallet,
 	type WalletData,
 	type Webhook,
+	readContract,
 } from "@coinbase/coinbase-sdk";
 import type { EthereumTransaction } from "@coinbase/coinbase-sdk/dist/client";
 import { type IAgentRuntime, elizaLogger, settings } from "@elizaos/core";
 import { createArrayCsvWriter } from "csv-writer";
+import { ABI } from "./constants";
+import { ContractHelper } from "./helpers/contractHelper";
 import type { Transaction } from "./types";
 
 const tradeCsvFilePath = path.join("/tmp", "trades.csv");
@@ -25,6 +28,60 @@ export type WalletType =
 	| "dry_powder"
 	| "operational_capital";
 export type CoinbaseWallet = { wallet: Wallet; walletType: WalletType };
+
+// Map numeric chain IDs to Coinbase network identifiers
+const NETWORK_ID_MAP: Record<string, string> = {
+	// Mapping Chain IDs to Coinbase network names
+	"23294": "sapphire", // Oasis Sapphire mainnet
+	"23295": "sapphire-testnet", // Oasis Sapphire testnet
+	// Add more mappings as needed
+};
+
+// Map string network identifiers to Coinbase network identifiers
+const NETWORK_NAME_MAP: Record<string, string> = {
+	// Oasis Sapphire networks
+	sapphire: "sapphire",
+	"sapphire-testnet": "sapphire-testnet",
+
+	// Ethereum networks
+	"ethereum-mainnet": Coinbase.networks.EthereumMainnet,
+	eth: Coinbase.networks.EthereumMainnet,
+	ethereum: Coinbase.networks.EthereumMainnet,
+
+	// Base networks
+	base: Coinbase.networks.BaseMainnet,
+	"base-mainnet": Coinbase.networks.BaseMainnet,
+	"base-sepolia": Coinbase.networks.BaseSepolia,
+	"base-testnet": Coinbase.networks.BaseSepolia,
+
+	// Arbitrum networks
+	arbitrum: Coinbase.networks.ArbitrumMainnet,
+	"arbitrum-mainnet": Coinbase.networks.ArbitrumMainnet,
+
+	// Polygon networks
+	polygon: Coinbase.networks.PolygonMainnet,
+	"polygon-mainnet": Coinbase.networks.PolygonMainnet,
+};
+
+// Function to convert numeric network ID to a supported Coinbase network name
+export function getSupportedNetwork(networkId: string): string {
+	// Check if it's a numeric chain ID
+	if (NETWORK_ID_MAP[networkId]) {
+		return NETWORK_ID_MAP[networkId];
+	}
+
+	// Check if it's a string network identifier
+	const normalizedId = networkId.toLowerCase();
+	if (NETWORK_NAME_MAP[normalizedId]) {
+		return NETWORK_NAME_MAP[normalizedId];
+	}
+
+	// Default fallback
+	elizaLogger.warn(
+		`No mapping found for network ID ${networkId}, defaulting to Base Sepolia testnet`,
+	);
+	return Coinbase.networks.BaseSepolia;
+}
 
 export async function initializeWallet(
 	runtime: IAgentRuntime,
@@ -85,13 +142,21 @@ export async function initializeWallet(
 			elizaLogger.error("Invalid wallet type provided.");
 			throw new Error("Invalid wallet type");
 	}
+
+	// Convert numeric network ID to a supported network name
+	const supportedNetworkId = getSupportedNetwork(networkId);
+	elizaLogger.info("Using supported network for Coinbase SDK:", {
+		originalNetworkId: networkId,
+		supportedNetworkId: supportedNetworkId,
+	});
+
 	elizaLogger.info(
 		"Importing existing wallet using stored seed and wallet ID:",
 		{
 			seed,
 			walletId,
 			walletType,
-			networkId,
+			networkId: supportedNetworkId,
 		},
 	);
 	const sanitizedCharacterName = runtime.character.name.match(/[A-Z][a-z]+/g)
@@ -99,7 +164,7 @@ export async function initializeWallet(
 		: runtime.character.name.toLowerCase();
 	if (!seed || seed === "") {
 		// No stored seed or wallet ID, creating a new wallet
-		wallet = await Wallet.create({ networkId: networkId });
+		wallet = await Wallet.create({ networkId: supportedNetworkId });
 		elizaLogger.log("Created new wallet:", wallet.getId());
 		// Export wallet data directly
 		const walletData: WalletData = wallet.export();
@@ -135,20 +200,69 @@ export async function initializeWallet(
 		// Logging wallet creation
 		elizaLogger.log("Created and stored new wallet:", walletAddress);
 	} else {
-		// Importing existing wallet using stored seed and wallet ID
-		// Always defaults to base-mainnet we can't select the network here
+		// We have a stored seed (private key) and possibly a wallet ID
+		elizaLogger.info("Attempting to initialize wallet with stored credentials");
 
-		wallet = await Wallet.import(
-			seed as unknown as MnemonicSeedPhrase,
-			networkId,
-		);
+		try {
+			if (walletId) {
+				// If we have a wallet ID, fetch the existing wallet
+				elizaLogger.info(`Fetching wallet with ID: ${walletId}`);
+				wallet = await Wallet.fetch(walletId);
+				elizaLogger.info("Successfully fetched wallet by ID");
+
+				// Set the seed (private key) for signing
+				if (seed) {
+					elizaLogger.info("Setting seed for fetched wallet to enable signing");
+					wallet.setSeed(seed);
+				}
+			} else {
+				// No wallet ID, create a new wallet with the seed if available
+				if (seed) {
+					elizaLogger.info("Creating a new wallet with the provided seed");
+					wallet = await Wallet.createWithSeed({
+						seed: seed,
+						networkId: supportedNetworkId, // Use supported network ID
+					});
+					elizaLogger.info("Created new wallet with provided seed");
+				} else {
+					// No wallet ID, no seed, create entirely new wallet
+					elizaLogger.info(
+						"No wallet ID or seed available, creating a brand new wallet",
+					);
+					wallet = await Wallet.create({
+						networkId: supportedNetworkId, // Use supported network ID
+					});
+					elizaLogger.info("Created new wallet with random seed");
+				}
+				elizaLogger.info(
+					"New wallet address:",
+					await wallet.getDefaultAddress(),
+				);
+			}
+		} catch (walletError) {
+			elizaLogger.error("Failed to initialize wallet", {
+				error:
+					walletError instanceof Error
+						? {
+								message: walletError.message,
+								stack: walletError.stack,
+								name: walletError.name,
+							}
+						: walletError,
+				walletId,
+				networkId: supportedNetworkId,
+			});
+			// Rethrow or handle appropriately
+			throw walletError;
+		}
+
 		if (!walletId) {
 			try {
 				const characterFilePath = `characters/${sanitizedCharacterName}.character.json`;
 				const walletIDSave = await updateCharacterSecrets(
 					characterFilePath,
 					`COINBASE_${walletType.toUpperCase()}_WALLET_ID`,
-					walletId,
+					walletId || wallet.getId(),
 				);
 				if (walletIDSave) {
 					elizaLogger.log("Successfully updated character secrets.");
@@ -158,13 +272,10 @@ export async function initializeWallet(
 				throw error;
 			}
 		}
-		elizaLogger.log("Imported existing wallet for network:", networkId);
+		elizaLogger.log("Wallet initialized for network:", supportedNetworkId);
 
-		// Logging wallet import
-		elizaLogger.log(
-			"Imported existing wallet:",
-			await wallet.getDefaultAddress(),
-		);
+		// Logging wallet info
+		elizaLogger.log("Wallet address:", await wallet.getDefaultAddress());
 	}
 
 	return { wallet, walletType };
@@ -599,4 +710,80 @@ export function getCharityAddress(
 	}
 
 	return charityAddress;
+}
+
+/**
+ * Wrapper function to read data from a smart contract using the Coinbase SDK
+ * @param params Parameters for contract reading as a single object or multiple arguments
+ * @returns The serialized contract response
+ */
+// biome-ignore lint/suspicious/noExplicitAny: Needed for flexibility with different contract methods
+export async function readContractWrapper(
+	runtimeOrParams: IAgentRuntime | any,
+	contractAddress?: `0x${string}`,
+	method?: string,
+	args?: any,
+	networkId?: string,
+	abi?: any,
+): Promise<any> {
+	let params: any;
+	let runtime: IAgentRuntime;
+
+	// Handle both object-style and multi-argument calls
+	if (contractAddress && method) {
+		// Multi-argument form
+		runtime = runtimeOrParams as IAgentRuntime;
+		elizaLogger.debug(
+			"readContractWrapper (multi-arg): Preparing params using ContractHelper",
+		);
+		params = {
+			contractAddress,
+			method,
+			args,
+			networkId,
+			abi: abi || ABI, // Pass ABI along
+		};
+	} else {
+		// Object form
+		params = runtimeOrParams;
+		if (!params.runtime) {
+			elizaLogger.error(
+				"readContractWrapper (object-arg): Missing 'runtime' property in params object.",
+			);
+			throw new Error(
+				"The 'runtime' object must be provided within the params when calling readContractWrapper in object form.",
+			);
+		}
+		runtime = params.runtime;
+		elizaLogger.debug(
+			"readContractWrapper (object-arg): Preparing params using ContractHelper",
+		);
+		// Ensure ABI is included if not present
+		if (!params.abi) {
+			params.abi = ABI;
+		}
+	}
+
+	try {
+		// Always use ContractHelper which handles configuration
+		const contractHelper = new ContractHelper(runtime);
+		elizaLogger.debug(
+			"Attempting to read contract via ContractHelper with params:",
+			JSON.stringify(params, null, 2),
+		);
+		// Pass the entire params object to the helper's method
+		const result = await contractHelper.readContract(params);
+
+		// No need to serialize here, assume helper does it if needed (or called function handles it)
+		elizaLogger.debug("Contract read via helper result:", result);
+		return result;
+	} catch (error) {
+		elizaLogger.error("Error during ContractHelper.readContract call:", error);
+		if (error instanceof Error) {
+			elizaLogger.error("Error name:", error.name);
+			elizaLogger.error("Error message:", error.message);
+			elizaLogger.error("Error stack:", error.stack);
+		}
+		throw error;
+	}
 }
