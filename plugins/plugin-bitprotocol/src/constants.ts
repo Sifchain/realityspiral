@@ -27,6 +27,7 @@ export const BITPROTOCOL_CONTRACTS = {
 	Adapter_mTBill: "0x164a8e5ecd0312f9D25Fc0Cc265e7443Eaa57B0F",
 	CustomTroveManagerImpl_mTBill: "0x35f1D05d1Ad481D0FccC764d521c0Cd435c93527",
 	BitUSDs: "0xA14167756d9F86Aed12b472C29B257BBdD9974C2", // Same as DebtToken, added for clarity
+	Router: "0x250d48C5E78f1E85F7AB07FEC61E93ba703aE668", // Uniswap V2 Router
 };
 
 // Network Configuration
@@ -428,14 +429,7 @@ export const PRICE_FEED_ABI = [
 		outputs: [],
 		stateMutability: "nonpayable",
 		type: "function",
-	},
-	{
-		inputs: [],
-		name: "lastGoodPrice",
-		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-		stateMutability: "view",
-		type: "function",
-	},
+	}
 ];
 
 // Borrower Operations ABI - for stablecoin swapping functionality
@@ -689,456 +683,520 @@ export const BORROWER_OPERATIONS_ABI = [
 	},
 ];
 
-
 // Stability Pool ABI - for automated swap strategies
 export const STABILITY_POOL_ABI = [
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "_bitCore", "type": "address"},
-		{"internalType": "address", "name": "_debtTokenAddress", "type": "address"},
-		{"internalType": "address", "name": "_factory", "type": "address"}
-	  ],
-	  "stateMutability": "nonpayable",
-	  "type": "constructor"
+		inputs: [
+			{ internalType: "address", name: "_bitCore", type: "address" },
+			{ internalType: "address", name: "_debtTokenAddress", type: "address" },
+			{ internalType: "address", name: "_factory", type: "address" },
+		],
+		stateMutability: "nonpayable",
+		type: "constructor",
 	},
 	{
-	  "inputs": [],
-	  "name": "DECIMAL_PRECISION",
-	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "DECIMAL_PRECISION",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "REWARD_DURATION",
-	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "REWARD_DURATION",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "SCALE_FACTOR",
-	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "SCALE_FACTOR",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "SUNSET_DURATION",
-	  "outputs": [{"internalType": "uint128", "name": "", "type": "uint128"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "SUNSET_DURATION",
+		outputs: [{ internalType: "uint128", name: "", type: "uint128" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "", "type": "address"}
-	  ],
-	  "name": "accountDeposits",
-	  "outputs": [
-		{"internalType": "uint128", "name": "amount", "type": "uint128"},
-		{"internalType": "uint128", "name": "timestamp", "type": "uint128"}
-	  ],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [{ internalType: "address", name: "", type: "address" }],
+		name: "accountDeposits",
+		outputs: [
+			{ internalType: "uint128", name: "amount", type: "uint128" },
+			{ internalType: "uint128", name: "timestamp", type: "uint128" },
+		],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "recipient", "type": "address"},
-		{"internalType": "uint256[]", "name": "collateralIndexes", "type": "uint256[]"}
-	  ],
-	  "name": "claimCollateralGains",
-	  "outputs": [],
-	  "stateMutability": "nonpayable",
-	  "type": "function"
+		inputs: [
+			{ internalType: "address", name: "recipient", type: "address" },
+			{
+				internalType: "uint256[]",
+				name: "collateralIndexes",
+				type: "uint256[]",
+			},
+		],
+		name: "claimCollateralGains",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "recipient", "type": "address"}
-	  ],
-	  "name": "claimReward",
-	  "outputs": [{"internalType": "uint256", "name": "amount", "type": "uint256"}],
-	  "stateMutability": "nonpayable",
-	  "type": "function"
+		inputs: [{ internalType: "address", name: "recipient", type: "address" }],
+		name: "claimReward",
+		outputs: [{ internalType: "uint256", name: "amount", type: "uint256" }],
+		stateMutability: "nonpayable",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "_depositor", "type": "address"}
-	  ],
-	  "name": "claimableReward",
-	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [{ internalType: "address", name: "_depositor", type: "address" }],
+		name: "claimableReward",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "depositor", "type": "address"},
-		{"internalType": "uint256", "name": "", "type": "uint256"}
-	  ],
-	  "name": "collateralGainsByDepositor",
-	  "outputs": [{"internalType": "uint80", "name": "", "type": "uint80"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [
+			{ internalType: "address", name: "depositor", type: "address" },
+			{ internalType: "uint256", name: "", type: "uint256" },
+		],
+		name: "collateralGainsByDepositor",
+		outputs: [{ internalType: "uint80", name: "", type: "uint80" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "uint256", "name": "", "type": "uint256"}
-	  ],
-	  "name": "collateralTokens",
-	  "outputs": [{"internalType": "address", "name": "", "type": "address"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		name: "collateralTokens",
+		outputs: [{ internalType: "address", name: "", type: "address" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "currentEpoch",
-	  "outputs": [{"internalType": "uint128", "name": "", "type": "uint128"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "currentEpoch",
+		outputs: [{ internalType: "uint128", name: "", type: "uint128" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "currentScale",
-	  "outputs": [{"internalType": "uint128", "name": "", "type": "uint128"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "currentScale",
+		outputs: [{ internalType: "uint128", name: "", type: "uint128" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "debtToken",
-	  "outputs": [{"internalType": "address", "name": "", "type": "address"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "debtToken",
+		outputs: [{ internalType: "address", name: "", type: "address" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "", "type": "address"},
-		{"internalType": "uint256", "name": "", "type": "uint256"}
-	  ],
-	  "name": "depositSums",
-	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [
+			{ internalType: "address", name: "", type: "address" },
+			{ internalType: "uint256", name: "", type: "uint256" },
+		],
+		name: "depositSums",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "", "type": "address"}
-	  ],
-	  "name": "depositSnapshots",
-	  "outputs": [
-		{"internalType": "uint256", "name": "P", "type": "uint256"},
-		{"internalType": "uint256", "name": "G", "type": "uint256"},
-		{"internalType": "uint128", "name": "scale", "type": "uint128"},
-		{"internalType": "uint128", "name": "epoch", "type": "uint128"}
-	  ],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [{ internalType: "address", name: "", type: "address" }],
+		name: "depositSnapshots",
+		outputs: [
+			{ internalType: "uint256", name: "P", type: "uint256" },
+			{ internalType: "uint256", name: "G", type: "uint256" },
+			{ internalType: "uint128", name: "scale", type: "uint128" },
+			{ internalType: "uint128", name: "epoch", type: "uint128" },
+		],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "_collateral", "type": "address"}
-	  ],
-	  "name": "enableCollateral",
-	  "outputs": [],
-	  "stateMutability": "nonpayable",
-	  "type": "function"
+		inputs: [{ internalType: "address", name: "_collateral", type: "address" }],
+		name: "enableCollateral",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "emissionId",
-	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "emissionId",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "uint128", "name": "", "type": "uint128"},
-		{"internalType": "uint128", "name": "", "type": "uint128"}
-	  ],
-	  "name": "epochToScaleToG",
-	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [
+			{ internalType: "uint128", name: "", type: "uint128" },
+			{ internalType: "uint128", name: "", type: "uint128" },
+		],
+		name: "epochToScaleToG",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "uint128", "name": "", "type": "uint128"},
-		{"internalType": "uint128", "name": "", "type": "uint128"},
-		{"internalType": "uint256", "name": "", "type": "uint256"}
-	  ],
-	  "name": "epochToScaleToSums",
-	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [
+			{ internalType: "uint128", name: "", type: "uint128" },
+			{ internalType: "uint128", name: "", type: "uint128" },
+			{ internalType: "uint256", name: "", type: "uint256" },
+		],
+		name: "epochToScaleToSums",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "factory",
-	  "outputs": [{"internalType": "address", "name": "", "type": "address"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "factory",
+		outputs: [{ internalType: "address", name: "", type: "address" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "_depositor", "type": "address"}
-	  ],
-	  "name": "getCompoundedDebtDeposit",
-	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [{ internalType: "address", name: "_depositor", type: "address" }],
+		name: "getCompoundedDebtDeposit",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "_depositor", "type": "address"}
-	  ],
-	  "name": "getDepositorCollateralGain",
-	  "outputs": [{"internalType": "uint256[]", "name": "collateralGains", "type": "uint256[]"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [{ internalType: "address", name: "_depositor", type: "address" }],
+		name: "getDepositorCollateralGain",
+		outputs: [
+			{ internalType: "uint256[]", name: "collateralGains", type: "uint256[]" },
+		],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "getTotalDebtTokenDeposits",
-	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "getTotalDebtTokenDeposits",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "", "type": "address"}
-	  ],
-	  "name": "indexByCollateral",
-	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [{ internalType: "address", name: "", type: "address" }],
+		name: "indexByCollateral",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "lastBitError",
-	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "lastBitError",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "uint256", "name": "", "type": "uint256"}
-	  ],
-	  "name": "lastCollateralError_Offset",
-	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		name: "lastCollateralError_Offset",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "lastDebtLossError_Offset",
-	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "lastDebtLossError_Offset",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "lastUpdate",
-	  "outputs": [{"internalType": "uint32", "name": "", "type": "uint32"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "lastUpdate",
+		outputs: [{ internalType: "uint32", name: "", type: "uint32" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "liquidationManager",
-	  "outputs": [{"internalType": "address", "name": "", "type": "address"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "liquidationManager",
+		outputs: [{ internalType: "address", name: "", type: "address" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "collateral", "type": "address"},
-		{"internalType": "uint256", "name": "_debtToOffset", "type": "uint256"},
-		{"internalType": "uint256", "name": "_collToAdd", "type": "uint256"}
-	  ],
-	  "name": "offset",
-	  "outputs": [],
-	  "stateMutability": "nonpayable",
-	  "type": "function"
+		inputs: [
+			{ internalType: "address", name: "collateral", type: "address" },
+			{ internalType: "uint256", name: "_debtToOffset", type: "uint256" },
+			{ internalType: "uint256", name: "_collToAdd", type: "uint256" },
+		],
+		name: "offset",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "P",
-	  "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "P",
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "periodFinish",
-	  "outputs": [{"internalType": "uint32", "name": "", "type": "uint32"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "periodFinish",
+		outputs: [{ internalType: "uint32", name: "", type: "uint32" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "uint256", "name": "_amount", "type": "uint256"}
-	  ],
-	  "name": "provideToSP",
-	  "outputs": [],
-	  "stateMutability": "nonpayable",
-	  "type": "function"
+		inputs: [{ internalType: "uint256", name: "_amount", type: "uint256" }],
+		name: "provideToSP",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "rewardRate",
-	  "outputs": [{"internalType": "uint128", "name": "", "type": "uint128"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "rewardRate",
+		outputs: [{ internalType: "uint128", name: "", type: "uint128" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "_vault", "type": "address"},
-		{"internalType": "address", "name": "_liquidationManager", "type": "address"}
-	  ],
-	  "name": "setInitialParameters",
-	  "outputs": [],
-	  "stateMutability": "nonpayable",
-	  "type": "function"
+		inputs: [
+			{ internalType: "address", name: "_vault", type: "address" },
+			{ internalType: "address", name: "_liquidationManager", type: "address" },
+		],
+		name: "setInitialParameters",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "collateral", "type": "address"}
-	  ],
-	  "name": "startCollateralSunset",
-	  "outputs": [],
-	  "stateMutability": "nonpayable",
-	  "type": "function"
+		inputs: [{ internalType: "address", name: "collateral", type: "address" }],
+		name: "startCollateralSunset",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
 	},
 	{
-	  "inputs": [],
-	  "name": "vault",
-	  "outputs": [{"internalType": "address", "name": "", "type": "address"}],
-	  "stateMutability": "view",
-	  "type": "function"
+		inputs: [],
+		name: "vault",
+		outputs: [{ internalType: "address", name: "", type: "address" }],
+		stateMutability: "view",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "address", "name": "claimant", "type": "address"},
-		{"internalType": "address", "name": "", "type": "address"}
-	  ],
-	  "name": "vaultClaimReward",
-	  "outputs": [{"internalType": "uint256", "name": "amount", "type": "uint256"}],
-	  "stateMutability": "nonpayable",
-	  "type": "function"
+		inputs: [
+			{ internalType: "address", name: "claimant", type: "address" },
+			{ internalType: "address", name: "", type: "address" },
+		],
+		name: "vaultClaimReward",
+		outputs: [{ internalType: "uint256", name: "amount", type: "uint256" }],
+		stateMutability: "nonpayable",
+		type: "function",
 	},
 	{
-	  "inputs": [
-		{"internalType": "uint256", "name": "_amount", "type": "uint256"}
-	  ],
-	  "name": "withdrawFromSP",
-	  "outputs": [],
-	  "stateMutability": "nonpayable",
-	  "type": "function"
+		inputs: [{ internalType: "uint256", name: "_amount", type: "uint256" }],
+		name: "withdrawFromSP",
+		outputs: [],
+		stateMutability: "nonpayable",
+		type: "function",
 	},
 	{
-	  "anonymous": false,
-	  "inputs": [
-		{"indexed": false, "internalType": "address", "name": "oldCollateral", "type": "address"},
-		{"indexed": false, "internalType": "address", "name": "newCollateral", "type": "address"}
-	  ],
-	  "name": "CollateralOverwritten",
-	  "type": "event"
+		anonymous: false,
+		inputs: [
+			{
+				indexed: false,
+				internalType: "address",
+				name: "oldCollateral",
+				type: "address",
+			},
+			{
+				indexed: false,
+				internalType: "address",
+				name: "newCollateral",
+				type: "address",
+			},
+		],
+		name: "CollateralOverwritten",
+		type: "event",
 	},
 	{
-	  "anonymous": false,
-	  "inputs": [
-		{"indexed": true, "internalType": "address", "name": "_depositor", "type": "address"},
-		{"indexed": false, "internalType": "uint256[]", "name": "_collateral", "type": "uint256[]"}
-	  ],
-	  "name": "CollateralGainWithdrawn",
-	  "type": "event"
+		anonymous: false,
+		inputs: [
+			{
+				indexed: true,
+				internalType: "address",
+				name: "_depositor",
+				type: "address",
+			},
+			{
+				indexed: false,
+				internalType: "uint256[]",
+				name: "_collateral",
+				type: "uint256[]",
+			},
+		],
+		name: "CollateralGainWithdrawn",
+		type: "event",
 	},
 	{
-	  "anonymous": false,
-	  "inputs": [
-		{"indexed": true, "internalType": "address", "name": "_depositor", "type": "address"},
-		{"indexed": false, "internalType": "uint256", "name": "_P", "type": "uint256"},
-		{"indexed": false, "internalType": "uint256", "name": "_G", "type": "uint256"}
-	  ],
-	  "name": "DepositSnapshotUpdated",
-	  "type": "event"
+		anonymous: false,
+		inputs: [
+			{
+				indexed: true,
+				internalType: "address",
+				name: "_depositor",
+				type: "address",
+			},
+			{ indexed: false, internalType: "uint256", name: "_P", type: "uint256" },
+			{ indexed: false, internalType: "uint256", name: "_G", type: "uint256" },
+		],
+		name: "DepositSnapshotUpdated",
+		type: "event",
 	},
 	{
-	  "anonymous": false,
-	  "inputs": [
-		{"indexed": false, "internalType": "uint128", "name": "_currentEpoch", "type": "uint128"}
-	  ],
-	  "name": "EpochUpdated",
-	  "type": "event"
+		anonymous: false,
+		inputs: [
+			{
+				indexed: false,
+				internalType: "uint128",
+				name: "_currentEpoch",
+				type: "uint128",
+			},
+		],
+		name: "EpochUpdated",
+		type: "event",
 	},
 	{
-	  "anonymous": false,
-	  "inputs": [
-		{"indexed": false, "internalType": "uint256", "name": "_G", "type": "uint256"},
-		{"indexed": false, "internalType": "uint128", "name": "_epoch", "type": "uint128"},
-		{"indexed": false, "internalType": "uint128", "name": "_scale", "type": "uint128"}
-	  ],
-	  "name": "G_Updated",
-	  "type": "event"
+		anonymous: false,
+		inputs: [
+			{ indexed: false, internalType: "uint256", name: "_G", type: "uint256" },
+			{
+				indexed: false,
+				internalType: "uint128",
+				name: "_epoch",
+				type: "uint128",
+			},
+			{
+				indexed: false,
+				internalType: "uint128",
+				name: "_scale",
+				type: "uint128",
+			},
+		],
+		name: "G_Updated",
+		type: "event",
 	},
 	{
-	  "anonymous": false,
-	  "inputs": [
-		{"indexed": false, "internalType": "uint256", "name": "_P", "type": "uint256"}
-	  ],
-	  "name": "P_Updated",
-	  "type": "event"
+		anonymous: false,
+		inputs: [
+			{ indexed: false, internalType: "uint256", name: "_P", type: "uint256" },
+		],
+		name: "P_Updated",
+		type: "event",
 	},
 	{
-	  "anonymous": false,
-	  "inputs": [
-		{"indexed": true, "internalType": "address", "name": "account", "type": "address"},
-		{"indexed": true, "internalType": "address", "name": "recipient", "type": "address"},
-		{"indexed": false, "internalType": "uint256", "name": "claimed", "type": "uint256"}
-	  ],
-	  "name": "RewardClaimed",
-	  "type": "event"
+		anonymous: false,
+		inputs: [
+			{
+				indexed: true,
+				internalType: "address",
+				name: "account",
+				type: "address",
+			},
+			{
+				indexed: true,
+				internalType: "address",
+				name: "recipient",
+				type: "address",
+			},
+			{
+				indexed: false,
+				internalType: "uint256",
+				name: "claimed",
+				type: "uint256",
+			},
+		],
+		name: "RewardClaimed",
+		type: "event",
 	},
 	{
-	  "anonymous": false,
-	  "inputs": [
-		{"indexed": false, "internalType": "uint256", "name": "idx", "type": "uint256"},
-		{"indexed": false, "internalType": "uint256", "name": "_S", "type": "uint256"},
-		{"indexed": false, "internalType": "uint128", "name": "_epoch", "type": "uint128"},
-		{"indexed": false, "internalType": "uint128", "name": "_scale", "type": "uint128"}
-	  ],
-	  "name": "S_Updated",
-	  "type": "event"
+		anonymous: false,
+		inputs: [
+			{ indexed: false, internalType: "uint256", name: "idx", type: "uint256" },
+			{ indexed: false, internalType: "uint256", name: "_S", type: "uint256" },
+			{
+				indexed: false,
+				internalType: "uint128",
+				name: "_epoch",
+				type: "uint128",
+			},
+			{
+				indexed: false,
+				internalType: "uint128",
+				name: "_scale",
+				type: "uint128",
+			},
+		],
+		name: "S_Updated",
+		type: "event",
 	},
 	{
-	  "anonymous": false,
-	  "inputs": [
-		{"indexed": false, "internalType": "uint128", "name": "_currentScale", "type": "uint128"}
-	  ],
-	  "name": "ScaleUpdated",
-	  "type": "event"
+		anonymous: false,
+		inputs: [
+			{
+				indexed: false,
+				internalType: "uint128",
+				name: "_currentScale",
+				type: "uint128",
+			},
+		],
+		name: "ScaleUpdated",
+		type: "event",
 	},
 	{
-	  "anonymous": false,
-	  "inputs": [
-		{"indexed": false, "internalType": "uint256", "name": "_newBalance", "type": "uint256"}
-	  ],
-	  "name": "StabilityPoolDebtBalanceUpdated",
-	  "type": "event"
+		anonymous: false,
+		inputs: [
+			{
+				indexed: false,
+				internalType: "uint256",
+				name: "_newBalance",
+				type: "uint256",
+			},
+		],
+		name: "StabilityPoolDebtBalanceUpdated",
+		type: "event",
 	},
 	{
-	  "anonymous": false,
-	  "inputs": [
-		{"indexed": true, "internalType": "address", "name": "_depositor", "type": "address"},
-		{"indexed": false, "internalType": "uint256", "name": "_newDeposit", "type": "uint256"}
-	  ],
-	  "name": "UserDepositChanged",
-	  "type": "event"
+		anonymous: false,
+		inputs: [
+			{
+				indexed: true,
+				internalType: "address",
+				name: "_depositor",
+				type: "address",
+			},
+			{
+				indexed: false,
+				internalType: "uint256",
+				name: "_newDeposit",
+				type: "uint256",
+			},
+		],
+		name: "UserDepositChanged",
+		type: "event",
 	},
 	{
-	  "stateMutability": "payable",
-	  "type": "receive"
-	}
-  ];
+		stateMutability: "payable",
+		type: "receive",
+	},
+];
 
 // Trove Manager ABI - for managing troves in swap strategies
 export const TROVE_MANAGER_ABI = [
@@ -1719,50 +1777,14 @@ export const TROVE_MANAGER_ABI = [
 	},
 ];
 
-// Router ABI for optimal swap path and stablecoin swapping
-export const ROUTER_ABI = [
-	{
-		inputs: [
-			{ name: "fromToken", type: "address" },
-			{ name: "toToken", type: "address" },
-			{ name: "amountIn", type: "uint256" },
-		],
-		name: "getOptimalPath",
-		outputs: [
-			{ name: "path", type: "address[]" },
-			{ name: "estimatedOutput", type: "uint256" },
-		],
-		stateMutability: "view",
-		type: "function",
-	},
-	{
-		inputs: [
-			{ name: "fromToken", type: "address" },
-			{ name: "toToken", type: "address" },
-			{ name: "amountIn", type: "uint256" },
-			{ name: "minAmountOut", type: "uint256" },
-			{ name: "deadline", type: "uint256" },
-		],
-		name: "swap",
-		outputs: [{ name: "amountOut", type: "uint256" }],
-		stateMutability: "nonpayable",
-		type: "function",
-	},
-	{
-		inputs: [
-			{ name: "fromToken", type: "address" },
-			{ name: "toToken", type: "address" },
-			{ name: "amountIn", type: "uint256" },
-			{ name: "minAmountOut", type: "uint256" },
-			{ name: "deadline", type: "uint256" },
-			{ name: "encryptedData", type: "bytes" },
-		],
-		name: "privateSwap",
-		outputs: [{ name: "amountOut", type: "uint256" }],
-		stateMutability: "nonpayable",
-		type: "function",
-	},
-];
+// Combine all ABIs in a single object for easier access
+export const ABIS = {
+	ERC20: ERC20_ABI,
+	PRICE_FEED: PRICE_FEED_ABI,
+	BORROWER_OPERATIONS: BORROWER_OPERATIONS_ABI,
+	STABILITY_POOL: STABILITY_POOL_ABI,
+	TROVE_MANAGER: TROVE_MANAGER_ABI,
+};
 
 // Default assumed decimals for tokens
 export const DEFAULT_DECIMALS = 18;
@@ -1809,13 +1831,82 @@ export const PRIVACY_CONFIG = {
 	MINIMUM_GAS_FOR_PRIVACY: 300000, // Minimum gas to ensure privacy operations complete
 };
 
-// Combine all ABIs in a single object for easier access
-export const ABIS = {
-	ERC20: ERC20_ABI,
-	PRICE_FEED: PRICE_FEED_ABI,
-	BORROWER_OPERATIONS: BORROWER_OPERATIONS_ABI,
-	STABILITY_POOL: STABILITY_POOL_ABI,
-	TROVE_MANAGER: TROVE_MANAGER_ABI,
-	ROUTER: ROUTER_ABI,
-};
+// Add Uniswap V2 Router ABI
+export const UNISWAP_V2_ROUTER_ABI = [
+	// Functions for swapping
+	{
+		inputs: [
+			{ name: "amountIn", type: "uint256" },
+			{ name: "amountOutMin", type: "uint256" },
+			{ name: "path", type: "address[]" },
+			{ name: "to", type: "address" },
+			{ name: "deadline", type: "uint256" },
+		],
+		name: "swapExactTokensForTokens",
+		outputs: [{ name: "amounts", type: "uint256[]" }],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ name: "amountOutMin", type: "uint256" },
+			{ name: "path", type: "address[]" },
+			{ name: "to", type: "address" },
+			{ name: "deadline", type: "uint256" },
+		],
+		name: "swapExactETHForTokens",
+		outputs: [{ name: "amounts", type: "uint256[]" }],
+		stateMutability: "payable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ name: "amountIn", type: "uint256" },
+			{ name: "amountOutMin", type: "uint256" },
+			{ name: "path", type: "address[]" },
+			{ name: "to", type: "address" },
+			{ name: "deadline", type: "uint256" },
+		],
+		name: "swapExactTokensForETH",
+		outputs: [{ name: "amounts", type: "uint256[]" }],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	// Functions for getting amounts
+	{
+		inputs: [
+			{ name: "amountIn", type: "uint256" },
+			{ name: "path", type: "address[]" },
+		],
+		name: "getAmountsOut",
+		outputs: [{ name: "amounts", type: "uint256[]" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [
+			{ name: "amountOut", type: "uint256" },
+			{ name: "path", type: "address[]" },
+		],
+		name: "getAmountsIn",
+		outputs: [{ name: "amounts", type: "uint256[]" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	// Factory and WETH
+	{
+		inputs: [],
+		name: "factory",
+		outputs: [{ name: "", type: "address" }],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [],
+		name: "WETH",
+		outputs: [{ name: "", type: "address" }],
+		stateMutability: "view",
+		type: "function",
+	},
+];
 

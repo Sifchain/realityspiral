@@ -10,16 +10,17 @@ import { ContractHelper } from "@realityspiral/plugin-coinbase";
 
 import {
 	BITPROTOCOL_CONTRACTS,
+	// BIT_VAULT_ABI, // Removed incorrect ABI import
 	BORROWER_OPERATIONS_ABI,
 	COLLATERAL_TOKENS,
 	ERC20_ABI,
 	NETWORK_CONFIG,
 	PRICE_FEED_ABI,
 	PRIVACY_CONFIG,
-	ROUTER_ABI,
 	STABILITY_POOL_ABI,
 	TOKEN_ADDRESSES,
 	TROVE_MANAGER_ABI,
+	UNISWAP_V2_ROUTER_ABI,
 } from "../constants";
 // Import types and schemas
 import {
@@ -121,123 +122,160 @@ const handleSwap: Action["handler"] = async (
 			config.networkId,
 		);
 
-		// --- Contract Interaction --- //
-		// 1. Approve (if necessary)
-		if (fromTokenSymbol !== "ROSE") {
-			// ROSE is native on Sapphire
-			elizaLogger.info(`Approving ${amountStr} ${fromTokenSymbol} for swap...`);
+		// --- Determine swap path ---
+		const path = [fromTokenAddress, toTokenAddress];
+		if (
+			fromTokenSymbol !== "BitUSD" &&
+			toTokenSymbol !== "BitUSD" &&
+			fromTokenSymbol !== "ROSE" &&
+			toTokenSymbol !== "ROSE"
+		) {
+			// If neither token is BitUSD or ROSE, use BitUSD as an intermediate
+			path.splice(1, 0, TOKEN_ADDRESSES.BitUSD);
+		}
 
+		elizaLogger.info(`Using swap path: ${path.join(" -> ")}`);
+
+		// --- Get estimated output amount ---
+		let estimatedOutput = "0"; // Default to 0
+		try {
+			const amountsOut = await contractHelper.readContract({
+				networkId: config.networkId,
+				contractAddress: BITPROTOCOL_CONTRACTS.Router,
+				method: "getAmountsOut",
+				args: [amountParsed.toString(), path],
+				abi: UNISWAP_V2_ROUTER_ABI,
+			});
+
+			estimatedOutput = amountsOut[amountsOut.length - 1].toString(); // Convert BigInt to string
+			elizaLogger.info(`Estimated output: ${estimatedOutput} ${toTokenSymbol}`);
+		} catch (error) {
+			elizaLogger.warn(
+				`Could not estimate output: ${error instanceof Error ? error.message : String(error)}`,
+			);
+			// Keep estimatedOutput as "0"
+		}
+
+		// Calculate minimum output with slippage
+		const minOutput =
+			BigInt(estimatedOutput) -
+			(BigInt(estimatedOutput) * BigInt(Math.floor(currentSlippage * 10000))) /
+				BigInt(10000);
+
+		elizaLogger.info(
+			`Minimum output with ${currentSlippage * 100}% slippage: ${minOutput.toString()}`,
+		);
+
+		// --- Execute the swap ---
+		let swapTx: any;
+		let txHash: string | undefined;
+		const deadline = Math.floor(Date.now() / 1000) + 3600; // 1 hour deadline
+		const userAddress = await contractHelper.getUserAddress();
+
+		// Case 1: From ETH/ROSE to Token
+		if (fromTokenSymbol === "ROSE") {
+			elizaLogger.info(
+				`Swapping ROSE to ${toTokenSymbol} using swapExactETHForTokens`,
+			);
+
+			swapTx = await contractHelper.invokeContract({
+				networkId: config.networkId,
+				contractAddress: BITPROTOCOL_CONTRACTS.Router,
+				method: "swapExactETHForTokens",
+				args: [minOutput.toString(), path, userAddress, deadline],
+				abi: UNISWAP_V2_ROUTER_ABI,
+				value: amountParsed.toString(),
+			});
+		}
+		// Case 2: From Token to ETH/ROSE
+		else if (toTokenSymbol === "ROSE") {
+			elizaLogger.info(`Approving ${fromTokenSymbol} for Router`);
 			const approveTx = await contractHelper.invokeContract({
 				networkId: config.networkId,
 				contractAddress: fromTokenAddress,
 				method: "approve",
-				args: [BITPROTOCOL_CONTRACTS.BitVault, amountParsed.toString()],
+				args: [BITPROTOCOL_CONTRACTS.Router, amountParsed.toString()],
 				abi: ERC20_ABI,
 			});
 
 			elizaLogger.info(
 				`Approval transaction sent: ${approveTx.transactionLink}`,
 			);
-		}
 
-		// 2. Get optimal swap path if using DEX-style swap
-		let optimalPath: string[] = [];
-		let estimatedOutput = "0";
-
-		try {
-			const pathResult = await contractHelper.readContract({
-				networkId: config.networkId,
-				contractAddress: BITPROTOCOL_CONTRACTS.MultiCollateralHintHelpers,
-				method: "getOptimalPath",
-				args: [fromTokenAddress, toTokenAddress, amountParsed.toString()],
-				abi: ROUTER_ABI,
-			});
-
-			optimalPath = pathResult.path || [fromTokenAddress, toTokenAddress];
-			estimatedOutput = pathResult.estimatedOutput || "0";
 			elizaLogger.info(
-				`Found optimal swap path with estimated output: ${estimatedOutput}`,
+				`Swapping ${fromTokenSymbol} to ROSE using swapExactTokensForETH`,
 			);
-		} catch (pathError) {
-			elizaLogger.warn(
-				`Could not determine optimal path, using direct swap: ${pathError}`,
-			);
-			// Default to direct path if optimal path can't be determined
-			optimalPath = [fromTokenAddress, toTokenAddress];
-		}
-
-		// 3. Calculate minimum output based on slippage
-		const minOutput =
-			BigInt(estimatedOutput) -
-			(BigInt(estimatedOutput) * BigInt(Math.floor(currentSlippage * 10000))) /
-				BigInt(10000);
-
-		// 4. Execute the swap
-		elizaLogger.info(`Executing BitProtocol swap operation...`);
-		const deadline = Math.floor(Date.now() / 1000) + 3600; // 1 hour deadline
-
-		let swapTx;
-		if (config.privacyEnabled && PRIVACY_CONFIG.TEE_ENABLED) {
-			elizaLogger.info("Using privacy-preserving swap...");
-			// Generate nonce for confidentiality
-			const nonce = BigInt(Math.floor(Math.random() * 1000000000)).toString();
-
-			// Get user address
-			const userAddress = await contractHelper.getUserAddress();
-
-			// Use privateSwap from ROUTER_ABI for privacy-preserving swaps
 			swapTx = await contractHelper.invokeContract({
 				networkId: config.networkId,
-				contractAddress: BITPROTOCOL_CONTRACTS.BitVault,
-				method: "privateSwap",
+				contractAddress: BITPROTOCOL_CONTRACTS.Router,
+				method: "swapExactTokensForETH",
 				args: [
-					fromTokenAddress,
-					toTokenAddress,
 					amountParsed.toString(),
 					minOutput.toString(),
+					path,
+					userAddress,
 					deadline,
-					Buffer.from(JSON.stringify({ sender: userAddress, nonce })).toString(
-						"base64",
-					),
 				],
-				abi: ROUTER_ABI,
-				confidential: true,
-				gasLimit: PRIVACY_CONFIG.MINIMUM_GAS_FOR_PRIVACY, // Higher gas limit for privacy operations
+				abi: UNISWAP_V2_ROUTER_ABI,
 			});
-		} else {
-			// Standard swap
+		}
+		// Case 3: Token to Token
+		else {
+			elizaLogger.info(`Approving ${fromTokenSymbol} for Router`);
+			const approveTx = await contractHelper.invokeContract({
+				networkId: config.networkId,
+				contractAddress: fromTokenAddress,
+				method: "approve",
+				args: [BITPROTOCOL_CONTRACTS.Router, amountParsed.toString()],
+				abi: ERC20_ABI,
+			});
+
+			elizaLogger.info(
+				`Approval transaction sent: ${approveTx.transactionLink}`,
+			);
+
+			elizaLogger.info(
+				`Swapping ${fromTokenSymbol} to ${toTokenSymbol} using swapExactTokensForTokens`,
+			);
 			swapTx = await contractHelper.invokeContract({
 				networkId: config.networkId,
-				contractAddress: BITPROTOCOL_CONTRACTS.BitVault,
-				method: "swap",
+				contractAddress: BITPROTOCOL_CONTRACTS.Router,
+				method: "swapExactTokensForTokens",
 				args: [
-					fromTokenAddress,
-					toTokenAddress,
 					amountParsed.toString(),
 					minOutput.toString(),
+					path,
+					userAddress,
 					deadline,
 				],
-				abi: ROUTER_ABI,
+				abi: UNISWAP_V2_ROUTER_ABI,
 			});
 		}
 
 		elizaLogger.info(`Swap transaction sent: ${swapTx.transactionLink}`);
-
-		// Extract transaction hash from transaction link
-		const txHash = swapTx.transactionLink.includes("/")
-			? swapTx.transactionLink.split("/").pop() || swapTx.transactionLink
+		txHash = swapTx.transactionLink?.includes("/")
+			? (swapTx.transactionLink.split("/").pop() ?? swapTx.transactionLink)
 			: swapTx.transactionLink;
 
-		const result: SwapResult = {
-			transactionHash: txHash,
-			fromAmountFormatted: amountStr,
-			estimatedOutputFormatted: await formatTokenAmount(
-				BigInt(estimatedOutput),
+		// Format estimated output for return
+		let formattedOutput;
+		try {
+			formattedOutput = await formatTokenAmount(
+				BigInt(estimatedOutput), // Use the string estimatedOutput
 				toTokenAddress,
 				contractHelper,
 				config.networkId,
-			),
-			path: optimalPath.map((addr) => {
+			);
+		} catch (error) {
+			formattedOutput = `~${estimatedOutput} wei`;
+		}
+
+		const result: SwapResult = {
+			transactionHash: txHash ?? "N/A",
+			fromAmountFormatted: amountStr,
+			estimatedOutputFormatted: formattedOutput,
+			path: path.map((addr: string) => {
+				// Add type annotation for addr
 				// Find token symbol from address
 				for (const [symbol, address] of Object.entries(TOKEN_ADDRESSES)) {
 					if (address.toLowerCase() === addr.toLowerCase()) {
@@ -248,10 +286,11 @@ const handleSwap: Action["handler"] = async (
 			}),
 		};
 
-		if (callback)
+		if (callback) {
 			callback({
-				text: `Swap initiated: ${amountStr} ${fromTokenSymbol} to approximately ${result.estimatedOutputFormatted} ${toTokenSymbol}. Transaction: ${txHash}`,
+				text: `Swap initiated: ${amountStr} ${fromTokenSymbol} to approximately ${formattedOutput} ${toTokenSymbol}. Transaction: ${txHash ?? "N/A"}`,
 			});
+		}
 
 		return result;
 	} catch (error: unknown) {
@@ -266,11 +305,13 @@ const handleSwap: Action["handler"] = async (
 				privacyEnabled: config.privacyEnabled,
 			},
 		});
-		if (callback)
+		if (callback) {
 			callback({
 				text: `Swap failed: ${errorMessage}`,
 			});
-		throw error; // Re-throw error to be handled by the agent runtime
+		}
+		// It's important to re-throw the error so the runtime can handle it
+		throw error;
 	}
 };
 
@@ -290,7 +331,7 @@ export const swapAction: Action = {
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Initiating swap for 100 ROSE to BitUSD via BitProtocol...",
+					text: "Initiating swap for 100 ROSE to BitUSD...",
 					action: "bitProtocol.swap",
 				},
 			},
@@ -323,7 +364,6 @@ export const swapAction: Action = {
 };
 
 // --- Private Swap Action --- //
-
 const handlePrivateSwap: Action["handler"] = async (
 	runtime: IAgentRuntime,
 	message: Memory,
@@ -345,6 +385,9 @@ const handlePrivateSwap: Action["handler"] = async (
 		// Validate input from options using Zod schema
 		const validationResult = PrivateSwapInputSchema.safeParse(options);
 		if (!validationResult.success) {
+			elizaLogger.error(
+				`Input validation failed: ${JSON.stringify(validationResult.error.format())}`,
+			);
 			throw new Error(
 				`Invalid input options: ${validationResult.error.message}`,
 			);
@@ -375,123 +418,251 @@ const handlePrivateSwap: Action["handler"] = async (
 			config.networkId,
 		);
 
-		// --- Contract Interaction --- //
-		// 1. Approve (if necessary)
-		if (fromTokenSymbol !== "ROSE") {
+		// --- Determine swap path ---
+		const path = [fromTokenAddress, toTokenAddress];
+		if (
+			fromTokenSymbol !== "BitUSD" &&
+			toTokenSymbol !== "BitUSD" &&
+			fromTokenSymbol !== "ROSE" &&
+			toTokenSymbol !== "ROSE"
+		) {
+			// If neither token is BitUSD or ROSE, use BitUSD as an intermediate
+			path.splice(1, 0, TOKEN_ADDRESSES.BitUSD);
+		}
+
+		elizaLogger.info(`Using private swap path: ${path.join(" -> ")}`);
+
+		// --- Get estimated output amount (less accurate for private swaps) ---
+		let estimatedOutput = "0"; // Default to 0
+		try {
+			// For privacy reasons, we might use a different estimation approach
+			// This is an example - in a real implementation, there might be a separate
+			// view method that doesn't reveal user intent
+			const amountsOut = await contractHelper.readContract({
+				networkId: config.networkId,
+				contractAddress: BITPROTOCOL_CONTRACTS.Router,
+				method: "getAmountsOut",
+				args: [amountParsed.toString(), path],
+				abi: UNISWAP_V2_ROUTER_ABI,
+			});
+
+			estimatedOutput = amountsOut[amountsOut.length - 1].toString();
 			elizaLogger.info(
-				`Approving ${amountStr} ${fromTokenSymbol} for confidential operations...`,
+				`Estimated output (approximate): ${estimatedOutput} ${toTokenSymbol}`,
+			);
+		} catch (error) {
+			elizaLogger.warn(
+				`Could not estimate output for private swap: ${error instanceof Error ? error.message : String(error)}`,
+			);
+			// Use a conservative estimate - apply a 5% discount compared to public swap
+			estimatedOutput = (
+				(BigInt(amountParsed) * BigInt(95)) /
+				BigInt(100)
+			).toString();
+			elizaLogger.info(`Using conservative estimate: ${estimatedOutput}`);
+		}
+
+		// Calculate minimum output with slippage
+		const minOutput =
+			BigInt(estimatedOutput) -
+			(BigInt(estimatedOutput) * BigInt(Math.floor(currentSlippage * 10000))) /
+				BigInt(10000);
+
+		elizaLogger.info(
+			`Minimum output with ${currentSlippage * 100}% slippage: ${minOutput.toString()} (private swap)`,
+		);
+
+		// --- Execute the swap ---
+		let swapTx: any;
+		let txHash: string | undefined;
+		const deadline = Math.floor(Date.now() / 1000) + 3600; // 1 hour deadline
+		const userAddress = await contractHelper.getUserAddress();
+
+		// Create encrypted data payload for privacy
+		const nonce = BigInt(Math.floor(Math.random() * 1000000000)).toString();
+		const encryptedData = Buffer.from(
+			JSON.stringify({
+				sender: userAddress,
+				nonce: nonce,
+				timestamp: Date.now(),
+			}),
+		).toString("base64");
+
+		elizaLogger.info(`Prepared confidential transaction metadata`);
+
+		// Case 1: From ETH/ROSE to Token
+		if (fromTokenSymbol === "ROSE") {
+			elizaLogger.info(
+				`Private swap ROSE to ${toTokenSymbol} using confidential transaction`,
 			);
 
+			swapTx = await contractHelper.invokeContract({
+				networkId: config.networkId,
+				contractAddress: BITPROTOCOL_CONTRACTS.BitVault,
+				method: "depositAndSwapETHForTokens",
+				args: [
+					toTokenAddress,
+					minOutput.toString(),
+					deadline,
+					Buffer.from(encryptedData),
+				],
+				abi: UNISWAP_V2_ROUTER_ABI, // Using a compatible ABI as placeholder
+				value: amountParsed.toString(),
+				gasLimit: PRIVACY_CONFIG.MINIMUM_GAS_FOR_PRIVACY,
+				confidential: true,
+			});
+		}
+		// Case 2: From Token to ETH/ROSE
+		else if (toTokenSymbol === "ROSE") {
+			elizaLogger.info(
+				`Approving ${fromTokenSymbol} for BitVault with confidentiality`,
+			);
 			const approveTx = await contractHelper.invokeContract({
 				networkId: config.networkId,
 				contractAddress: fromTokenAddress,
 				method: "approve",
 				args: [BITPROTOCOL_CONTRACTS.BitVault, amountParsed.toString()],
 				abi: ERC20_ABI,
-				confidential: true, // Use confidential transactions if available
+				confidential: true,
 			});
 
 			elizaLogger.info(
 				`Confidential approval transaction sent: ${approveTx.transactionLink}`,
 			);
+
+			elizaLogger.info(
+				`Private swap ${fromTokenSymbol} to ROSE using confidential transaction`,
+			);
+			swapTx = await contractHelper.invokeContract({
+				networkId: config.networkId,
+				contractAddress: BITPROTOCOL_CONTRACTS.BitVault,
+				method: "depositAndSwapTokensForETH",
+				args: [
+					fromTokenAddress,
+					amountParsed.toString(),
+					minOutput.toString(),
+					deadline,
+					Buffer.from(encryptedData),
+				],
+				abi: UNISWAP_V2_ROUTER_ABI, // Using a compatible ABI as placeholder
+				gasLimit: PRIVACY_CONFIG.MINIMUM_GAS_FOR_PRIVACY,
+				confidential: true,
+			});
+		}
+		// Case 3: Token to Token
+		else {
+			elizaLogger.info(
+				`Approving ${fromTokenSymbol} for BitVault with confidentiality`,
+			);
+			const approveTx = await contractHelper.invokeContract({
+				networkId: config.networkId,
+				contractAddress: fromTokenAddress,
+				method: "approve",
+				args: [BITPROTOCOL_CONTRACTS.BitVault, amountParsed.toString()],
+				abi: ERC20_ABI,
+				confidential: true,
+			});
+
+			elizaLogger.info(
+				`Confidential approval transaction sent: ${approveTx.transactionLink}`,
+			);
+
+			elizaLogger.info(
+				`Private swap ${fromTokenSymbol} to ${toTokenSymbol} using confidential transaction`,
+			);
+			swapTx = await contractHelper.invokeContract({
+				networkId: config.networkId,
+				contractAddress: BITPROTOCOL_CONTRACTS.BitVault,
+				method: "depositAndSwapTokensForTokens",
+				args: [
+					fromTokenAddress,
+					toTokenAddress,
+					amountParsed.toString(),
+					minOutput.toString(),
+					deadline,
+					Buffer.from(encryptedData),
+				],
+				abi: UNISWAP_V2_ROUTER_ABI, // Using a compatible ABI as placeholder
+				gasLimit: PRIVACY_CONFIG.MINIMUM_GAS_FOR_PRIVACY,
+				confidential: true,
+			});
 		}
 
-		// 2. Calculate minimum output based on slippage (estimate is less accurate in private mode)
-		const estimatedOutputRaw =
-			(BigInt(amountParsed) * BigInt(95)) / BigInt(100); // 5% discount as estimation
-		const minOutput =
-			estimatedOutputRaw -
-			(estimatedOutputRaw * BigInt(Math.floor(currentSlippage * 10000))) /
-				BigInt(10000);
-
-		// 3. Execute the private swap
-		elizaLogger.info(`Executing private swap operation`, {
-			fromToken: fromTokenSymbol,
-			toToken: toTokenSymbol,
-			amount: amountStr,
-			slippage: `${currentSlippage * 100}%`,
-			privacyEnabled: config.privacyEnabled,
-			teeEnabled: PRIVACY_CONFIG.TEE_ENABLED,
-		});
-
-		const deadline = Math.floor(Date.now() / 1000) + 3600; // 1 hour deadline
-
-		// Create encrypted data payload for privacy
-		const userAddress = await contractHelper.getUserAddress();
-		const nonce = BigInt(Math.floor(Math.random() * 1000000000)).toString();
-		const encryptedData = Buffer.from(
-			JSON.stringify({
-				sender: userAddress,
-				nonce: nonce,
-			}),
-		).toString("base64");
-
-		elizaLogger.info(`Encrypted transaction data prepared`, {
-			dataLength: encryptedData.length,
-			// Don't log the actual encrypted data for security reasons
-		});
-
-		// Use privateSwap method which is in the ROUTER_ABI
-		const swapTx = await contractHelper.invokeContract({
-			networkId: config.networkId,
-			contractAddress: BITPROTOCOL_CONTRACTS.BitVault,
-			method: "privateSwap",
-			args: [
-				fromTokenAddress,
-				toTokenAddress,
-				amountParsed.toString(),
-				minOutput.toString(),
-				deadline,
-				encryptedData,
-			],
-			abi: ROUTER_ABI,
-			gasLimit: PRIVACY_CONFIG.MINIMUM_GAS_FOR_PRIVACY, // Higher gas limit for privacy operations
-			confidential: true,
-		});
-
-		elizaLogger.info(`Private swap transaction sent: ${swapTx.transactionLink}`, {
-			networkId: config.networkId,
-			gasLimit: PRIVACY_CONFIG.MINIMUM_GAS_FOR_PRIVACY,
-			confidential: true,
-		});
-
-		// Extract transaction hash from transaction link
-		const txHash = swapTx.transactionLink.includes("/")
-			? swapTx.transactionLink.split("/").pop() || swapTx.transactionLink
+		elizaLogger.info(
+			`Private swap transaction sent: ${swapTx.transactionLink}`,
+		);
+		txHash = swapTx.transactionLink?.includes("/")
+			? (swapTx.transactionLink.split("/").pop() ?? swapTx.transactionLink)
 			: swapTx.transactionLink;
 
+		// Format estimated output for return
+		let formattedOutput = "Confidential";
+		try {
+			formattedOutput = await formatTokenAmount(
+				BigInt(estimatedOutput),
+				toTokenAddress,
+				contractHelper,
+				config.networkId,
+			);
+			formattedOutput += " (estimate)";
+		} catch (error) {
+			formattedOutput = `~${estimatedOutput} wei (confidential)`;
+		}
+
 		const result: SwapResult = {
-			transactionHash: txHash,
+			transactionHash: txHash ?? "N/A",
 			fromAmountFormatted: amountStr,
+			estimatedOutputFormatted: formattedOutput,
+			path: path.map((addr: string) => {
+				// Find token symbol from address
+				for (const [symbol, address] of Object.entries(TOKEN_ADDRESSES)) {
+					if (address.toLowerCase() === addr.toLowerCase()) {
+						return symbol;
+					}
+				}
+				return addr; // Return address if symbol not found
+			}),
 			isConfidential: true,
 		};
 
-		if (callback)
+		if (callback) {
 			callback({
-				text: `Private swap initiated: ${amountStr} ${fromTokenSymbol} to ${toTokenSymbol}. Transaction details are confidential.`,
+				text: `Confidential swap initiated: ${amountStr} ${fromTokenSymbol} to approximately ${formattedOutput} ${toTokenSymbol}. Transaction: ${txHash ?? "N/A"}`,
 			});
+		}
 
-		// Add transaction receipt handling to monitor transaction status
+		// Monitor transaction status
 		try {
-			elizaLogger.info(`Monitoring transaction ${swapTx.transactionHash}`);
-			// Log transaction confirmation
-			elizaLogger.info(`Transaction confirmed: ${swapTx.transactionHash}`);
-		} catch (receiptError) {
-			elizaLogger.warn(`Failed to get transaction receipt: ${receiptError}`);
+			elizaLogger.info(`Monitoring confidential transaction ${txHash}`);
+			// Additional logic to monitor the transaction could be added here
+		} catch (monitorError) {
+			elizaLogger.warn(
+				`Failed to monitor confidential transaction: ${monitorError}`,
+			);
 		}
 
 		return result;
 	} catch (error: unknown) {
+		const errorMessage = error instanceof Error ? error.message : String(error);
+		const errorStack =
+			error instanceof Error ? error.stack : "No stack trace available";
 		elizaLogger.error(
-			`bitProtocol.privateSwap action failed: ${error instanceof Error ? error.message : String(error)}`,
+			`bitProtocol.privateSwap action failed: ${errorMessage}`,
 			{
-				error: error instanceof Error ? error?.stack : error,
+				error: errorStack,
+				context: {
+					options,
+					networkId: config.networkId,
+					privacyEnabled: config.privacyEnabled,
+				},
 			},
 		);
-		if (callback)
+		if (callback) {
 			callback({
-				text: `Private swap failed: ${error instanceof Error ? error.message : String(error)}`,
+				text: `Private swap failed: ${errorMessage}`,
 			});
+		}
+		// It's important to re-throw the error so the runtime can handle it
 		throw error;
 	}
 };
@@ -530,7 +701,6 @@ export const privateSwapAction: Action = {
 };
 
 // --- Monitor Price Stability Action --- //
-
 const handleMonitorPriceStability: Action["handler"] = async (
 	runtime: IAgentRuntime,
 	message: Memory,
@@ -552,8 +722,8 @@ const handleMonitorPriceStability: Action["handler"] = async (
 		const priceBigInt = await contractHelper.readContract({
 			networkId: config.networkId,
 			contractAddress: BITPROTOCOL_CONTRACTS.PriceFeed,
-			method: "lastGoodPrice",
-			args: [],
+			method: "fetchPrice",
+			args: [BITPROTOCOL_CONTRACTS.DebtToken], // Pass the BitUSD token address
 			abi: PRICE_FEED_ABI,
 		});
 
@@ -569,8 +739,8 @@ const handleMonitorPriceStability: Action["handler"] = async (
 
 		// --- Stability Logic --- //
 		const priceNum = Number.parseFloat(priceString);
-		const lowerBound = 0.99; // Example threshold
-		const upperBound = 1.01; // Example threshold
+		const lowerBound = 0.99;
+		const upperBound = 1.01;
 		const isStable = priceNum >= lowerBound && priceNum <= upperBound;
 
 		const result: PriceStabilityInfo = {
@@ -617,7 +787,6 @@ export const monitorPriceStabilityAction: Action = {
 		],
 	],
 	validate: async (options: unknown): Promise<boolean> => {
-		// No schema validation needed
 		return true;
 	},
 };
@@ -665,52 +834,29 @@ const handleGetOptimalSwapPath: Action["handler"] = async (
 			config.networkId,
 		);
 
-		// --- Path Calculation --- //
-		elizaLogger.info("Calculating optimal swap path...");
+		// --- Path Determination (Simplified Logic - No Contract Call) --- //
+		elizaLogger.info("Determining default swap path (no contract call)...");
 
-		let pathResult;
-		try {
-			pathResult = await contractHelper.readContract({
-				networkId: config.networkId,
-				contractAddress: BITPROTOCOL_CONTRACTS.MultiCollateralHintHelpers,
-				method: "getOptimalPath",
-				args: [fromTokenAddress, toTokenAddress, amountParsed.toString()],
-				abi: ROUTER_ABI,
-			});
-		} catch (pathError) {
-			elizaLogger.warn(
-				`Could not determine optimal path from contract: ${pathError}`,
-			);
+		let pathResult: { path: string[]; estimatedOutput: string };
 
-			// Fallback logic if contract call fails
-			if (fromTokenSymbol === "BitUSD" || toTokenSymbol === "BitUSD") {
-				// Direct path if one token is BitUSD
-				pathResult = {
-					path: [fromTokenAddress, toTokenAddress],
-					estimatedOutput: (
-						(BigInt(amountParsed) * BigInt(95)) /
-						BigInt(100)
-					).toString(), // 95% estimate
-				};
-			} else {
-				// Path through BitUSD for other tokens
-				pathResult = {
-					path: [fromTokenAddress, TOKEN_ADDRESSES.BitUSD, toTokenAddress],
-					estimatedOutput: (
-						(BigInt(amountParsed) * BigInt(90)) /
-						BigInt(100)
-					).toString(), // 90% estimate for two hops
-				};
-			}
+		if (fromTokenSymbol === "BitUSD" || toTokenSymbol === "BitUSD") {
+			// Direct path if one token is BitUSD
+			pathResult = {
+				path: [fromTokenAddress, toTokenAddress],
+				estimatedOutput: "0", // Estimation not available
+			};
+			elizaLogger.info("Defaulting to direct swap path involving BitUSD.");
+		} else {
+			// Path through BitUSD for other tokens
+			pathResult = {
+				path: [fromTokenAddress, TOKEN_ADDRESSES.BitUSD, toTokenAddress],
+				estimatedOutput: "0", // Estimation not available
+			};
+			elizaLogger.info("Defaulting to swap path via BitUSD.");
 		}
 
 		// Format output
-		const formattedOutput = await formatTokenAmount(
-			BigInt(pathResult.estimatedOutput),
-			toTokenAddress,
-			contractHelper,
-			config.networkId,
-		);
+		const formattedOutput = "N/A (Estimation unavailable)"; // Set to N/A
 
 		// Convert addresses in path to token symbols
 		const symbolPath = pathResult.path.map((addr: string) => {
@@ -725,8 +871,8 @@ const handleGetOptimalSwapPath: Action["handler"] = async (
 
 		const result: SwapPath = {
 			path: symbolPath,
-			estimatedOutput: pathResult.estimatedOutput,
-			formattedOutput: formattedOutput,
+			estimatedOutput: pathResult.estimatedOutput, // Will be '0'
+			formattedOutput: formattedOutput, // Will be 'N/A'
 			inputAmount: amountStr,
 			fromSymbol: fromTokenSymbol,
 			toSymbol: toTokenSymbol,
