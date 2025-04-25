@@ -16,6 +16,7 @@ import {
 	type Strategy,
 	type TransactionReceipt,
 } from "../types";
+import * as ethers from "ethers";
 
 // Helper function to get user address via ContractHelper
 const getUserAddressString = async (
@@ -448,7 +449,7 @@ export const accumulatedFinancePlugin = (
 	};
 
 	/**
-	 * Mint a specific number of wstROSE shares
+	 * Mint a specific number of stROSE shares
 	 * This implements the ERC4626 mint standard
 	 */
 	const mint = async (
@@ -456,103 +457,60 @@ export const accumulatedFinancePlugin = (
 		receiver?: string,
 	): Promise<StakingResult> => {
 		try {
-			elizaLogger.info("Minting wstROSE shares", { sharesAmount, receiver });
+			elizaLogger.info("Minting stROSE shares", { sharesAmount, receiver });
 			const targetReceiver =
 				receiver || (await getUserAddressString(runtime, getNetworkId()));
 			elizaLogger.info("Target receiver address", { targetReceiver });
 
-			// // Get the asset amount required for minting the specified shares
-			// const assetsRequired = await contractHelper.readContract({
-			// 	networkId: getNetworkId(),
-			// 	contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
-			// 	method: "previewMint",
-			// 	args: [sharesAmount],
-			// 	abi: ABIS.WSTROSE,
-			// });
+			// Initialize ethers provider
+			const provider = new ethers.JsonRpcProvider(networkConfig.RPC_URL);
 
-			// elizaLogger.info("Assets required for mint", { assetsRequired });
+			if (!process.env.WALLET_PRIVATE_KEY) {
+				throw new Error("WALLET_PRIVATE_KEY must be defined");
+			}
 
-			// First, approve the wstROSE contract to spend the required assets
-			// elizaLogger.info("Preparing to approve token spending", {
-			// 	tokenContract: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
-			// 	spender: networkConfig.CONTRACTS.WRAPPED_ROSE,
-			// 	amount: sharesAmount.toString(),
-			// });
+			// Get signer from private key
+			const signer = new ethers.Wallet(
+				process.env.WALLET_PRIVATE_KEY,
+				provider,
+			);
 
-			// try {
-			// 	elizaLogger.info("Invoking approve on token contract");
-			// 	const approveResult = await contractHelper.invokeContract({
-			// 		networkId: getNetworkId(),
-			// 		contractAddress: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
-			// 		method: "approve",
-			// 		args: [networkConfig.CONTRACTS.WRAPPED_ROSE, sharesAmount.toString()],
-			// 		abi: ABIS.WSTROSE,
-			// 	});
+			// Create contract instance
+			const contract = new ethers.Contract(
+				networkConfig.CONTRACTS.UNSTAKED_ROSE,
+				ABIS.STROSE,
+				signer,
+			);
 
-			// 	elizaLogger.info("Approved token spending", {
-			// 		hash: approveResult.status,
-			// 		details: approveResult,
-			// 	});
-			// } catch (approveError) {
-			// 	elizaLogger.error("Failed to approve token spending", {
-			// 		error:
-			// 			approveError instanceof Error
-			// 				? {
-			// 						message: approveError.message,
-			// 						stack: approveError.stack,
-			// 						name: approveError.name,
-			// 					}
-			// 				: approveError,
-			// 	});
-			// 	throw approveError;
-			// }
-
-			// Now mint the shares
-			elizaLogger.info("Preparing to mint shares", {
-				contract: networkConfig.CONTRACTS.WRAPPED_ROSE,
+			elizaLogger.info("Preparing to deposit shares", {
+				contract: networkConfig.CONTRACTS.UNSTAKED_ROSE,
 				shares: sharesAmount,
 				receiver: targetReceiver,
 			});
 
-			try {
-				elizaLogger.info("Invoking mint on wstROSE contract");
-				const depositResult = await contractHelper.invokeContract({
-					networkId: "23294", // Oasis Sapphire mainnet chain ID
-					contractAddress: networkConfig.CONTRACTS.UNSTAKED_ROSE,
-					method: "deposit",
-					args: [targetReceiver],
-					amount: sharesAmount,
-					assetId: "0x0000000000000000000000000000000000000000", // Native token asset ID
-					abi: ABIS.STROSE,
-				});
+			// Call the deposit function
+			const tx = await contract.deposit(targetReceiver, {
+				value: ethers.parseEther(sharesAmount),
+				gasLimit: 300000, // Adjust gas limit as needed
+			});
 
-				elizaLogger.info("Deposit completed", {
-					status: depositResult.status,
-					details: depositResult,
-				});
+			elizaLogger.info("Transaction sent", { hash: tx.hash });
 
-				const result: StakingResult = {
-					transactionHash:
-						depositResult.transactionLink?.split("/").pop() || "",
-					stakedAmount: sharesAmount.toString(),
-					timestamp: Date.now(),
-				};
+			// Wait for transaction to be mined
+			const receipt = await tx.wait();
+			elizaLogger.info("Transaction mined", {
+				hash: receipt.hash,
+				gasUsed: receipt.gasUsed.toString(),
+			});
 
-				elizaLogger.info("Minting completed successfully", result);
-				return result;
-			} catch (mintError) {
-				elizaLogger.error("Failed to mint shares", {
-					error:
-						mintError instanceof Error
-							? {
-									message: mintError.message,
-									stack: mintError.stack,
-									name: mintError.name,
-								}
-							: mintError,
-				});
-				throw mintError;
-			}
+			const result: StakingResult = {
+				transactionHash: receipt.hash,
+				stakedAmount: sharesAmount,
+				timestamp: Date.now(),
+			};
+
+			elizaLogger.info("Minting completed successfully", result);
+			return result;
 		} catch (error: unknown) {
 			const errorMessage =
 				error instanceof Error ? error.message : "Unknown error";
@@ -782,8 +740,9 @@ export const stakeAction: Action = {
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<StakingResult> => {
@@ -931,7 +890,7 @@ export const stakeAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Staking failed: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Staking failed: Unknown error` });
+				callback({ text: "Staking failed: Unknown error" });
 			}
 			throw error;
 		}
@@ -976,14 +935,15 @@ export const unstakeAction: Action = {
 		try {
 			new ContractHelper(runtime);
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
@@ -1022,7 +982,7 @@ export const unstakeAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Unstaking failed: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Unstaking failed: Unknown error` });
+				callback({ text: "Unstaking failed: Unknown error" });
 			}
 			throw error;
 		}
@@ -1067,15 +1027,16 @@ export const getRewardsAction: Action = {
 		try {
 			new ContractHelper(runtime);
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
-		options?: any,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<RewardInfo> => {
 		const contractHelper = new ContractHelper(runtime);
@@ -1126,7 +1087,7 @@ export const getRewardsAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to get rewards: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Failed to get rewards: Unknown error` });
+				callback({ text: "Failed to get rewards: Unknown error" });
 			}
 			throw error;
 		}
@@ -1171,15 +1132,16 @@ export const claimRewardsAction: Action = {
 		try {
 			new ContractHelper(runtime);
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
-		options?: any,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
 		const contractHelper = new ContractHelper(runtime);
@@ -1206,7 +1168,7 @@ export const claimRewardsAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to claim rewards: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Failed to claim rewards: Unknown error` });
+				callback({ text: "Failed to claim rewards: Unknown error" });
 			}
 			throw error;
 		}
@@ -1249,10 +1211,11 @@ export const getStakingStrategiesAction: Action = {
 	],
 	validate: async () => true,
 	handler: async (
-		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
-		options?: any,
+		_runtime: IAgentRuntime,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<Strategy[]> => {
 		const strategies: Strategy[] = [
@@ -1311,15 +1274,16 @@ export const getStakedBalanceAction: Action = {
 		try {
 			new ContractHelper(runtime);
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
-		options?: any,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<string> => {
 		const contractHelper = new ContractHelper(runtime);
@@ -1355,7 +1319,7 @@ export const getStakedBalanceAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to get staked balance: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Failed to get staked balance: Unknown error` });
+				callback({ text: "Failed to get staked balance: Unknown error" });
 			}
 			throw error;
 		}
@@ -1404,10 +1368,11 @@ export const wrapRoseAction: Action = {
 		runtime: IAgentRuntime,
 		message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
-		const amount = options?.amount || "0";
+		const _amount = options?.amount || "0";
 
 		try {
 			// Directly call stake handler logic
@@ -1438,7 +1403,7 @@ export const wrapRoseAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to wrap ROSE: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Failed to wrap ROSE: Unknown error` });
+				callback({ text: "Failed to wrap ROSE: Unknown error" });
 			}
 			throw error;
 		}
@@ -1484,10 +1449,11 @@ export const unwrapRoseAction: Action = {
 		runtime: IAgentRuntime,
 		message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
-		const amount = options?.amount || "0";
+		const _amount = options?.amount || "0";
 
 		try {
 			// Directly call unstake handler
@@ -1516,7 +1482,7 @@ export const unwrapRoseAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to unwrap ROSE: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Failed to unwrap ROSE: Unknown error` });
+				callback({ text: "Failed to unwrap ROSE: Unknown error" });
 			}
 			throw error;
 		}
@@ -1525,21 +1491,20 @@ export const unwrapRoseAction: Action = {
 
 export const mintAction: Action = {
 	name: "ACCUMULATED_FINANCE_MINT",
-	description:
-		"Mint a specific number of wstROSE shares on Accumulated Finance",
-	similes: ["MINT_WSTROSE_ACCUMULATED", "MINT_SHARES_ACCUMULATED"],
+	description: "Mint a specific number of stROSE shares on Accumulated Finance",
+	similes: ["MINT_STROSE_ACCUMULATED", "MINT_SHARES_ACCUMULATED"],
 	examples: [
 		[
 			{
 				user: "{{user1}}",
 				content: {
-					text: "I want to mint 5 wstROSE shares",
+					text: "I want to mint 5 stROSE shares",
 				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Minted 5 wstROSE shares. Tx: 0x3a8d706eed54b7b13f53e2a1639e0fff35ad5458c62af97d629b4bfcdb42e1a9",
+					text: "Minted 5 stROSE shares. Tx: 0x3a8d706eed54b7b13f53e2a1639e0fff35ad5458c62af97d629b4bfcdb42e1a9",
 				},
 			},
 		],
@@ -1547,42 +1512,37 @@ export const mintAction: Action = {
 			{
 				user: "{{user1}}",
 				content: {
-					text: "Mint 10 shares of wstROSE",
+					text: "Mint 10 shares of stROSE",
 				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Minted 10 wstROSE shares. Tx: 0x8c76a1137d31a3b7f5ccc29aa31f91436745e27d8865acc0cd4cdcb8ae34368f",
+					text: "Minted 10 stROSE shares. Tx: 0x8c76a1137d31a3b7f5ccc29aa31f91436745e27d8865acc0cd4cdcb8ae34368f",
 				},
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => {
-		// Basic validation: Check if ContractHelper can be initialized
+	validate: async (_runtime: IAgentRuntime) => {
 		try {
-			elizaLogger.info("Validating mintAction: Creating ContractHelper");
-			new ContractHelper(runtime);
-			elizaLogger.info("Validation successful: ContractHelper created");
+			// Check if we have the required environment variables
+			if (!process.env.WALLET_PRIVATE_KEY) {
+				elizaLogger.error(
+					"Validation failed: WALLET_PRIVATE_KEY environment variable is missing",
+				);
+				return false;
+			}
 			return true;
 		} catch (e) {
-			elizaLogger.error(
-				"Validation failed for mintAction: Coinbase/ContractHelper setup missing",
-				e instanceof Error
-					? {
-							message: e.message,
-							stack: e.stack,
-							name: e.name,
-						}
-					: e,
-			);
+			elizaLogger.error("Validation failed for mintAction", e);
 			return false;
 		}
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<StakingResult> => {
@@ -1594,10 +1554,6 @@ export const mintAction: Action = {
 		});
 
 		try {
-			elizaLogger.info("Creating ContractHelper in mintAction handler");
-			const contractHelper = new ContractHelper(runtime);
-			elizaLogger.info("Successfully created ContractHelper");
-
 			const { networkConfig, networkId } = getConfigAndNetwork(runtime);
 			elizaLogger.info("Network configuration", {
 				networkId,
@@ -1607,114 +1563,65 @@ export const mintAction: Action = {
 				},
 			});
 
-			const sharesAmount = "5"; // Default to 1 share if not specified
-			const receiver = "0xD952175d6A20187d7A5803DcC9741472F640A9b8";
+			const sharesAmount = options?.amount || "5"; // Default to 5 shares if not specified
+			const receiver =
+				options?.receiver || "0xD952175d6A20187d7A5803DcC9741472F640A9b8";
 			elizaLogger.info("Mint parameters", { sharesAmount, receiver });
 
 			try {
-				elizaLogger.info("Getting user address");
-				const userAddress = await getUserAddressString(runtime, networkId);
-				elizaLogger.info("User address retrieved", { userAddress });
-				const targetReceiver = receiver || userAddress;
+				// Initialize ethers provider
+				const provider = new ethers.JsonRpcProvider(networkConfig.RPC_URL);
 
-				// Get asset amount required for minting
-				// const assetsRequired = await contractHelper.readContract({
-				// 	networkId: networkId,
-				// 	contractAddress: networkConfig.CONTRACTS.WRAPPED_ROSE,
-				// 	method: "previewMint",
-				// 	args: [sharesAmount],
-				// 	abi: ABIS.WSTROSE,
-				// });
+				// Get signer from private key
+				const signer = new ethers.Wallet(
+					process.env.WALLET_PRIVATE_KEY as string,
+					provider,
+				);
 
-				// // Approve
-				// elizaLogger.info("Preparing to approve token spending", {
-				// 	tokenContract: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
-				// 	spender: networkConfig.CONTRACTS.WRAPPED_ROSE,
-				// 	amount: sharesAmount.toString(),
-				// });
+				// Create contract instance
+				const contract = new ethers.Contract(
+					networkConfig.CONTRACTS.UNSTAKED_ROSE,
+					ABIS.STROSE,
+					signer,
+				);
 
-				// try {
-				// 	const approveResult = await contractHelper.invokeContract({
-				// 		networkId: networkId,
-				// 		contractAddress: networkConfig.CONTRACTS.UNWRAPPED_ROSE,
-				// 		method: "approve",
-				// 		args: [
-				// 			networkConfig.CONTRACTS.WRAPPED_ROSE,
-				// 			sharesAmount.toString(),
-				// 		],
-				// 		abi: ABIS.WSTROSE,
-				// 	});
-
-				// 	elizaLogger.info("Approved token spending", {
-				// 		status: approveResult.status,
-				// 		details: approveResult,
-				// 	});
-				// } catch (approveError) {
-				// 	elizaLogger.error("Failed to approve token spending", {
-				// 		error:
-				// 			approveError instanceof Error
-				// 				? {
-				// 						message: approveError.message,
-				// 						stack: approveError.stack,
-				// 						name: approveError.name,
-				// 					}
-				// 				: approveError,
-				// 	});
-				// 	throw approveError;
-				// }
-
-				// Deposit shares
 				elizaLogger.info("Preparing to deposit shares", {
 					contract: networkConfig.CONTRACTS.UNSTAKED_ROSE,
 					shares: sharesAmount,
-					receiver: targetReceiver,
+					receiver: receiver,
 				});
 
-				try {
-					const depositResult = await contractHelper.invokeContract({
-						networkId: "23294", // Oasis Sapphire mainnet chain ID
-						contractAddress: networkConfig.CONTRACTS.UNSTAKED_ROSE,
-						method: "deposit",
-						args: [targetReceiver],
-						amount: sharesAmount,
-						assetId: "wei", // Native token asset ID
-						abi: ABIS.STROSE,
+				// Call the deposit function
+				const tx = await contract.deposit(receiver, {
+					value: ethers.parseEther(sharesAmount),
+					gasLimit: 300000, // Adjust gas limit as needed
+				});
+
+				elizaLogger.info("Transaction sent", { hash: tx.hash });
+
+				// Wait for transaction to be mined
+				const receipt = await tx.wait();
+				elizaLogger.info("Transaction mined", {
+					hash: receipt.hash,
+					gasUsed: receipt.gasUsed.toString(),
+				});
+
+				const result: StakingResult = {
+					transactionHash: receipt.hash,
+					stakedAmount: sharesAmount,
+					timestamp: Date.now(),
+				};
+
+				elizaLogger.info("Mint action completed successfully", result);
+
+				if (callback) {
+					callback({
+						text: `Minted ${sharesAmount} stROSE shares. Tx: ${result.transactionHash}`,
 					});
-
-					elizaLogger.info("Deposit completed", {
-						status: depositResult.status,
-						details: depositResult,
-					});
-
-					const result: StakingResult = {
-						transactionHash:
-							depositResult.transactionLink?.split("/").pop() || "",
-						stakedAmount: sharesAmount.toString(),
-						timestamp: Date.now(),
-					};
-
-					elizaLogger.info("Mint action completed successfully", result);
-
-					if (callback)
-						callback({
-							text: `Minted ${sharesAmount} stROSE shares. Tx: ${result.transactionHash}`,
-						});
-					return result;
-				} catch (mintError) {
-					elizaLogger.error("Failed to mint shares", {
-						error:
-							mintError instanceof Error
-								? {
-										message: mintError.message,
-										stack: mintError.stack,
-										name: mintError.name,
-									}
-								: mintError,
-					});
-					throw mintError;
 				}
+				return result;
 			} catch (error) {
-				elizaLogger.error("Error in user address or contract operations", {
+				elizaLogger.error("Error in contract operations", {
 					error:
 						error instanceof Error
 							? {
@@ -1788,14 +1695,15 @@ export const approveAction: Action = {
 		try {
 			new ContractHelper(runtime);
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
@@ -1850,7 +1758,7 @@ export const approveAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Approval failed: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Approval failed: Unknown error` });
+				callback({ text: "Approval failed: Unknown error" });
 			}
 			throw error;
 		}
@@ -1895,14 +1803,15 @@ export const redeemAction: Action = {
 		try {
 			new ContractHelper(runtime);
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
@@ -1982,7 +1891,7 @@ export const redeemAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to redeem shares: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Failed to redeem shares: Unknown error` });
+				callback({ text: "Failed to redeem shares: Unknown error" });
 			}
 			throw error;
 		}
