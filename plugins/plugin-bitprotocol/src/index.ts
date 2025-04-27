@@ -1,24 +1,19 @@
 import type { Plugin } from "@elizaos/core";
 import {
-	getOptimalSwapPathAction,
+	getOptimalPathAction,
 	monitorPriceStabilityAction,
-	privateSwapAction,
 	swapAction,
 } from "./plugins/bitprotocol";
 
+// Main consolidated plugin export
 export const bitProtocolPlugin: Plugin = {
-	name: "bitProtocol", // Simple name for plugin registration/lookup
+	name: "bitProtocol",
 	description:
 		"Plugin for interacting with BitProtocol on Oasis Sapphire (Swaps, Price Feed, Path Finding).",
-	actions: [
-		swapAction,
-		monitorPriceStabilityAction,
-		getOptimalSwapPathAction,
-		privateSwapAction,
-	],
-	providers: [], // Add if the plugin offers any data providers
-	evaluators: [], // Add if the plugin offers any evaluators
-	services: [], // Add if the plugin offers any services
+	actions: [swapAction, monitorPriceStabilityAction, getOptimalPathAction],
+	providers: [],
+	evaluators: [],
+	services: [],
 };
 
 export * from "./types";

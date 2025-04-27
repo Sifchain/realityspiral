@@ -429,7 +429,7 @@ export const PRICE_FEED_ABI = [
 		outputs: [],
 		stateMutability: "nonpayable",
 		type: "function",
-	}
+	},
 ];
 
 // Borrower Operations ABI - for stablecoin swapping functionality
@@ -1792,14 +1792,14 @@ export const DEFAULT_DECIMALS = 18;
 // Collateral token addresses
 export const COLLATERAL_TOKENS = {
 	ROSE: {
-		address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // Native token address placeholder
+		address: "0x3cabbe76ea8b4e7a2c0a69812cbe671800379ec8", // Native token address placeholder
 		symbol: "ROSE",
 		name: "Oasis ROSE",
 		decimals: 18,
 		isNative: true,
 	},
 	wstROSE: {
-		address: "0x57D51c99b7EB39c978c9E4493D74Ea79495999b0", // Placeholder - update with actual address
+		address: "0x3cabbe76ea8b4e7a2c0a69812cbe671800379ec8", // Placeholder - update with actual address
 		symbol: "wstROSE",
 		name: "Wrapped Staked ROSE",
 		decimals: 18,
@@ -1909,4 +1909,3 @@ export const UNISWAP_V2_ROUTER_ABI = [
 		type: "function",
 	},
 ];
-
