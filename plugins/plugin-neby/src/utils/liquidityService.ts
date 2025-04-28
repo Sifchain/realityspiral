@@ -446,6 +446,8 @@ export class LiquidityService {
 				],
 			});
 
+			elizaLogger.info("Pool liquidity", { poolLiquidity });
+
 			return poolLiquidity.toString();
 		} catch (error) {
 			elizaLogger.error("Failed to get pool liquidity", {

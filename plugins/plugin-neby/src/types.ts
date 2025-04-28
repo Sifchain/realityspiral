@@ -77,42 +77,42 @@ export type PluginConfig = z.infer<typeof PluginConfigSchema>;
  * Main plugin return type
  */
 export interface NebyPluginType {
-	swap: (
-		fromToken: string,
-		toToken: string,
-		amount: string,
-		slippage?: number,
-	) => Promise<SwapResult>;
+		swap: (
+			fromToken: string,
+			toToken: string,
+			amount: string,
+			slippage?: number,
+		) => Promise<SwapResult>;
 
-	addLiquidity: (
-		tokenA: string,
-		tokenB: string,
-		amountA: string,
-		amountB: string,
-	) => Promise<LiquidityResult>;
+		addLiquidity: (
+			tokenA: string,
+			tokenB: string,
+			amountA: string,
+			amountB: string,
+		) => Promise<LiquidityResult>;
 
-	removeLiquidity: (
-		tokenA: string,
-		tokenB: string,
-		liquidity: string,
-	) => Promise<LiquidityResult>;
+		removeLiquidity: (
+			tokenA: string,
+			tokenB: string,
+			liquidity: string,
+		) => Promise<LiquidityResult>;
 
-	monitorPrices: () => Promise<PriceInfo[]>;
+		monitorPrices: (
+			tokenPairs: Array<[string, string]>,
+		) => Promise<PriceInfo[]>;
 
-	findArbitrageOpportunities: () => Promise<ArbitrageOpportunity[]>;
+		getPoolLiquidity: (
+			tokenA: string,
+			tokenB: string,
+			fee?: number,
+		) => Promise<string>;
 
-	getPoolLiquidity: (
-		tokenA: string,
-		tokenB: string,
-		fee?: number,
-	) => Promise<string>;
-
-	getPoolInfo: (
-		tokenA: string,
-		tokenB: string,
-		fee?: number,
-	) => Promise<Record<string, unknown>>;
-}
+		getPoolInfo: (
+			tokenA: string,
+			tokenB: string,
+			fee?: number,
+		) => Promise<Record<string, unknown>>;
+	}
 
 /**
  * Plugin factory function type

@@ -1,11 +1,9 @@
 import type { Plugin } from "@elizaos/core";
 import {
 	addLiquidityAction,
-	findArbitrageOpportunitiesAction,
 	getPoolInfoAction,
 	getPoolLiquidityAction,
 	monitorPricesAction,
-	nebyPluginFactory,
 	removeLiquidityAction,
 	swapAction,
 } from "./plugins/neby";
@@ -19,7 +17,6 @@ export const nebyPlugin: Plugin = {
 		addLiquidityAction,
 		removeLiquidityAction,
 		monitorPricesAction,
-		findArbitrageOpportunitiesAction,
 		getPoolLiquidityAction,
 		getPoolInfoAction,
 	],
@@ -30,5 +27,3 @@ export const nebyPlugin: Plugin = {
 export * from "./types";
 export * from "./constants";
 
-// Re-export the plugin factory function
-export { nebyPluginFactory } from "./plugins/neby";

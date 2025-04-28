@@ -160,6 +160,8 @@ export class PriceService {
 				}
 			}
 
+			elizaLogger.info("Price infos", { priceInfos });
+
 			return priceInfos;
 		} catch (error) {
 			elizaLogger.error("Failed to monitor prices", {

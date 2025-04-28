@@ -60,6 +60,7 @@ import synfuturesPlugin from "@realityspiral/plugin-synfutures";
 import Database from "better-sqlite3";
 import yargs from "yargs";
 import { z } from "zod";
+import { nebyPlugin } from "@realityspiral/plugin-neby";
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -565,7 +566,7 @@ export async function createAgent(
 			// getSecret(character, "COINBASE_COMMERCE_KEY")
 			// 	? coinbaseCommercePlugin
 			// 	: null,
-			accumulatedFinancePlugin,
+			nebyPlugin,
 			// ...(getSecret(character, "COINBASE_API_KEY") &&
 			// getSecret(character, "COINBASE_PRIVATE_KEY")
 			// 	? [

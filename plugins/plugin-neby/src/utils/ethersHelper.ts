@@ -12,14 +12,17 @@ const serializeResult = (value: any): any => {
 	// Handle ethers Result objects (arrays with named properties)
 	if (Array.isArray(value) && typeof value === "object") {
 		const serializedArray = value.map(serializeResult);
-		const resultObject = { ...serializedArray }; // Copy array indices
+		// Explicitly type resultObject to allow string keys
+		const resultObject: Record<string, any> = { ...serializedArray }; // Copy array indices
 		// Copy named properties
-		Object.keys(value).forEach((key) => {
+		for (const key of Object.keys(value)) {
 			// Check if key is not a standard array index
 			if (Number.isNaN(Number(key))) {
-				resultObject[key] = serializeResult(value[key]);
+				// Accessing the original value array/object with a potential string key
+				// Need to assert value as any here if TS complains about string index on array type
+				resultObject[key] = serializeResult((value as any)[key]);
 			}
-		});
+		}
 		return resultObject;
 	}
 	if (Array.isArray(value)) {
@@ -165,6 +168,7 @@ export const readContract = async <T = any>({
 			elizaLogger.debug(`Using direct call for view/pure method: ${method}`);
 			result = await contractMethod(...args);
 		}
+		elizaLogger.info("Contract read result", { result });
 
 		const serializedResult = serializeResult(result);
 		elizaLogger.debug("Contract read successful", { method, serializedResult });
@@ -224,7 +228,9 @@ export const invokeContract = async ({
 			throw new Error(`Method '${method}' not found on contract ABI.`);
 		}
 
-		const txValue = value ? ethers.parseEther(value.toString()) : 0n; // Assuming value is in Ether unit
+		// const txValue = value ? ethers.parseEther(value.toString()) : 0n; // Assuming value is in Ether unit
+		// Use parseUnits with 18 decimals (standard for ROSE/ETH) for clarity
+		const txValue = value ? ethers.parseUnits(value.toString(), 18) : 0n;
 		elizaLogger.debug(
 			`Sending transaction with value: ${txValue.toString()} wei`,
 		);
