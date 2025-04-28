@@ -566,7 +566,7 @@ export async function createAgent(
 			getSecret(character, "COINBASE_COMMERCE_KEY")
 				? coinbaseCommercePlugin
 				: null,
-      accumulatedFinancePlugin,
+			accumulatedFinancePlugin,
 			...(getSecret(character, "COINBASE_API_KEY") &&
 			getSecret(character, "COINBASE_PRIVATE_KEY")
 				? [

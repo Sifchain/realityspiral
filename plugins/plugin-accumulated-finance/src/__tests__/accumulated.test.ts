@@ -1,25 +1,25 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { IAgentRuntime, Memory, State } from "@elizaos/core";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ABIS, SAPPHIRE_MAINNET } from "../constants"; // Import constants for addresses/ABIs
 import {
+	approveAction,
+	claimRewardsAction,
+	getRewardsAction,
+	getStakedBalanceAction,
+	mintAction,
+	redeemAction,
 	// Import all actions that can be resolved
 	stakeAction,
 	unstakeAction,
-	getRewardsAction,
-	claimRewardsAction,
-	getStakedBalanceAction,
-	wrapRoseAction,
 	unwrapRoseAction,
-	mintAction,
-	approveAction,
-	redeemAction,
+	wrapRoseAction,
 	// We can't import getStakingStrategiesAction due to previous issues,
 	// so we'll keep the mock test for that one.
 } from "../plugins/accumulated";
-import { ABIS, SAPPHIRE_MAINNET } from "../constants"; // Import constants for addresses/ABIs
 import type {
-	Strategy,
 	RewardInfo,
 	StakingResult,
+	Strategy,
 	TransactionReceipt,
 } from "../types";
 
@@ -73,7 +73,7 @@ describe("Accumulated Finance Plugin Actions", () => {
 			mockInvokeContract
 				.mockResolvedValueOnce({
 					status: "SUCCESS",
-					transactionLink: `tx/approvehash`,
+					transactionLink: "tx/approvehash",
 				})
 				.mockResolvedValueOnce({
 					status: "SUCCESS",
@@ -409,7 +409,7 @@ describe("Accumulated Finance Plugin Actions", () => {
 			mockInvokeContract
 				.mockResolvedValueOnce({
 					status: "SUCCESS",
-					transactionLink: `tx/approveWrap`,
+					transactionLink: "tx/approveWrap",
 				})
 				.mockResolvedValueOnce({
 					status: "SUCCESS",
@@ -495,13 +495,14 @@ describe("Accumulated Finance Plugin Actions", () => {
 			mockReadContract.mockResolvedValueOnce(mockRequiredAssets); // previewMint returns required assets
 
 			// Specific mock implementation for invokeContract for this test
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			mockInvokeContract.mockImplementation(async (callDetails: any) => {
 				console.log(
 					"mockInvokeContract called with:",
 					JSON.stringify(callDetails, null, 2),
 				); // Add logging
 				if (callDetails.method === "approve") {
-					return { status: "SUCCESS", transactionLink: `tx/approveMint` };
+					return { status: "SUCCESS", transactionLink: "tx/approveMint" };
 				}
 				if (callDetails.method === "mint") {
 					return {
@@ -617,10 +618,13 @@ describe("Accumulated Finance Plugin Actions", () => {
 	it("getStakingStrategiesAction should return the default strategy (using mock handler)", async () => {
 		// Use a mock handler instead of the actual one that's not being resolved properly
 		const mockGetStakingStrategiesHandler = async (
-			runtime: IAgentRuntime,
-			message: Memory,
-			state: any,
-			options: any,
+			_runtime: IAgentRuntime,
+			_message: Memory,
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			_state: any,
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			_options: any,
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			callback?: any,
 		): Promise<Strategy[]> => {
 			const mockStrategies: Strategy[] = [
@@ -666,4 +670,4 @@ describe("Accumulated Finance Plugin Actions", () => {
 			}),
 		);
 	});
-}); 
+});

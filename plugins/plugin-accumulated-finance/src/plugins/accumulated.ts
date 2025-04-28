@@ -782,8 +782,9 @@ export const stakeAction: Action = {
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<StakingResult> => {
@@ -931,7 +932,7 @@ export const stakeAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Staking failed: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Staking failed: Unknown error` });
+				callback({ text: "Staking failed: Unknown error" });
 			}
 			throw error;
 		}
@@ -976,14 +977,15 @@ export const unstakeAction: Action = {
 		try {
 			new ContractHelper(runtime);
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
@@ -1022,7 +1024,7 @@ export const unstakeAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Unstaking failed: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Unstaking failed: Unknown error` });
+				callback({ text: "Unstaking failed: Unknown error" });
 			}
 			throw error;
 		}
@@ -1067,15 +1069,16 @@ export const getRewardsAction: Action = {
 		try {
 			new ContractHelper(runtime);
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
-		options?: any,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<RewardInfo> => {
 		const contractHelper = new ContractHelper(runtime);
@@ -1126,7 +1129,7 @@ export const getRewardsAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to get rewards: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Failed to get rewards: Unknown error` });
+				callback({ text: "Failed to get rewards: Unknown error" });
 			}
 			throw error;
 		}
@@ -1171,15 +1174,16 @@ export const claimRewardsAction: Action = {
 		try {
 			new ContractHelper(runtime);
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
-		options?: any,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
 		const contractHelper = new ContractHelper(runtime);
@@ -1206,7 +1210,7 @@ export const claimRewardsAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to claim rewards: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Failed to claim rewards: Unknown error` });
+				callback({ text: "Failed to claim rewards: Unknown error" });
 			}
 			throw error;
 		}
@@ -1249,10 +1253,11 @@ export const getStakingStrategiesAction: Action = {
 	],
 	validate: async () => true,
 	handler: async (
-		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
-		options?: any,
+		_runtime: IAgentRuntime,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<Strategy[]> => {
 		const strategies: Strategy[] = [
@@ -1311,15 +1316,16 @@ export const getStakedBalanceAction: Action = {
 		try {
 			new ContractHelper(runtime);
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
-		options?: any,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<string> => {
 		const contractHelper = new ContractHelper(runtime);
@@ -1355,7 +1361,7 @@ export const getStakedBalanceAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to get staked balance: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Failed to get staked balance: Unknown error` });
+				callback({ text: "Failed to get staked balance: Unknown error" });
 			}
 			throw error;
 		}
@@ -1404,10 +1410,11 @@ export const wrapRoseAction: Action = {
 		runtime: IAgentRuntime,
 		message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
-		const amount = options?.amount || "0";
+		const _amount = options?.amount || "0";
 
 		try {
 			// Directly call stake handler logic
@@ -1438,7 +1445,7 @@ export const wrapRoseAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to wrap ROSE: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Failed to wrap ROSE: Unknown error` });
+				callback({ text: "Failed to wrap ROSE: Unknown error" });
 			}
 			throw error;
 		}
@@ -1484,10 +1491,11 @@ export const unwrapRoseAction: Action = {
 		runtime: IAgentRuntime,
 		message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
-		const amount = options?.amount || "0";
+		const _amount = options?.amount || "0";
 
 		try {
 			// Directly call unstake handler
@@ -1516,7 +1524,7 @@ export const unwrapRoseAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to unwrap ROSE: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Failed to unwrap ROSE: Unknown error` });
+				callback({ text: "Failed to unwrap ROSE: Unknown error" });
 			}
 			throw error;
 		}
@@ -1581,8 +1589,9 @@ export const mintAction: Action = {
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<StakingResult> => {
@@ -1788,14 +1797,15 @@ export const approveAction: Action = {
 		try {
 			new ContractHelper(runtime);
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
@@ -1850,7 +1860,7 @@ export const approveAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Approval failed: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Approval failed: Unknown error` });
+				callback({ text: "Approval failed: Unknown error" });
 			}
 			throw error;
 		}
@@ -1895,14 +1905,15 @@ export const redeemAction: Action = {
 		try {
 			new ContractHelper(runtime);
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state?: State,
+		_message: Memory,
+		_state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
@@ -1982,7 +1993,7 @@ export const redeemAction: Action = {
 			if (callback && error instanceof Error) {
 				callback({ text: `Failed to redeem shares: ${error.message}` });
 			} else if (callback) {
-				callback({ text: `Failed to redeem shares: Unknown error` });
+				callback({ text: "Failed to redeem shares: Unknown error" });
 			}
 			throw error;
 		}
