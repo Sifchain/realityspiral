@@ -24,6 +24,7 @@ import {
 } from "@realityspiral/plugin-instrumentation";
 import { createArrayCsvWriter } from "csv-writer";
 import { ABI } from "../constants";
+import { ContractHelper } from "../helpers/contractHelper";
 import {
 	contractInvocationTemplate,
 	readContractTemplate,
@@ -44,23 +45,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const baseDir = path.resolve(__dirname, "../../plugin-coinbase/src/plugins");
 const contractsCsvFilePath = path.join(baseDir, "contracts.csv");
-
-// Add this helper at the top level
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-const serializeBigInt = (value: any): any => {
-	if (typeof value === "bigint") {
-		return value.toString();
-	}
-	if (Array.isArray(value)) {
-		return value.map(serializeBigInt);
-	}
-	if (typeof value === "object" && value !== null) {
-		return Object.fromEntries(
-			Object.entries(value).map(([k, v]) => [k, serializeBigInt(v)]),
-		);
-	}
-	return value;
-};
 
 export const deployTokenContractAction: Action = {
 	name: "DEPLOY_TOKEN_CONTRACT",
@@ -311,14 +295,7 @@ export const invokeContractAction: Action = {
 		elizaLogger.debug("Starting INVOKE_CONTRACT handler...");
 
 		try {
-			Coinbase.configure({
-				apiKeyName:
-					runtime.getSetting("COINBASE_API_KEY") ??
-					process.env.COINBASE_API_KEY,
-				privateKey:
-					runtime.getSetting("COINBASE_PRIVATE_KEY") ??
-					process.env.COINBASE_PRIVATE_KEY,
-			});
+			const contractHelper = new ContractHelper(runtime);
 
 			const context = composeContext({
 				state,
@@ -344,26 +321,18 @@ export const invokeContractAction: Action = {
 
 			const { contractAddress, method, args, amount, assetId, networkId } =
 				invocationDetails.object;
-			const { wallet } = await initializeWallet(runtime, networkId);
 
-			// Prepare invocation options
-			const invocationOptions = {
-				contractAddress,
+			// Use ContractHelper to invoke contract
+			const invocationResult = await contractHelper.invokeContract({
+				// Pass parameters as a single object
+				contractAddress: contractAddress as `0x${string}`, // Ensure type safety
 				method,
-				abi: ABI,
-				args: {
-					...args,
-					amount: args.amount || amount, // Ensure amount is passed in args
-				},
+				args,
 				networkId,
-				assetId,
-			};
-			elizaLogger.info("Invocation options:", invocationOptions);
-			// Invoke the contract
-			const invocation = await wallet.invokeContract(invocationOptions);
-
-			// Wait for the transaction to be mined
-			await invocation.wait();
+				abi: ABI, // Pass the default ABI
+				amount: amount === "0" ? undefined : amount, // Pass amount if not "0"
+				assetId, // Pass assetId if present
+			});
 
 			// Log the invocation to CSV
 			const csvWriter = createArrayCsvWriter({
@@ -385,21 +354,21 @@ export const invokeContractAction: Action = {
 					contractAddress,
 					method,
 					networkId,
-					invocation.getStatus(),
-					invocation.getTransactionLink() || "",
+					invocationResult.status,
+					invocationResult.transactionLink,
 					amount || "",
 					assetId || "",
 				],
 			]);
 
 			const response: Content = {
-				text: `Contract method invoked successfully:
+				text: `Contract invocation successful:
 - Contract Address: ${contractAddress}
 - Method: ${method}
-- Network: ${networkId}
-- Status: ${invocation.getStatus()}
-- Transaction URL: ${invocation.getTransactionLink() || "N/A"}${amount ? `\n- Amount: ${amount}` : ""}
-${assetId ? `- Asset ID: ${assetId}` : ""}`,
+- Arguments: ${JSON.stringify(args)}
+- Network ID: ${networkId}
+- Status: ${invocationResult.status}
+- Transaction Link: ${invocationResult.transactionLink}`,
 			};
 
 			callback(response, []);
@@ -471,14 +440,7 @@ export const readContractAction: Action = {
 		elizaLogger.debug("Starting READ_CONTRACT handler...");
 
 		try {
-			Coinbase.configure({
-				apiKeyName:
-					runtime.getSetting("COINBASE_API_KEY") ??
-					process.env.COINBASE_API_KEY,
-				privateKey:
-					runtime.getSetting("COINBASE_PRIVATE_KEY") ??
-					process.env.COINBASE_PRIVATE_KEY,
-			});
+			const contractHelper = new ContractHelper(runtime);
 
 			const context = composeContext({
 				state,
@@ -503,22 +465,23 @@ export const readContractAction: Action = {
 			}
 
 			const { contractAddress, method, args, networkId } = readDetails.object;
-			const result = await readContractWrapper(
-				runtime,
-				contractAddress,
+			elizaLogger.info("Reading contract:", args);
+			const result = await contractHelper.readContract({
+				// Pass parameters as a single object
+				networkId,
+				contractAddress: contractAddress as `0x${string}`, // Ensure type safety
 				method,
 				args,
-				networkId,
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-				ABI as any,
-			);
+				abi: ABI, // Pass the default ABI
+			});
 
 			const response: Content = {
 				text: `Contract read successful:
 - Contract Address: ${contractAddress}
 - Method: ${method}
-- Network: ${networkId}
-- Result: ${JSON.stringify(result, null, 2)}`,
+- Arguments: ${JSON.stringify(args)}
+- Network ID: ${networkId}
+- Result: ${JSON.stringify(result)}`,
 			};
 
 			callback(response, []);
@@ -563,36 +526,7 @@ export const tokenContractPlugin: Plugin = {
 		"Enables deployment, invocation, and reading of ERC20, ERC721, and ERC1155 token contracts using the Coinbase SDK",
 	actions: [
 		deployTokenContractAction,
-		//  invokeContractAction,
+		// invokeContractAction,
 		readContractAction,
 	],
-};
-
-export const readContractWrapper = async (
-	runtime: IAgentRuntime,
-	contractAddress: `0x${string}`,
-	method: string,
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	args: any,
-	networkId: string,
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	abi: any,
-) => {
-	Coinbase.configure({
-		apiKeyName:
-			runtime.getSetting("COINBASE_API_KEY") ?? process.env.COINBASE_API_KEY,
-		privateKey:
-			runtime.getSetting("COINBASE_PRIVATE_KEY") ??
-			process.env.COINBASE_PRIVATE_KEY,
-	});
-
-	const result = await readContract({
-		networkId,
-		contractAddress,
-		method,
-		args,
-		abi,
-	});
-	const serializedResult = serializeBigInt(result);
-	return serializedResult;
 };

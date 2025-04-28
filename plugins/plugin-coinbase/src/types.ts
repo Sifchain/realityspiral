@@ -151,18 +151,17 @@ export interface ContractInvocationContent {
 	contractAddress: string;
 	method: string;
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	abi: any[];
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	args?: Record<string, any>;
 	amount?: string;
-	assetId: string;
+	assetId?: string;
 	networkId: string;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	abi?: any[];
 }
 
 export const ContractInvocationSchema = z.object({
 	contractAddress: z.string().describe("The address of the contract to invoke"),
 	method: z.string().describe("The method to invoke on the contract"),
-	abi: z.array(z.any()).describe("The ABI of the contract"),
 	args: z
 		.record(z.string(), z.any())
 		.optional()
@@ -173,10 +172,14 @@ export const ContractInvocationSchema = z.object({
 		.describe(
 			"The amount of the asset to send (as string to handle large numbers)",
 		),
-	assetId: z.string().describe("The ID of the asset to send (e.g., 'USDC')"),
+	assetId: z
+		.string()
+		.optional()
+		.describe("The ID of the asset to send (e.g., 'USDC')"),
 	networkId: z
 		.string()
 		.describe("The network ID to use (e.g., 'ethereum-mainnet')"),
+	abi: z.array(z.any()).optional().describe("The ABI of the contract"),
 });
 
 export const isContractInvocationContent = (

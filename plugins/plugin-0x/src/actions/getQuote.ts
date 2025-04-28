@@ -76,12 +76,12 @@ export const getQuote: Action = {
 			}
 
 			const buyAmountBaseUnitsQuoted = formatUnits(
-				BigInt(quote.buyAmount),
+				BigInt(quote?.buyAmount),
 				buyTokenObject.decimals,
 			);
 
 			const sellAmountBaseUnitsQuoted = formatUnits(
-				BigInt(quote.sellAmount),
+				BigInt(quote?.sellAmount),
 				sellTokenObject.decimals,
 			);
 
@@ -107,7 +107,7 @@ export const getQuote: Action = {
 					chainId,
 				)}`,
 				`📥 Buy: ${formatTokenAmount(
-					quote.buyAmount,
+					quote?.buyAmount,
 					buyTokenObject.address,
 					chainId,
 				)}`,
@@ -374,7 +374,7 @@ export const getQuoteObj = async (
 			}
 
 			const buyAmountBaseUnitsQuoted = formatUnits(
-				BigInt(quote.buyAmount),
+				BigInt(quote?.buyAmount),
 				buyTokenObject.decimals,
 			);
 			elizaLogger.info(`buyAmountBaseUnitsQuoted: ${buyAmountBaseUnitsQuoted}`);
@@ -409,7 +409,7 @@ export const getQuoteObj = async (
 					sellTokenObject.symbol,
 				)}`,
 				`📥 Buy: ${formatTokenAmountManual(
-					quote.buyAmount,
+					quote?.buyAmount,
 					buyTokenObject.address,
 					buyTokenObject.symbol,
 				)}`,

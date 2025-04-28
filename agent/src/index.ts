@@ -31,6 +31,7 @@ import { normalizeCharacter } from "@elizaos/plugin-di";
 import { CoinbaseClientInterface } from "@realityspiral/client-coinbase";
 import { DirectClient } from "@realityspiral/client-direct";
 import { GitHubClientInterface } from "@realityspiral/client-github";
+import { accumulatedFinancePlugin } from "@realityspiral/plugin-accumulated-finance";
 import {
 	advancedTradePlugin,
 	coinbaseCommercePlugin,
@@ -371,10 +372,36 @@ async function handlePluginImporting(plugins: string[]) {
 		const importedPlugins = await Promise.all(
 			plugins.map(async (plugin) => {
 				try {
+					elizaLogger.debug(`Attempting to import plugin: ${plugin}`);
 					const importedPlugin = await import(plugin);
+
+					// Log the imported plugin structure to help debug
+					elizaLogger.debug(
+						`Plugin import succeeded. Keys available: ${Object.keys(importedPlugin)}`,
+					);
+
 					const functionName = `${plugin
 						.replace("@realityspiral/plugin-", "")
 						.replace(/-./g, (x) => x[1].toUpperCase())}Plugin`; // Assumes plugin function is camelCased with Plugin suffix
+
+					elizaLogger.debug(`Looking for plugin function: ${functionName}`);
+
+					if (importedPlugin.default) {
+						// Check if the expected function exists
+						elizaLogger.debug(`Using default export for plugin: ${plugin}`);
+					} else if (importedPlugin[functionName]) {
+						elizaLogger.debug(
+							`Using named export '${functionName}' for plugin: ${plugin}`,
+						);
+					} else {
+						elizaLogger.error(
+							`Neither default export nor '${functionName}' found in plugin: ${plugin}`,
+						);
+						elizaLogger.error(
+							`Available exports: ${Object.keys(importedPlugin)}`,
+						);
+					}
+
 					return importedPlugin.default || importedPlugin[functionName];
 				} catch (importError) {
 					elizaLogger.error(`Failed to import plugin: ${plugin}`, importError);
@@ -532,58 +559,59 @@ export async function createAgent(
 		character,
 		// character.plugins are handled when clients are added
 		plugins: [
-			getSecret(character, "MARGIN_SHORT_TRADING_ENABLED") === "true"
-				? synfuturesPlugin
-				: null,
-			getSecret(character, "COINBASE_COMMERCE_KEY")
-				? coinbaseCommercePlugin
-				: null,
-			...(getSecret(character, "COINBASE_API_KEY") &&
-			getSecret(character, "COINBASE_PRIVATE_KEY")
-				? [
-						...(getSecret(
-							character,
-							"COINBASE_MASS_PAYMENTS_PAYMENT_ENABLED",
-						) === "true"
-							? [coinbaseMassPaymentsPlugin]
-							: []),
-						...(getSecret(character, "COINBASE_TRADE_PLUGIN_ENABLED") === "true"
-							? [tradePlugin]
-							: []),
-						...(getSecret(
-							character,
-							"COINBASE_TOKEN_CONTRACT_PLUGIN_ENABLED",
-						) === "true"
-							? [tokenContractPlugin]
-							: []),
-						...(getSecret(
-							character,
-							"COINBASE_ADVANCED_TRADE_PLUGIN_ENABLED",
-						) === "true"
-							? [advancedTradePlugin]
-							: []),
-					]
-				: []),
-			getSecret(character, "COINBASE_API_KEY") &&
-			getSecret(character, "COINBASE_PRIVATE_KEY") &&
-			getSecret(character, "COINBASE_NOTIFICATION_URI")
-				? webhookPlugin
-				: null,
-			...(getSecret(character, "GITHUB_PLUGIN_ENABLED") === "true" &&
-			getSecret(character, "GITHUB_API_TOKEN")
-				? [
-						githubInitializePlugin,
-						githubCreateCommitPlugin,
-						githubCreatePullRequestPlugin,
-						githubCreateMemorizeFromFilesPlugin,
-						githubCreateIssuePlugin,
-						githubModifyIssuePlugin,
-						githubIdeationPlugin,
-						githubInteractWithIssuePlugin,
-						githubInteractWithPRPlugin,
-						githubOrchestratePlugin,
-					]
-				: []),
+			// getSecret(character, "MARGIN_SHORT_TRADING_ENABLED") === "true"
+			// 	? synfuturesPlugin
+			// 	: null,
+			// getSecret(character, "COINBASE_COMMERCE_KEY")
+			// 	? coinbaseCommercePlugin
+			// 	: null,
+			accumulatedFinancePlugin,
+			// ...(getSecret(character, "COINBASE_API_KEY") &&
+			// getSecret(character, "COINBASE_PRIVATE_KEY")
+			// 	? [
+			// 			...(getSecret(
+			// 				character,
+			// 				"COINBASE_MASS_PAYMENTS_PAYMENT_ENABLED",
+			// 			) === "true"
+			// 				? [coinbaseMassPaymentsPlugin]
+			// 				: []),
+			// 			...(getSecret(character, "COINBASE_TRADE_PLUGIN_ENABLED") === "true"
+			// 				? [tradePlugin]
+			// 				: []),
+			// 			...(getSecret(
+			// 				character,
+			// 				"COINBASE_TOKEN_CONTRACT_PLUGIN_ENABLED",
+			// 			) === "true"
+			// 				? [tokenContractPlugin]
+			// 				: []),
+			// 			...(getSecret(
+			// 				character,
+			// 				"COINBASE_ADVANCED_TRADE_PLUGIN_ENABLED",
+			// 			) === "true"
+			// 				? [advancedTradePlugin]
+			// 				: []),
+			// 		]
+			// 	: []),
+			// getSecret(character, "COINBASE_API_KEY") &&
+			// getSecret(character, "COINBASE_PRIVATE_KEY") &&
+			// getSecret(character, "COINBASE_NOTIFICATION_URI")
+			// 	? webhookPlugin
+			// 	: null,
+			// ...(getSecret(character, "GITHUB_PLUGIN_ENABLED") === "true" &&
+			// getSecret(character, "GITHUB_API_TOKEN")
+			// 	? [
+			// 			githubInitializePlugin,
+			// 			githubCreateCommitPlugin,
+			// 			githubCreatePullRequestPlugin,
+			// 			githubCreateMemorizeFromFilesPlugin,
+			// 			githubCreateIssuePlugin,
+			// 			githubModifyIssuePlugin,
+			// 			githubIdeationPlugin,
+			// 			githubInteractWithIssuePlugin,
+			// 			githubInteractWithPRPlugin,
+			// 			githubOrchestratePlugin,
+			// 		]
+			// 	: []),
 		]
 			.flat()
 			.filter(Boolean),
