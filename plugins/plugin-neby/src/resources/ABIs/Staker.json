@@ -1,0 +1,737 @@
+[
+	{
+		"type": "constructor",
+		"inputs": [
+			{
+				"name": "_neby",
+				"type": "address",
+				"internalType": "contract IERC20"
+			},
+			{
+				"name": "_wrose",
+				"type": "address",
+				"internalType": "contract IERC20"
+			},
+			{
+				"name": "_usdc",
+				"type": "address",
+				"internalType": "contract IERC20"
+			},
+			{
+				"name": "_owner",
+				"type": "address",
+				"internalType": "address"
+			}
+		],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"name": "AddressEmptyCode",
+		"type": "error",
+		"inputs": [
+			{
+				"name": "target",
+				"type": "address",
+				"internalType": "address"
+			}
+		]
+	},
+	{
+		"name": "AddressInsufficientBalance",
+		"type": "error",
+		"inputs": [
+			{
+				"name": "account",
+				"type": "address",
+				"internalType": "address"
+			}
+		]
+	},
+	{
+		"name": "EndTimestampPassed",
+		"type": "error",
+		"inputs": []
+	},
+	{
+		"name": "FailedInnerCall",
+		"type": "error",
+		"inputs": []
+	},
+	{
+		"name": "NewTimestampTooSoon",
+		"type": "error",
+		"inputs": []
+	},
+	{
+		"name": "OwnableInvalidOwner",
+		"type": "error",
+		"inputs": [
+			{
+				"name": "owner",
+				"type": "address",
+				"internalType": "address"
+			}
+		]
+	},
+	{
+		"name": "OwnableUnauthorizedAccount",
+		"type": "error",
+		"inputs": [
+			{
+				"name": "account",
+				"type": "address",
+				"internalType": "address"
+			}
+		]
+	},
+	{
+		"name": "PositionDoesNotExist",
+		"type": "error",
+		"inputs": []
+	},
+	{
+		"name": "SafeERC20FailedOperation",
+		"type": "error",
+		"inputs": [
+			{
+				"name": "token",
+				"type": "address",
+				"internalType": "address"
+			}
+		]
+	},
+	{
+		"name": "TokensStillLocked",
+		"type": "error",
+		"inputs": []
+	},
+	{
+		"name": "ZeroAmount",
+		"type": "error",
+		"inputs": []
+	},
+	{
+		"name": "MigratedToV2",
+		"type": "event",
+		"inputs": [
+			{
+				"name": "user",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			},
+			{
+				"name": "endTimestamp",
+				"type": "uint128",
+				"indexed": false,
+				"internalType": "uint128"
+			},
+			{
+				"name": "options",
+				"type": "bytes",
+				"indexed": false,
+				"internalType": "bytes"
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"name": "OwnershipTransferred",
+		"type": "event",
+		"inputs": [
+			{
+				"name": "previousOwner",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			},
+			{
+				"name": "newOwner",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"name": "RewardsClaimed",
+		"type": "event",
+		"inputs": [
+			{
+				"name": "user",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			},
+			{
+				"name": "wRoseEarned",
+				"type": "uint256",
+				"indexed": false,
+				"internalType": "uint256"
+			},
+			{
+				"name": "usdcEarned",
+				"type": "uint256",
+				"indexed": false,
+				"internalType": "uint256"
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"name": "RewardsDeposited",
+		"type": "event",
+		"inputs": [
+			{
+				"name": "wRose",
+				"type": "uint256",
+				"indexed": false,
+				"internalType": "uint256"
+			},
+			{
+				"name": "usdc",
+				"type": "uint256",
+				"indexed": false,
+				"internalType": "uint256"
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"name": "RewardsUpdated",
+		"type": "event",
+		"inputs": [
+			{
+				"name": "user",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			},
+			{
+				"name": "stakedInWrose",
+				"type": "bool",
+				"indexed": false,
+				"internalType": "bool"
+			},
+			{
+				"name": "rewardEarned",
+				"type": "uint256",
+				"indexed": false,
+				"internalType": "uint256"
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"name": "StakerV2Set",
+		"type": "event",
+		"inputs": [
+			{
+				"name": "stakerV2",
+				"type": "address",
+				"indexed": false,
+				"internalType": "address"
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"name": "StakingPowerAdded",
+		"type": "event",
+		"inputs": [
+			{
+				"name": "user",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			},
+			{
+				"name": "endTimestamp",
+				"type": "uint128",
+				"indexed": false,
+				"internalType": "uint128"
+			},
+			{
+				"name": "amount",
+				"type": "uint128",
+				"indexed": false,
+				"internalType": "uint128"
+			},
+			{
+				"name": "stakingPower",
+				"type": "uint128",
+				"indexed": false,
+				"internalType": "uint128"
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"name": "StakingPowerRemoved",
+		"type": "event",
+		"inputs": [
+			{
+				"name": "user",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			},
+			{
+				"name": "endTimestamp",
+				"type": "uint128",
+				"indexed": false,
+				"internalType": "uint128"
+			},
+			{
+				"name": "amount",
+				"type": "uint128",
+				"indexed": false,
+				"internalType": "uint128"
+			},
+			{
+				"name": "stakingPower",
+				"type": "uint128",
+				"indexed": false,
+				"internalType": "uint128"
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"name": "StakingRewardTokenChanged",
+		"type": "event",
+		"inputs": [
+			{
+				"name": "user",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			},
+			{
+				"name": "previouslyStakedInWrose",
+				"type": "bool",
+				"indexed": false,
+				"internalType": "bool"
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"name": "MAX_LOCK_DURATION",
+		"type": "function",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint128",
+				"internalType": "uint128"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "NEBY",
+		"type": "function",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "address",
+				"internalType": "contract IERC20"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "USDC",
+		"type": "function",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "address",
+				"internalType": "contract IERC20"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "USDC_STAKING_POWER_ADJUSTMENT",
+		"type": "function",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "WROSE",
+		"type": "function",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "address",
+				"internalType": "contract IERC20"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "WROSE_STAKING_POWER_ADJUSTMENT",
+		"type": "function",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "changeStakingRewardToken",
+		"type": "function",
+		"inputs": [],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"name": "claim",
+		"type": "function",
+		"inputs": [],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"name": "cumulativeUsdcPerStakingPower",
+		"type": "function",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "cumulativeWrosePerStakingPower",
+		"type": "function",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "increaseEndTimestamp",
+		"type": "function",
+		"inputs": [
+			{
+				"name": "_endTimestamp",
+				"type": "uint128",
+				"internalType": "uint128"
+			},
+			{
+				"name": "_newEndTimestamp",
+				"type": "uint128",
+				"internalType": "uint128"
+			}
+		],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"name": "migrateToV2",
+		"type": "function",
+		"inputs": [
+			{
+				"name": "_endTimestamp",
+				"type": "uint128",
+				"internalType": "uint128"
+			},
+			{
+				"name": "_options",
+				"type": "bytes",
+				"internalType": "bytes"
+			}
+		],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"name": "multicall",
+		"type": "function",
+		"inputs": [
+			{
+				"name": "data",
+				"type": "bytes[]",
+				"internalType": "bytes[]"
+			}
+		],
+		"outputs": [
+			{
+				"name": "results",
+				"type": "bytes[]",
+				"internalType": "bytes[]"
+			}
+		],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"name": "notifyRewardAmount",
+		"type": "function",
+		"inputs": [
+			{
+				"name": "_wRose",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "_usdc",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"name": "owner",
+		"type": "function",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "address",
+				"internalType": "address"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "positions",
+		"type": "function",
+		"inputs": [
+			{
+				"name": "",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"outputs": [
+			{
+				"name": "amount",
+				"type": "uint128",
+				"internalType": "uint128"
+			},
+			{
+				"name": "stakingPower",
+				"type": "uint128",
+				"internalType": "uint128"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "renounceOwnership",
+		"type": "function",
+		"inputs": [],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"name": "rewardsEarned",
+		"type": "function",
+		"inputs": [
+			{
+				"name": "_user",
+				"type": "address",
+				"internalType": "address"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "setStakerV2",
+		"type": "function",
+		"inputs": [
+			{
+				"name": "_stakerV2",
+				"type": "address",
+				"internalType": "address"
+			}
+		],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"name": "stake",
+		"type": "function",
+		"inputs": [
+			{
+				"name": "_amount",
+				"type": "uint128",
+				"internalType": "uint128"
+			},
+			{
+				"name": "_endTimestamp",
+				"type": "uint128",
+				"internalType": "uint128"
+			}
+		],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"name": "stakerV2",
+		"type": "function",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "address",
+				"internalType": "address"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "stakingPower",
+		"type": "function",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "stakingPowerInUsdc",
+		"type": "function",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "stakingPowerInWrose",
+		"type": "function",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "transferOwnership",
+		"type": "function",
+		"inputs": [
+			{
+				"name": "newOwner",
+				"type": "address",
+				"internalType": "address"
+			}
+		],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"name": "unstake",
+		"type": "function",
+		"inputs": [
+			{
+				"name": "endTimestamp",
+				"type": "uint128",
+				"internalType": "uint128"
+			}
+		],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"name": "users",
+		"type": "function",
+		"inputs": [
+			{
+				"name": "",
+				"type": "address",
+				"internalType": "address"
+			}
+		],
+		"outputs": [
+			{
+				"name": "stakingPower",
+				"type": "uint128",
+				"internalType": "uint128"
+			},
+			{
+				"name": "stakedInWrose",
+				"type": "bool",
+				"internalType": "bool"
+			},
+			{
+				"name": "storedRewardPerStakingPower",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "wRoseEarned",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "usdcEarned",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	}
+]

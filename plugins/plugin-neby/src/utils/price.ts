@@ -1,12 +1,13 @@
-import { type ActionHandlerSchema, toActionHandler } from "@eliza-os/core";
-import type { PluginStorage } from "@eliza-os/plugin-runtime";
-import { z } from "zod";
 import {
-	findArbitrageOpportunities,
-	getTokenPrice,
-} from "../services/priceService";
+	type ActionHandlerSchema,
+	type Logger,
+	toActionHandler,
+} from "@elizaos/core";
+import type { PluginStorage } from "@elizaos/core";
+import { z } from "zod";
 import type { ArbitrageOpportunity, PriceInfo } from "../types";
-import { getConfigOrThrow } from "../utils";
+import { findArbitrageOpportunities, getTokenPrice } from "./priceService";
+import { getConfigOrThrow } from "./utils";
 
 export const GET_PRICE_NEBY = "get-price-neby";
 export const FIND_ARBITRAGE_NEBY = "find-arbitrage-neby";
@@ -52,20 +53,18 @@ export const getPriceHandler: ActionHandlerSchema<
 		result?: PriceInfo;
 		error?: string;
 	}
-> = async ({ tokenAddress, baseTokenAddress }, { pluginStorage, logger }) => {
+> = async (
+	{ tokenAddress, baseTokenAddress }: GetPriceParams,
+	{ pluginStorage, logger }: { pluginStorage: PluginStorage; logger: Logger },
+) => {
 	try {
 		logger.info(
 			`Getting price for token ${tokenAddress} against ${baseTokenAddress || "USDC"}`,
 			{ plugin: "neby", module: "GET_PRICE_NEBY" },
 		);
 
-		const config = await getConfigOrThrow(pluginStorage as PluginStorage);
-		const priceInfo = await getTokenPrice(
-			tokenAddress,
-			baseTokenAddress,
-			config,
-			logger,
-		);
+		const _config = await getConfigOrThrow(pluginStorage as PluginStorage);
+		const priceInfo = await getTokenPrice(tokenAddress);
 
 		logger.info(`Price retrieved: ${priceInfo.price}`, {
 			plugin: "neby",
@@ -76,8 +75,12 @@ export const getPriceHandler: ActionHandlerSchema<
 			success: true,
 			result: priceInfo,
 		};
-	} catch (error) {
-		logger.error(`Failed to get price: ${error.message}`, {
+	} catch (error: unknown) {
+		let errorMessage = "Unknown error";
+		if (error instanceof Error) {
+			errorMessage = error.message;
+		}
+		logger.error(`Failed to get price: ${errorMessage}`, {
 			plugin: "neby",
 			module: "GET_PRICE_NEBY",
 			error,
@@ -85,7 +88,7 @@ export const getPriceHandler: ActionHandlerSchema<
 
 		return {
 			success: false,
-			error: error.message,
+			error: errorMessage,
 		};
 	}
 };
@@ -99,8 +102,8 @@ export const findArbitrageHandler: ActionHandlerSchema<
 		error?: string;
 	}
 > = async (
-	{ tokenAddresses, minProfitPercentage, maxHops },
-	{ pluginStorage, logger },
+	{ tokenAddresses, minProfitPercentage, maxHops }: FindArbitrageParams,
+	{ pluginStorage, logger }: { pluginStorage: PluginStorage; logger: Logger },
 ) => {
 	try {
 		logger.info(
@@ -108,14 +111,8 @@ export const findArbitrageHandler: ActionHandlerSchema<
 			{ plugin: "neby", module: "FIND_ARBITRAGE_NEBY" },
 		);
 
-		const config = await getConfigOrThrow(pluginStorage as PluginStorage);
-		const opportunities = await findArbitrageOpportunities(
-			tokenAddresses,
-			minProfitPercentage,
-			maxHops,
-			config,
-			logger,
-		);
+		const _config = await getConfigOrThrow(pluginStorage as PluginStorage);
+		const opportunities = await findArbitrageOpportunities();
 
 		logger.info(`Found ${opportunities.length} arbitrage opportunities`, {
 			plugin: "neby",
@@ -126,8 +123,12 @@ export const findArbitrageHandler: ActionHandlerSchema<
 			success: true,
 			result: opportunities,
 		};
-	} catch (error) {
-		logger.error(`Failed to find arbitrage opportunities: ${error.message}`, {
+	} catch (error: unknown) {
+		let errorMessage = "Unknown error";
+		if (error instanceof Error) {
+			errorMessage = error.message;
+		}
+		logger.error(`Failed to find arbitrage opportunities: ${errorMessage}`, {
 			plugin: "neby",
 			module: "FIND_ARBITRAGE_NEBY",
 			error,
@@ -135,7 +136,7 @@ export const findArbitrageHandler: ActionHandlerSchema<
 
 		return {
 			success: false,
-			error: error.message,
+			error: errorMessage,
 		};
 	}
 };

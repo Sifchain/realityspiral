@@ -1,0 +1,92 @@
+[
+	{
+		"name": "getCurrentBlockTimestamp",
+		"type": "function",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "timestamp",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "getEthBalance",
+		"type": "function",
+		"inputs": [
+			{
+				"name": "addr",
+				"type": "address",
+				"internalType": "address"
+			}
+		],
+		"outputs": [
+			{
+				"name": "balance",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"name": "multicall",
+		"type": "function",
+		"inputs": [
+			{
+				"name": "calls",
+				"type": "tuple[]",
+				"components": [
+					{
+						"name": "target",
+						"type": "address",
+						"internalType": "address"
+					},
+					{
+						"name": "gasLimit",
+						"type": "uint256",
+						"internalType": "uint256"
+					},
+					{
+						"name": "callData",
+						"type": "bytes",
+						"internalType": "bytes"
+					}
+				],
+				"internalType": "struct UniswapInterfaceMulticall.Call[]"
+			}
+		],
+		"outputs": [
+			{
+				"name": "blockNumber",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "returnData",
+				"type": "tuple[]",
+				"components": [
+					{
+						"name": "success",
+						"type": "bool",
+						"internalType": "bool"
+					},
+					{
+						"name": "gasUsed",
+						"type": "uint256",
+						"internalType": "uint256"
+					},
+					{
+						"name": "returnData",
+						"type": "bytes",
+						"internalType": "bytes"
+					}
+				],
+				"internalType": "struct UniswapInterfaceMulticall.Result[]"
+			}
+		],
+		"stateMutability": "nonpayable"
+	}
+]

@@ -1,16 +1,16 @@
-import { elizaLogger } from "@elizaos/core";
-import type { ContractHelper } from "@realityspiral/plugin-coinbase";
+import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
 import { ABIS } from "../constants";
+import { readContract } from "./ethersHelper";
 
 /**
  * Service for querying token data
  */
 export class TokenQueries {
-	private contractHelper: ContractHelper;
+	private runtime: IAgentRuntime;
 	private networkId: string;
 
-	constructor(contractHelper: ContractHelper, networkId: string) {
-		this.contractHelper = contractHelper;
+	constructor(runtime: IAgentRuntime, networkId: string) {
+		this.runtime = runtime;
 		this.networkId = networkId;
 	}
 
@@ -19,7 +19,8 @@ export class TokenQueries {
 	 */
 	async getTokenDecimals(tokenAddress: string): Promise<number> {
 		try {
-			const decimals = await this.contractHelper.invokeContract({
+			const decimals = await readContract<string | number>({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: tokenAddress,
 				method: "decimals",
@@ -44,11 +45,13 @@ export class TokenQueries {
 	 */
 	async getTokenSymbol(tokenAddress: string): Promise<string> {
 		try {
-			const symbol = await this.contractHelper.invokeContract({
+			const symbol = await readContract<string>({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: tokenAddress,
 				method: "symbol",
 				args: [],
+				// Minimal ABI for symbol
 				abi: [
 					{
 						constant: true,
@@ -77,11 +80,13 @@ export class TokenQueries {
 	 */
 	async getTokenName(tokenAddress: string): Promise<string> {
 		try {
-			const name = await this.contractHelper.invokeContract({
+			const name = await readContract<string>({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: tokenAddress,
 				method: "name",
 				args: [],
+				// Minimal ABI for name
 				abi: [
 					{
 						constant: true,
@@ -113,7 +118,8 @@ export class TokenQueries {
 		accountAddress: string,
 	): Promise<string> {
 		try {
-			const balance = await this.contractHelper.invokeContract({
+			const balance = await readContract<string>({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: tokenAddress,
 				method: "balanceOf",
@@ -142,7 +148,8 @@ export class TokenQueries {
 		spenderAddress: string,
 	): Promise<string> {
 		try {
-			const allowance = await this.contractHelper.invokeContract({
+			const allowance = await readContract<string>({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: tokenAddress,
 				method: "allowance",

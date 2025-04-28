@@ -6,7 +6,6 @@ import {
 	type State,
 	elizaLogger,
 } from "@elizaos/core";
-import { ContractHelper } from "@realityspiral/plugin-coinbase";
 import { ethers } from "ethers";
 import {
 	ABIS,
@@ -14,9 +13,6 @@ import {
 	SAPPHIRE_MAINNET,
 	SAPPHIRE_TESTNET,
 } from "../constants";
-import { LiquidityService } from "../services/liquidityService";
-import { PriceService } from "../services/priceService";
-import { SwapService } from "../services/swapService";
 import {
 	type ArbitrageOpportunity,
 	type LiquidityResult,
@@ -27,31 +23,32 @@ import {
 	type SwapResult,
 	type TransactionReceipt,
 } from "../types";
+import { getUserAddress } from "../utils/ethersHelper";
+import { LiquidityService } from "../utils/liquidityService";
+import { PriceService } from "../utils/priceService";
+import { SwapService } from "../utils/swapService";
 
-// Helper function to get user address via ContractHelper
+// Helper function to get user address via ethersHelper
 const getUserAddressString = async (
 	runtime: IAgentRuntime,
 	networkId: string,
 ): Promise<string> => {
-	elizaLogger.info("Creating ContractHelper for getUserAddressString", {
-		networkId,
-	});
-	const contractHelper = new ContractHelper(runtime);
 	try {
-		elizaLogger.info("Calling getUserAddress on ContractHelper", { networkId });
-		const walletAddress = await contractHelper.getUserAddress(networkId);
-		elizaLogger.info("Received wallet address", { walletAddress });
+		elizaLogger.info("Getting user address string via ethersHelper", {
+			networkId,
+		});
+		const addressString = await getUserAddress(runtime, networkId);
+		elizaLogger.info("Received wallet address", { addressString });
 
-		const addressString = walletAddress as unknown as `0x${string}`;
 		if (!addressString) {
 			throw new Error(
 				"User address string not found. Ensure wallet is connected and configured.",
 			);
 		}
-		return addressString;
+		return addressString as `0x${string}`;
 	} catch (error: unknown) {
 		elizaLogger.error(
-			"Failed to get user address string from ContractHelper",
+			"Failed to get user address string from ethersHelper",
 			error instanceof Error
 				? {
 						message: error.message,
@@ -111,32 +108,28 @@ export const nebyPlugin = (
 		network: config.network || "mainnet",
 	});
 
-	elizaLogger.info("Creating ContractHelper in nebyPlugin");
-	const contractHelper = new ContractHelper(runtime);
-	elizaLogger.info("ContractHelper created successfully");
-
 	// Get network configuration
 	const networkConfig =
 		fullConfig.network === "mainnet" ? SAPPHIRE_MAINNET : SAPPHIRE_TESTNET;
 	const networkId = fullConfig.network === "mainnet" ? "23294" : "23295";
 
-	// Initialize services
+	// Initialize services, passing runtime
 	const swapService = new SwapService(
-		contractHelper,
+		runtime,
 		networkId,
 		networkConfig.CONTRACTS.SWAP_ROUTER_02,
 		networkConfig.CONTRACTS.QUOTER,
 	);
 
 	const liquidityService = new LiquidityService(
-		contractHelper,
+		runtime,
 		networkId,
 		networkConfig.CONTRACTS.NFT_POSITION_MANAGER,
 		networkConfig.CONTRACTS.V3_CORE_FACTORY,
 	);
 
 	const priceService = new PriceService(
-		contractHelper,
+		runtime,
 		networkId,
 		networkConfig.CONTRACTS.QUOTER,
 		networkConfig.CONTRACTS.V3_CORE_FACTORY,
@@ -177,13 +170,6 @@ export const nebyPlugin = (
 	): Promise<SwapResult> => {
 		try {
 			const effectiveSlippage = slippage ?? fullConfig.maxSlippage;
-			elizaLogger.info("Swapping tokens on Neby DEX", {
-				fromToken,
-				toToken,
-				amount,
-				slippage: effectiveSlippage,
-			});
-
 			const userAddress = await getUserAddressString(runtime, networkId);
 
 			// 1. First, approve the router to spend our tokens if needed
@@ -240,13 +226,6 @@ export const nebyPlugin = (
 		amountB: string,
 	): Promise<LiquidityResult> => {
 		try {
-			elizaLogger.info("Adding liquidity to Neby DEX pool", {
-				tokenA,
-				tokenB,
-				amountA,
-				amountB,
-			});
-
 			const userAddress = await getUserAddressString(runtime, networkId);
 
 			// 1. Approve token spending if needed
@@ -284,13 +263,6 @@ export const nebyPlugin = (
 		liquidity: string,
 	): Promise<LiquidityResult> => {
 		try {
-			elizaLogger.info("Removing liquidity from Neby DEX pool", {
-				tokenA,
-				tokenB,
-				liquidity,
-			});
-
-			// Execute the remove liquidity operation
 			return await liquidityService.removeLiquidity(tokenA, tokenB, liquidity);
 		} catch (error) {
 			elizaLogger.error("Error in removeLiquidity function", {
@@ -308,8 +280,6 @@ export const nebyPlugin = (
 	 */
 	const monitorPrices = async (): Promise<PriceInfo[]> => {
 		try {
-			elizaLogger.info("Monitoring token prices on Neby DEX");
-
 			// Get common token pairs to monitor
 			// This could be configurable or based on user's portfolio
 			const tokenPairs: Array<[string, string]> = [
@@ -338,9 +308,6 @@ export const nebyPlugin = (
 		ArbitrageOpportunity[]
 	> => {
 		try {
-			elizaLogger.info("Finding arbitrage opportunities on Neby DEX");
-
-			// Delegate to price service
 			return await priceService.findArbitrageOpportunities();
 		} catch (error) {
 			elizaLogger.error("Error in findArbitrageOpportunities function", {
@@ -362,13 +329,6 @@ export const nebyPlugin = (
 		fee: number = POOL_FEES.MEDIUM,
 	): Promise<string> => {
 		try {
-			elizaLogger.info("Getting pool liquidity for token pair", {
-				tokenA,
-				tokenB,
-				fee,
-			});
-
-			// Delegate to liquidity service
 			return await liquidityService.getPoolLiquidity(tokenA, tokenB, fee);
 		} catch (error) {
 			elizaLogger.error("Error in getPoolLiquidity function", {
@@ -390,13 +350,6 @@ export const nebyPlugin = (
 		fee: number = POOL_FEES.MEDIUM,
 	): Promise<Record<string, unknown>> => {
 		try {
-			elizaLogger.info("Getting pool info for token pair", {
-				tokenA,
-				tokenB,
-				fee,
-			});
-
-			// Delegate to price service
 			return await priceService.getPoolInfo(tokenA, tokenB, fee);
 		} catch (error) {
 			elizaLogger.error("Error in getPoolInfo function", {
@@ -422,12 +375,11 @@ export const nebyPlugin = (
 
 // Actions definitions for the plugin
 export const swapAction: Action = {
-	name: "swap",
+	name: "nebySwap",
 	description: "Swap tokens on Neby DEX.",
 	validate: async () => true,
 	similes: [],
 	examples: [],
-	severity: 0,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -435,17 +387,47 @@ export const swapAction: Action = {
 		options?: Record<string, unknown>,
 	): Promise<SwapResult> => {
 		try {
-			const fromToken = options?.fromToken;
-			const toToken = options?.toToken;
-			const amount = options?.amount;
-			const slippage = options?.slippage;
+			const { fullConfig, networkConfig, networkId } =
+				_getConfigAndNetwork(runtime);
+			const swapService = new SwapService(
+				runtime,
+				networkId,
+				networkConfig.CONTRACTS.SWAP_ROUTER_02,
+				networkConfig.CONTRACTS.QUOTER,
+			);
 
-			const plugin = nebyPlugin(runtime);
-			return await plugin.swap(
-				fromToken as string,
-				toToken as string,
-				amount as string,
-				slippage as number | undefined,
+			const fromToken = options?.fromToken as string;
+			const toToken = options?.toToken as string;
+			const amount = options?.amount as string;
+			const slippage = options?.slippage as number | undefined;
+
+			const effectiveSlippage = slippage ?? fullConfig.maxSlippage;
+			const userAddress = await getUserAddressString(runtime, networkId);
+
+			if (fromToken !== networkConfig.TOKENS.ROSE) {
+				await swapService.approveTokenSpending(
+					fromToken,
+					networkConfig.CONTRACTS.SWAP_ROUTER_02,
+					amount,
+				);
+			}
+			const expectedOutput = await swapService.getSwapQuote(
+				fromToken,
+				toToken,
+				amount,
+			);
+			const minOutputAmount = ethers.formatUnits(
+				(BigInt(expectedOutput) *
+					BigInt(10000 - Math.floor(effectiveSlippage * 100))) /
+					BigInt(10000),
+				0,
+			);
+			return await swapService.executeSwap(
+				fromToken,
+				toToken,
+				amount,
+				minOutputAmount,
+				userAddress,
 			);
 		} catch (error) {
 			elizaLogger.error("Error in swap action handler", {
@@ -460,12 +442,11 @@ export const swapAction: Action = {
 };
 
 export const addLiquidityAction: Action = {
-	name: "addLiquidity",
+	name: "nebyAddLiquidity",
 	description: "Add liquidity to a Neby DEX pool.",
 	validate: async () => true,
 	similes: [],
 	examples: [],
-	severity: 0,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -473,17 +454,32 @@ export const addLiquidityAction: Action = {
 		options?: Record<string, unknown>,
 	): Promise<LiquidityResult> => {
 		try {
-			const tokenA = options?.tokenA;
-			const tokenB = options?.tokenB;
-			const amountA = options?.amountA;
-			const amountB = options?.amountB;
+			const { fullConfig, networkConfig, networkId } =
+				_getConfigAndNetwork(runtime);
+			const liquidityService = new LiquidityService(
+				runtime,
+				networkId,
+				networkConfig.CONTRACTS.NFT_POSITION_MANAGER,
+				networkConfig.CONTRACTS.V3_CORE_FACTORY,
+			);
 
-			const plugin = nebyPlugin(runtime);
-			return await plugin.addLiquidity(
-				tokenA as string,
-				tokenB as string,
-				amountA as string,
-				amountB as string,
+			const tokenA = options?.tokenA as string;
+			const tokenB = options?.tokenB as string;
+			const amountA = options?.amountA as string;
+			const amountB = options?.amountB as string;
+
+			const userAddress = await getUserAddressString(runtime, networkId);
+			await Promise.all([
+				liquidityService.approveTokenSpending(tokenA, amountA),
+				liquidityService.approveTokenSpending(tokenB, amountB),
+			]);
+			return await liquidityService.addLiquidity(
+				tokenA,
+				tokenB,
+				amountA,
+				amountB,
+				fullConfig.maxSlippage,
+				userAddress,
 			);
 		} catch (error) {
 			elizaLogger.error("Error in addLiquidity action handler", {
@@ -498,12 +494,11 @@ export const addLiquidityAction: Action = {
 };
 
 export const removeLiquidityAction: Action = {
-	name: "removeLiquidity",
+	name: "nebyRemoveLiquidity",
 	description: "Remove liquidity from a Neby DEX pool.",
 	validate: async () => true,
 	similes: [],
 	examples: [],
-	severity: 0,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -511,16 +506,19 @@ export const removeLiquidityAction: Action = {
 		options?: Record<string, unknown>,
 	): Promise<LiquidityResult> => {
 		try {
-			const tokenA = options?.tokenA;
-			const tokenB = options?.tokenB;
-			const liquidity = options?.liquidity;
-
-			const plugin = nebyPlugin(runtime);
-			return await plugin.removeLiquidity(
-				tokenA as string,
-				tokenB as string,
-				liquidity as string,
+			const { networkConfig, networkId } = _getConfigAndNetwork(runtime);
+			const liquidityService = new LiquidityService(
+				runtime,
+				networkId,
+				networkConfig.CONTRACTS.NFT_POSITION_MANAGER,
+				networkConfig.CONTRACTS.V3_CORE_FACTORY,
 			);
+
+			const tokenA = options?.tokenA as string;
+			const tokenB = options?.tokenB as string;
+			const liquidity = options?.liquidity as string;
+
+			return await liquidityService.removeLiquidity(tokenA, tokenB, liquidity);
 		} catch (error) {
 			elizaLogger.error("Error in removeLiquidity action handler", {
 				error:
@@ -534,20 +532,26 @@ export const removeLiquidityAction: Action = {
 };
 
 export const monitorPricesAction: Action = {
-	name: "monitorPrices",
+	name: "nebyMonitorPrices",
 	description: "Monitor token prices on Neby DEX.",
 	validate: async () => true,
 	similes: [],
 	examples: [],
-	severity: 0,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
 		_state?: State,
 	): Promise<PriceInfo[]> => {
 		try {
-			const plugin = nebyPlugin(runtime);
-			return await plugin.monitorPrices();
+			const { networkConfig, networkId } = _getConfigAndNetwork(runtime);
+			const priceService = new PriceService(
+				runtime,
+				networkId,
+				networkConfig.CONTRACTS.QUOTER,
+				networkConfig.CONTRACTS.V3_CORE_FACTORY,
+			);
+			const tokenPairs: Array<[string, string]> = [];
+			return await priceService.monitorPrices(tokenPairs);
 		} catch (error) {
 			elizaLogger.error("Error in monitorPrices action handler", {
 				error:
@@ -561,20 +565,25 @@ export const monitorPricesAction: Action = {
 };
 
 export const findArbitrageOpportunitiesAction: Action = {
-	name: "findArbitrageOpportunities",
+	name: "nebyFindArbitrageOpportunities",
 	description: "Find arbitrage opportunities on Neby DEX.",
 	validate: async () => true,
 	similes: [],
 	examples: [],
-	severity: 0,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
 		_state?: State,
 	): Promise<ArbitrageOpportunity[]> => {
 		try {
-			const plugin = nebyPlugin(runtime);
-			return await plugin.findArbitrageOpportunities();
+			const { networkConfig, networkId } = _getConfigAndNetwork(runtime);
+			const priceService = new PriceService(
+				runtime,
+				networkId,
+				networkConfig.CONTRACTS.QUOTER,
+				networkConfig.CONTRACTS.V3_CORE_FACTORY,
+			);
+			return await priceService.findArbitrageOpportunities();
 		} catch (error) {
 			elizaLogger.error("Error in findArbitrageOpportunities action handler", {
 				error:
@@ -588,12 +597,11 @@ export const findArbitrageOpportunitiesAction: Action = {
 };
 
 export const getPoolLiquidityAction: Action = {
-	name: "getPoolLiquidity",
+	name: "nebyGetPoolLiquidity",
 	description: "Get liquidity of a Neby DEX pool.",
 	validate: async () => true,
 	similes: [],
 	examples: [],
-	severity: 0,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -601,16 +609,19 @@ export const getPoolLiquidityAction: Action = {
 		options?: Record<string, unknown>,
 	): Promise<string> => {
 		try {
-			const tokenA = options?.tokenA;
-			const tokenB = options?.tokenB;
-			const fee = options?.fee;
-
-			const plugin = nebyPlugin(runtime);
-			return await plugin.getPoolLiquidity(
-				tokenA as string,
-				tokenB as string,
-				fee as number | undefined,
+			const { networkConfig, networkId } = _getConfigAndNetwork(runtime);
+			const liquidityService = new LiquidityService(
+				runtime,
+				networkId,
+				networkConfig.CONTRACTS.NFT_POSITION_MANAGER,
+				networkConfig.CONTRACTS.V3_CORE_FACTORY,
 			);
+
+			const tokenA = options?.tokenA as string;
+			const tokenB = options?.tokenB as string;
+			const fee = options?.fee as number | undefined;
+
+			return await liquidityService.getPoolLiquidity(tokenA, tokenB, fee);
 		} catch (error) {
 			elizaLogger.error("Error in getPoolLiquidity action handler", {
 				error:
@@ -624,12 +635,11 @@ export const getPoolLiquidityAction: Action = {
 };
 
 export const getPoolInfoAction: Action = {
-	name: "getPoolInfo",
+	name: "nebyGetPoolInfo",
 	description: "Get detailed information about a Neby DEX pool.",
 	validate: async () => true,
 	similes: [],
 	examples: [],
-	severity: 0,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -637,16 +647,19 @@ export const getPoolInfoAction: Action = {
 		options?: Record<string, unknown>,
 	): Promise<Record<string, unknown>> => {
 		try {
-			const tokenA = options?.tokenA;
-			const tokenB = options?.tokenB;
-			const fee = options?.fee;
-
-			const plugin = nebyPlugin(runtime);
-			return await plugin.getPoolInfo(
-				tokenA as string,
-				tokenB as string,
-				fee as number | undefined,
+			const { networkConfig, networkId } = _getConfigAndNetwork(runtime);
+			const priceService = new PriceService(
+				runtime,
+				networkId,
+				networkConfig.CONTRACTS.QUOTER,
+				networkConfig.CONTRACTS.V3_CORE_FACTORY,
 			);
+
+			const tokenA = options?.tokenA as string;
+			const tokenB = options?.tokenB as string;
+			const fee = options?.fee as number | undefined;
+
+			return await priceService.getPoolInfo(tokenA, tokenB, fee);
 		} catch (error) {
 			elizaLogger.error("Error in getPoolInfo action handler", {
 				error:

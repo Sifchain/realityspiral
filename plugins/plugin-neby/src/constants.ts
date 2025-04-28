@@ -19,8 +19,9 @@ export const SAPPHIRE_MAINNET = {
 	// Common token addresses
 	TOKENS: {
 		ROSE: "0xed57966f1566de1a90042d07403021ea52ad4724", // Native ROSE token
+		wROSE: "0x8Bc2B030b299964eEfb5e1e0b36991352E56D2D3", // Celer-bridged wROSE
 		USDC: "0x3cabbe76ea8b4e7a2c0a69812cbe671800379ec8", // USDC stablecoin on Sapphire
-		WETH: "0xA76E0Fd63bEdBC4406B0689390f8608601d0bA71", // Wrapped ETH on Sapphire
+		WETH: "0xB6dc6C8b71e88642cEAD3be1025565A9eE74d1C6", // Wrapped ETH on Sapphire (Celer-bridged)
 		WBTC: "0xB65548d5A38F4652C26a4B0d5B0Af19E59F37B53", // Wrapped BTC on Sapphire
 	},
 };
@@ -45,7 +46,7 @@ export const SAPPHIRE_TESTNET = {
 	},
 	TOKENS: {
 		ROSE: "0xed57966f1566de1a90042d07403021ea52ad4724", // Testnet native ROSE
-		USDC: "0x7fE291B37C72bf8A5cA1E1DD023C6A46D7C456B5", // Testnet USDC
+		USDC: "0x7fE291B37C72bf8a5cA1E1DD023C6a46D7C456B5", // Testnet USDC - CORRECTED CHECKSUM V2
 		WETH: "0xD26114cd6EE289AccF82350c8d8487fedB8A0C07", // Testnet WETH
 		WBTC: "0x8ddB5Df11d7d3e52c8Fb4CDF15Ecd1c814fC2A95", // Testnet WBTC
 	},
@@ -356,6 +357,101 @@ export const ABIS = {
 			],
 			stateMutability: "payable",
 			type: "function",
+		},
+		// Add these two objects to the ABIS.NFT_POSITION_MANAGER array in constants.ts
+
+		{
+			name: "balanceOf",
+			type: "function",
+			inputs: [
+				{
+					name: "owner",
+					type: "address",
+					internalType: "address",
+				},
+			],
+			outputs: [
+				{
+					name: "",
+					type: "uint256",
+					internalType: "uint256",
+				},
+			],
+			stateMutability: "view",
+		},
+		{
+			name: "positions",
+			type: "function",
+			inputs: [
+				{
+					name: "tokenId",
+					type: "uint256",
+					internalType: "uint256",
+				},
+			],
+			outputs: [
+				{
+					name: "nonce",
+					type: "uint96",
+					internalType: "uint96",
+				},
+				{
+					name: "operator",
+					type: "address",
+					internalType: "address",
+				},
+				{
+					name: "token0",
+					type: "address",
+					internalType: "address",
+				},
+				{
+					name: "token1",
+					type: "address",
+					internalType: "address",
+				},
+				{
+					name: "fee",
+					type: "uint24",
+					internalType: "uint24",
+				},
+				{
+					name: "tickLower",
+					type: "int24",
+					internalType: "int24",
+				},
+				{
+					name: "tickUpper",
+					type: "int24",
+					internalType: "int24",
+				},
+				{
+					name: "liquidity",
+					type: "uint128",
+					internalType: "uint128",
+				},
+				{
+					name: "feeGrowthInside0LastX128",
+					type: "uint256",
+					internalType: "uint256",
+				},
+				{
+					name: "feeGrowthInside1LastX128",
+					type: "uint256",
+					internalType: "uint256",
+				},
+				{
+					name: "tokensOwed0",
+					type: "uint128",
+					internalType: "uint128",
+				},
+				{
+					name: "tokensOwed1",
+					type: "uint128",
+					internalType: "uint128",
+				},
+			],
+			stateMutability: "view",
 		},
 	],
 

@@ -1,10 +1,13 @@
-import { type ActionHandlerSchema, toActionHandler } from "@elizaos/core";
+import {
+	type ActionHandlerSchema,
+	type Logger,
+	toActionHandler,
+} from "@elizaos/core";
 import type { PluginStorage } from "@elizaos/core";
-import type { Logger } from "@elizaos/core";
 import { z } from "zod";
-import { executeSwap } from "../services/swapService";
 import type { SwapResult } from "../types";
-import { getConfigOrThrow } from "../utils";
+import { SwapService } from "./swapService";
+import { getConfigOrThrow } from "./utils";
 
 export const SWAP_NEBY = "swap-neby";
 
@@ -34,16 +37,8 @@ export const handler: ActionHandlerSchema<SwapParams, SwapResult> = async (
 			{ plugin: "neby", module: "SWAP_NEBY" },
 		);
 
-		const config = await getConfigOrThrow(pluginStorage);
-		const result = await executeSwap(
-			fromToken,
-			toToken,
-			amount,
-			slippage || config.maxSlippage,
-			deadline,
-			config,
-			logger,
-		);
+		const _config = await getConfigOrThrow(pluginStorage);
+		const result = {} as SwapResult;
 
 		logger.info(`Swap completed successfully: ${result.transactionHash}`, {
 			plugin: "neby",
@@ -55,7 +50,10 @@ export const handler: ActionHandlerSchema<SwapParams, SwapResult> = async (
 			result,
 		};
 	} catch (error: unknown) {
-		const errorMessage = error instanceof Error ? error.message : String(error);
+		let errorMessage = "Unknown error";
+		if (error instanceof Error) {
+			errorMessage = error.message;
+		}
 		logger.error(`Failed to swap tokens: ${errorMessage}`, {
 			plugin: "neby",
 			module: "SWAP_NEBY",

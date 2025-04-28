@@ -9,6 +9,28 @@ import type { PluginConfig } from "../types";
  */
 
 /**
+ * Attempts to return the checksummed version of an address.
+ * Returns the original address if checksumming fails (e.g., for non-standard formats).
+ * @param address The address string
+ * @param logger Optional logger instance
+ * @returns Checksummed address or original address
+ */
+export function getChecksummedAddress(
+	address: string,
+	logger = elizaLogger,
+): string {
+	try {
+		return ethers.getAddress(address);
+	} catch (error: unknown) {
+		// Log a warning if checksumming fails, but return the original address
+		logger.warn(
+			`Failed to checksum address ${address}. Using original. Error: ${error instanceof Error ? error.message : String(error)}`,
+		);
+		return address;
+	}
+}
+
+/**
  * Calculate minimum amount based on input amount and slippage percentage
  * @param amount The input amount as a string
  * @param slippagePercent The slippage percentage (0.5 = 0.5%)

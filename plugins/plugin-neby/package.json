@@ -33,7 +33,7 @@
 	"scripts": {
 		"build": "tsup --format esm --dts",
 		"dev": "tsup --format esm --dts --watch",
-		"test": "vitest run",
-		"test:watch": "vitest"
+		"test": "dotenv -e ../../.env -- vitest run",
+		"test:watch": "dotenv -e ../../.env -- vitest"
 	}
 }

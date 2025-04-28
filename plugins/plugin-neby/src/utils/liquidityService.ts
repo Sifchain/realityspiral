@@ -1,8 +1,8 @@
-import { elizaLogger } from "@elizaos/core";
-import type { ContractHelper } from "@realityspiral/plugin-coinbase";
+import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
 import { ethers } from "ethers";
 import { ABIS, POOL_FEES } from "../constants";
 import type { LiquidityResult, TransactionReceipt } from "../types";
+import { getUserAddress, invokeContract, readContract } from "./ethersHelper";
 import {
 	calculateMinAmount,
 	getDeadline,
@@ -14,18 +14,18 @@ import {
  * Service for handling liquidity operations on Neby DEX
  */
 export class LiquidityService {
-	private contractHelper: ContractHelper;
+	private runtime: IAgentRuntime;
 	private networkId: string;
 	private positionManagerAddress: string;
 	private factoryAddress: string;
 
 	constructor(
-		contractHelper: ContractHelper,
+		runtime: IAgentRuntime,
 		networkId: string,
 		positionManagerAddress: string,
 		factoryAddress: string,
 	) {
-		this.contractHelper = contractHelper;
+		this.runtime = runtime;
 		this.networkId = networkId;
 		this.positionManagerAddress = positionManagerAddress;
 		this.factoryAddress = factoryAddress;
@@ -45,7 +45,8 @@ export class LiquidityService {
 				amount,
 			});
 
-			const result = await this.contractHelper.invokeContract({
+			const result = await invokeContract({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: tokenAddress,
 				method: "approve",
@@ -118,7 +119,8 @@ export class LiquidityService {
 			};
 
 			// Execute the position creation
-			const result = await this.contractHelper.invokeContract({
+			const invokeResult = await invokeContract({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: this.positionManagerAddress,
 				method: "mint",
@@ -126,14 +128,29 @@ export class LiquidityService {
 				abi: ABIS.NFT_POSITION_MANAGER,
 			});
 
-			// Parse result - adapt to match LiquidityResult interface
+			// TODO: The result from invokeContract is just TransactionReceipt.
+			// We need the actual return values (tokenId, liquidity, amount0, amount1)
+			// from the 'mint' transaction, likely by decoding events from the receipt.
+			// This requires modification of invokeContract or post-processing here.
+			// Returning placeholders for now.
+			const placeholderResult = {
+				tokenId: "0",
+				liquidity: "0",
+				amount0: "0",
+				amount1: "0",
+			};
+			elizaLogger.warn(
+				"AddLiquidity executed, but return values not retrieved from invokeContract result.",
+			);
+
+			// Parse result
 			return {
 				tokenA,
 				tokenB,
-				amountA: result.amount0 || "0",
-				amountB: result.amount1 || "0",
-				liquidity: result.liquidity.toString(),
-				transactionHash: result.transactionHash,
+				amountA: placeholderResult.amount0,
+				amountB: placeholderResult.amount1,
+				liquidity: placeholderResult.liquidity,
+				transactionHash: invokeResult.transactionHash,
 				timestamp: Date.now(),
 			};
 		} catch (error) {
@@ -186,7 +203,8 @@ export class LiquidityService {
 			};
 
 			// Execute the decrease liquidity transaction
-			const _decreaseResult = await this.contractHelper.invokeContract({
+			const _decreaseResult = await invokeContract({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: this.positionManagerAddress,
 				method: "decreaseLiquidity",
@@ -195,15 +213,17 @@ export class LiquidityService {
 			});
 
 			// Create collect params to withdraw tokens
+			const userAddr = await getUserAddress(this.runtime, this.networkId);
 			const collectParams = {
 				tokenId,
-				recipient: await this.contractHelper.getUserAddress(this.networkId),
+				recipient: userAddr,
 				amount0Max: getMaxUint128(),
 				amount1Max: getMaxUint128(),
 			};
 
 			// Execute the collect transaction
-			const collectResult = await this.contractHelper.invokeContract({
+			const collectResult = await invokeContract({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: this.positionManagerAddress,
 				method: "collect",
@@ -211,12 +231,20 @@ export class LiquidityService {
 				abi: ABIS.NFT_POSITION_MANAGER,
 			});
 
-			// Return the result - adapt to match LiquidityResult interface
+			// TODO: Similar to mint, invokeContract only returns the receipt.
+			// Need to get amount0 and amount1 collected, likely from events in the receipt.
+			// Returning placeholders.
+			const placeholderAmounts = { amount0: "0", amount1: "0" };
+			elizaLogger.warn(
+				"RemoveLiquidity (collect) executed, but amounts not retrieved from invokeContract result.",
+			);
+
+			// Return the result
 			return {
 				tokenA,
 				tokenB,
-				amountA: collectResult.amount0.toString(),
-				amountB: collectResult.amount1.toString(),
+				amountA: placeholderAmounts.amount0,
+				amountB: placeholderAmounts.amount1,
 				liquidity: "0", // Liquidity has been fully removed
 				transactionHash: collectResult.transactionHash,
 				timestamp: Date.now(),
@@ -248,13 +276,12 @@ export class LiquidityService {
 			elizaLogger.info("Finding position for token pair", { token0, token1 });
 
 			// Get the user's address
-			const userAddress = await this.contractHelper.getUserAddress(
-				this.networkId,
-			);
+			const userAddress = await getUserAddress(this.runtime, this.networkId);
 			elizaLogger.info("User address for position lookup", { userAddress });
 
 			// First, get balance of position NFTs
-			const balanceResult = await this.contractHelper.invokeContract({
+			const balanceResult = await readContract<string | number>({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: this.positionManagerAddress,
 				method: "balanceOf",
@@ -281,7 +308,8 @@ export class LiquidityService {
 			// First approach: Check owned token IDs by querying token by index
 			for (let i = 0; i < Math.min(balance, 100); i++) {
 				try {
-					const tokenIdResult = await this.contractHelper.invokeContract({
+					const tokenIdResult = await readContract<string>({
+						runtime: this.runtime,
 						networkId: this.networkId,
 						contractAddress: this.positionManagerAddress,
 						method: "tokenOfOwnerByIndex",
@@ -327,7 +355,9 @@ export class LiquidityService {
 			// Check each position to see if it matches our token pair
 			for (const tokenId of potentialPositionIds) {
 				try {
-					const positionInfo = await this.contractHelper.invokeContract({
+					// biome-ignore lint/suspicious/noExplicitAny: ABI structure varies
+					const positionInfo = await readContract<any>({
+						runtime: this.runtime,
 						networkId: this.networkId,
 						contractAddress: this.positionManagerAddress,
 						method: "positions",
@@ -382,7 +412,8 @@ export class LiquidityService {
 			const [token0, token1] = sortTokens(tokenA, tokenB);
 
 			// Get pool address
-			const poolAddress = await this.contractHelper.invokeContract({
+			const poolAddress = await readContract<string>({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: this.factoryAddress,
 				method: "getPool",
@@ -398,7 +429,8 @@ export class LiquidityService {
 			}
 
 			// Get pool liquidity
-			const poolLiquidity = await this.contractHelper.invokeContract({
+			const poolLiquidity = await readContract<string>({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: poolAddress,
 				method: "liquidity",

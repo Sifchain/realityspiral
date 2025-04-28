@@ -1,0 +1,5722 @@
+{
+	"__schema": {
+		"queryType": {
+			"name": "Query"
+		},
+		"types": [
+			{
+				"name": "Aggregation_interval",
+				"kind": "ENUM",
+				"description": null,
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": [
+					{
+						"name": "hour",
+						"description": null
+					},
+					{
+						"name": "day",
+						"description": null
+					}
+				],
+				"possibleTypes": null
+			},
+			{
+				"name": "BigDecimal",
+				"kind": "SCALAR",
+				"description": null,
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "BigInt",
+				"kind": "SCALAR",
+				"description": null,
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "BlockChangedFilter",
+				"kind": "INPUT_OBJECT",
+				"description": null,
+				"fields": null,
+				"inputFields": [
+					{
+						"name": "number_gte",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "Int",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						},
+						"defaultValue": null
+					}
+				],
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "Block_height",
+				"kind": "INPUT_OBJECT",
+				"description": null,
+				"fields": null,
+				"inputFields": [
+					{
+						"name": "hash",
+						"description": null,
+						"type": {
+							"name": "Bytes",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "number",
+						"description": null,
+						"type": {
+							"name": "Int",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "number_gte",
+						"description": null,
+						"type": {
+							"name": "Int",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					}
+				],
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "Boolean",
+				"kind": "SCALAR",
+				"description": null,
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "Bytes",
+				"kind": "SCALAR",
+				"description": null,
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "Deposit",
+				"kind": "OBJECT",
+				"description": null,
+				"fields": [
+					{
+						"name": "id",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "ID",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "owner",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "String",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "stakes",
+						"description": null,
+						"args": [
+							{
+								"name": "skip",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "0"
+							},
+							{
+								"name": "first",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "100"
+							},
+							{
+								"name": "orderBy",
+								"description": null,
+								"type": {
+									"name": "Stake_orderBy",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "orderDirection",
+								"description": null,
+								"type": {
+									"name": "OrderDirection",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "where",
+								"description": null,
+								"type": {
+									"name": "Stake_filter",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							}
+						],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": null,
+								"kind": "LIST",
+								"ofType": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "Stake",
+										"kind": "OBJECT"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "lockedUntil",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "BigInt",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "isAutoHarvested",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "Boolean",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "Deposit_filter",
+				"kind": "INPUT_OBJECT",
+				"description": null,
+				"fields": null,
+				"inputFields": [
+					{
+						"name": "id",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_not",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_gt",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_lt",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_gte",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_lte",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "ID",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "ID",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_not",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_gt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_lt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_gte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_lte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_not_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_not_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_not_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_not_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_not_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "owner_not_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "stakes_",
+						"description": null,
+						"type": {
+							"name": "Stake_filter",
+							"kind": "INPUT_OBJECT",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockedUntil",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockedUntil_not",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockedUntil_gt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockedUntil_lt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockedUntil_gte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockedUntil_lte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockedUntil_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockedUntil_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "isAutoHarvested",
+						"description": null,
+						"type": {
+							"name": "Boolean",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "isAutoHarvested_not",
+						"description": null,
+						"type": {
+							"name": "Boolean",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "isAutoHarvested_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "Boolean",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "isAutoHarvested_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "Boolean",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "_change_block",
+						"description": "Filter for the block changed event.",
+						"type": {
+							"name": "BlockChangedFilter",
+							"kind": "INPUT_OBJECT",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "and",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": "Deposit_filter",
+								"kind": "INPUT_OBJECT",
+								"ofType": null
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "or",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": "Deposit_filter",
+								"kind": "INPUT_OBJECT",
+								"ofType": null
+							}
+						},
+						"defaultValue": null
+					}
+				],
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "Deposit_orderBy",
+				"kind": "ENUM",
+				"description": null,
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": [
+					{
+						"name": "id",
+						"description": null
+					},
+					{
+						"name": "owner",
+						"description": null
+					},
+					{
+						"name": "stakes",
+						"description": null
+					},
+					{
+						"name": "lockedUntil",
+						"description": null
+					},
+					{
+						"name": "isAutoHarvested",
+						"description": null
+					}
+				],
+				"possibleTypes": null
+			},
+			{
+				"name": "Float",
+				"kind": "SCALAR",
+				"description": null,
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "ID",
+				"kind": "SCALAR",
+				"description": null,
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "Incentive",
+				"kind": "OBJECT",
+				"description": null,
+				"fields": [
+					{
+						"name": "id",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "ID",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "rewardToken",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "String",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "totalVirtualReward",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "BigInt",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "surplusReclaimed",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "BigInt",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "pool",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "String",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "startTime",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "BigInt",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "endTime",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "BigInt",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "ended",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "Boolean",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "lockupDurations",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": null,
+								"kind": "LIST",
+								"ofType": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "BigInt",
+										"kind": "SCALAR"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "lockupMultipliers",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": null,
+								"kind": "LIST",
+								"ofType": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "BigInt",
+										"kind": "SCALAR"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "refundee",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "String",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "tokensStaked",
+						"description": null,
+						"args": [
+							{
+								"name": "skip",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "0"
+							},
+							{
+								"name": "first",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "100"
+							},
+							{
+								"name": "orderBy",
+								"description": null,
+								"type": {
+									"name": "Stake_orderBy",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "orderDirection",
+								"description": null,
+								"type": {
+									"name": "OrderDirection",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "where",
+								"description": null,
+								"type": {
+									"name": "Stake_filter",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							}
+						],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": null,
+								"kind": "LIST",
+								"ofType": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "Stake",
+										"kind": "OBJECT"
+									}
+								}
+							}
+						}
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "Incentive_filter",
+				"kind": "INPUT_OBJECT",
+				"description": null,
+				"fields": null,
+				"inputFields": [
+					{
+						"name": "id",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_not",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_gt",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_lt",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_gte",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_lte",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "ID",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "ID",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_not",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_gt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_lt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_gte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_lte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_not_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_not_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_not_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_not_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_not_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "rewardToken_not_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "totalVirtualReward",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "totalVirtualReward_not",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "totalVirtualReward_gt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "totalVirtualReward_lt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "totalVirtualReward_gte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "totalVirtualReward_lte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "totalVirtualReward_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "totalVirtualReward_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "surplusReclaimed",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "surplusReclaimed_not",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "surplusReclaimed_gt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "surplusReclaimed_lt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "surplusReclaimed_gte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "surplusReclaimed_lte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "surplusReclaimed_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "surplusReclaimed_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_not",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_gt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_lt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_gte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_lte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_not_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_not_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_not_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_not_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_not_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "pool_not_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "startTime",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "startTime_not",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "startTime_gt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "startTime_lt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "startTime_gte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "startTime_lte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "startTime_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "startTime_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "endTime",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "endTime_not",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "endTime_gt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "endTime_lt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "endTime_gte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "endTime_lte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "endTime_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "endTime_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "ended",
+						"description": null,
+						"type": {
+							"name": "Boolean",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "ended_not",
+						"description": null,
+						"type": {
+							"name": "Boolean",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "ended_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "Boolean",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "ended_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "Boolean",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupDurations",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupDurations_not",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupDurations_contains",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupDurations_contains_nocase",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupDurations_not_contains",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupDurations_not_contains_nocase",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupMultipliers",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupMultipliers_not",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupMultipliers_contains",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupMultipliers_contains_nocase",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupMultipliers_not_contains",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupMultipliers_not_contains_nocase",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_not",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_gt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_lt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_gte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_lte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_not_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_not_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_not_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_not_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_not_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "refundee_not_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokensStaked_",
+						"description": null,
+						"type": {
+							"name": "Stake_filter",
+							"kind": "INPUT_OBJECT",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "_change_block",
+						"description": "Filter for the block changed event.",
+						"type": {
+							"name": "BlockChangedFilter",
+							"kind": "INPUT_OBJECT",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "and",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": "Incentive_filter",
+								"kind": "INPUT_OBJECT",
+								"ofType": null
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "or",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": "Incentive_filter",
+								"kind": "INPUT_OBJECT",
+								"ofType": null
+							}
+						},
+						"defaultValue": null
+					}
+				],
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "Incentive_orderBy",
+				"kind": "ENUM",
+				"description": null,
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": [
+					{
+						"name": "id",
+						"description": null
+					},
+					{
+						"name": "rewardToken",
+						"description": null
+					},
+					{
+						"name": "totalVirtualReward",
+						"description": null
+					},
+					{
+						"name": "surplusReclaimed",
+						"description": null
+					},
+					{
+						"name": "pool",
+						"description": null
+					},
+					{
+						"name": "startTime",
+						"description": null
+					},
+					{
+						"name": "endTime",
+						"description": null
+					},
+					{
+						"name": "ended",
+						"description": null
+					},
+					{
+						"name": "lockupDurations",
+						"description": null
+					},
+					{
+						"name": "lockupMultipliers",
+						"description": null
+					},
+					{
+						"name": "refundee",
+						"description": null
+					},
+					{
+						"name": "tokensStaked",
+						"description": null
+					}
+				],
+				"possibleTypes": null
+			},
+			{
+				"name": "Int",
+				"kind": "SCALAR",
+				"description": "4 bytes signed integer\n",
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "Int8",
+				"kind": "SCALAR",
+				"description": "8 bytes signed integer\n",
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "OrderDirection",
+				"kind": "ENUM",
+				"description": "Defines the order direction, either ascending or descending",
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": [
+					{
+						"name": "asc",
+						"description": null
+					},
+					{
+						"name": "desc",
+						"description": null
+					}
+				],
+				"possibleTypes": null
+			},
+			{
+				"name": "Query",
+				"kind": "OBJECT",
+				"description": null,
+				"fields": [
+					{
+						"name": "incentive",
+						"description": null,
+						"args": [
+							{
+								"name": "id",
+								"description": null,
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "ID",
+										"kind": "SCALAR"
+									}
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": "Incentive",
+							"kind": "OBJECT",
+							"ofType": null
+						}
+					},
+					{
+						"name": "incentives",
+						"description": null,
+						"args": [
+							{
+								"name": "skip",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "0"
+							},
+							{
+								"name": "first",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "100"
+							},
+							{
+								"name": "orderBy",
+								"description": null,
+								"type": {
+									"name": "Incentive_orderBy",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "orderDirection",
+								"description": null,
+								"type": {
+									"name": "OrderDirection",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "where",
+								"description": null,
+								"type": {
+									"name": "Incentive_filter",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": null,
+								"kind": "LIST",
+								"ofType": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "Incentive",
+										"kind": "OBJECT"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "stake",
+						"description": null,
+						"args": [
+							{
+								"name": "id",
+								"description": null,
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "ID",
+										"kind": "SCALAR"
+									}
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": "Stake",
+							"kind": "OBJECT",
+							"ofType": null
+						}
+					},
+					{
+						"name": "stakes",
+						"description": null,
+						"args": [
+							{
+								"name": "skip",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "0"
+							},
+							{
+								"name": "first",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "100"
+							},
+							{
+								"name": "orderBy",
+								"description": null,
+								"type": {
+									"name": "Stake_orderBy",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "orderDirection",
+								"description": null,
+								"type": {
+									"name": "OrderDirection",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "where",
+								"description": null,
+								"type": {
+									"name": "Stake_filter",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": null,
+								"kind": "LIST",
+								"ofType": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "Stake",
+										"kind": "OBJECT"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "deposit",
+						"description": null,
+						"args": [
+							{
+								"name": "id",
+								"description": null,
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "ID",
+										"kind": "SCALAR"
+									}
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": "Deposit",
+							"kind": "OBJECT",
+							"ofType": null
+						}
+					},
+					{
+						"name": "deposits",
+						"description": null,
+						"args": [
+							{
+								"name": "skip",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "0"
+							},
+							{
+								"name": "first",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "100"
+							},
+							{
+								"name": "orderBy",
+								"description": null,
+								"type": {
+									"name": "Deposit_orderBy",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "orderDirection",
+								"description": null,
+								"type": {
+									"name": "OrderDirection",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "where",
+								"description": null,
+								"type": {
+									"name": "Deposit_filter",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": null,
+								"kind": "LIST",
+								"ofType": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "Deposit",
+										"kind": "OBJECT"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "rewardsClaimed",
+						"description": null,
+						"args": [
+							{
+								"name": "id",
+								"description": null,
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "ID",
+										"kind": "SCALAR"
+									}
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": "RewardsClaimed",
+							"kind": "OBJECT",
+							"ofType": null
+						}
+					},
+					{
+						"name": "rewardsClaimeds",
+						"description": null,
+						"args": [
+							{
+								"name": "skip",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "0"
+							},
+							{
+								"name": "first",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "100"
+							},
+							{
+								"name": "orderBy",
+								"description": null,
+								"type": {
+									"name": "RewardsClaimed_orderBy",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "orderDirection",
+								"description": null,
+								"type": {
+									"name": "OrderDirection",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "where",
+								"description": null,
+								"type": {
+									"name": "RewardsClaimed_filter",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": null,
+								"kind": "LIST",
+								"ofType": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "RewardsClaimed",
+										"kind": "OBJECT"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "_meta",
+						"description": "Access to subgraph metadata",
+						"args": [
+							{
+								"name": "block",
+								"description": null,
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							}
+						],
+						"type": {
+							"name": "_Meta_",
+							"kind": "OBJECT",
+							"ofType": null
+						}
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "RewardsClaimed",
+				"kind": "OBJECT",
+				"description": null,
+				"fields": [
+					{
+						"name": "id",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "ID",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "recipient",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "String",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "tokenAddress",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "String",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "amount",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "BigInt",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "RewardsClaimed_filter",
+				"kind": "INPUT_OBJECT",
+				"description": null,
+				"fields": null,
+				"inputFields": [
+					{
+						"name": "id",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_not",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_gt",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_lt",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_gte",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_lte",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "ID",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "ID",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_not",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_gt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_lt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_gte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_lte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_not_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_not_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_not_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_not_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_not_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "recipient_not_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_not",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_gt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_lt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_gte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_lte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_not_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_not_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_not_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_not_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_not_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "tokenAddress_not_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "amount",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "amount_not",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "amount_gt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "amount_lt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "amount_gte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "amount_lte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "amount_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "amount_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "_change_block",
+						"description": "Filter for the block changed event.",
+						"type": {
+							"name": "BlockChangedFilter",
+							"kind": "INPUT_OBJECT",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "and",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": "RewardsClaimed_filter",
+								"kind": "INPUT_OBJECT",
+								"ofType": null
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "or",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": "RewardsClaimed_filter",
+								"kind": "INPUT_OBJECT",
+								"ofType": null
+							}
+						},
+						"defaultValue": null
+					}
+				],
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "RewardsClaimed_orderBy",
+				"kind": "ENUM",
+				"description": null,
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": [
+					{
+						"name": "id",
+						"description": null
+					},
+					{
+						"name": "recipient",
+						"description": null
+					},
+					{
+						"name": "tokenAddress",
+						"description": null
+					},
+					{
+						"name": "amount",
+						"description": null
+					}
+				],
+				"possibleTypes": null
+			},
+			{
+				"name": "Stake",
+				"kind": "OBJECT",
+				"description": null,
+				"fields": [
+					{
+						"name": "id",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "ID",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "incentive",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "Incentive",
+								"kind": "OBJECT",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "deposit",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "Deposit",
+								"kind": "OBJECT",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "liquidityUponDeposit",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "BigInt",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "lockupDuration",
+						"description": null,
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "BigInt",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "Stake_filter",
+				"kind": "INPUT_OBJECT",
+				"description": null,
+				"fields": null,
+				"inputFields": [
+					{
+						"name": "id",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_not",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_gt",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_lt",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_gte",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_lte",
+						"description": null,
+						"type": {
+							"name": "ID",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "ID",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "id_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "ID",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_not",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_gt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_lt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_gte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_lte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_not_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_not_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_not_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_not_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_not_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_not_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "incentive_",
+						"description": null,
+						"type": {
+							"name": "Incentive_filter",
+							"kind": "INPUT_OBJECT",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_not",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_gt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_lt",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_gte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_lte",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "String",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_not_contains",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_not_contains_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_not_starts_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_not_starts_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_not_ends_with",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_not_ends_with_nocase",
+						"description": null,
+						"type": {
+							"name": "String",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "deposit_",
+						"description": null,
+						"type": {
+							"name": "Deposit_filter",
+							"kind": "INPUT_OBJECT",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "liquidityUponDeposit",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "liquidityUponDeposit_not",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "liquidityUponDeposit_gt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "liquidityUponDeposit_lt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "liquidityUponDeposit_gte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "liquidityUponDeposit_lte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "liquidityUponDeposit_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "liquidityUponDeposit_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupDuration",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupDuration_not",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupDuration_gt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupDuration_lt",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupDuration_gte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupDuration_lte",
+						"description": null,
+						"type": {
+							"name": "BigInt",
+							"kind": "SCALAR",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupDuration_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "lockupDuration_not_in",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": null,
+								"kind": "NON_NULL",
+								"ofType": {
+									"name": "BigInt",
+									"kind": "SCALAR",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "_change_block",
+						"description": "Filter for the block changed event.",
+						"type": {
+							"name": "BlockChangedFilter",
+							"kind": "INPUT_OBJECT",
+							"ofType": null
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "and",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": "Stake_filter",
+								"kind": "INPUT_OBJECT",
+								"ofType": null
+							}
+						},
+						"defaultValue": null
+					},
+					{
+						"name": "or",
+						"description": null,
+						"type": {
+							"name": null,
+							"kind": "LIST",
+							"ofType": {
+								"name": "Stake_filter",
+								"kind": "INPUT_OBJECT",
+								"ofType": null
+							}
+						},
+						"defaultValue": null
+					}
+				],
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "Stake_orderBy",
+				"kind": "ENUM",
+				"description": null,
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": [
+					{
+						"name": "id",
+						"description": null
+					},
+					{
+						"name": "incentive",
+						"description": null
+					},
+					{
+						"name": "incentive__id",
+						"description": null
+					},
+					{
+						"name": "incentive__rewardToken",
+						"description": null
+					},
+					{
+						"name": "incentive__totalVirtualReward",
+						"description": null
+					},
+					{
+						"name": "incentive__surplusReclaimed",
+						"description": null
+					},
+					{
+						"name": "incentive__pool",
+						"description": null
+					},
+					{
+						"name": "incentive__startTime",
+						"description": null
+					},
+					{
+						"name": "incentive__endTime",
+						"description": null
+					},
+					{
+						"name": "incentive__ended",
+						"description": null
+					},
+					{
+						"name": "incentive__refundee",
+						"description": null
+					},
+					{
+						"name": "deposit",
+						"description": null
+					},
+					{
+						"name": "deposit__id",
+						"description": null
+					},
+					{
+						"name": "deposit__owner",
+						"description": null
+					},
+					{
+						"name": "deposit__lockedUntil",
+						"description": null
+					},
+					{
+						"name": "deposit__isAutoHarvested",
+						"description": null
+					},
+					{
+						"name": "liquidityUponDeposit",
+						"description": null
+					},
+					{
+						"name": "lockupDuration",
+						"description": null
+					}
+				],
+				"possibleTypes": null
+			},
+			{
+				"name": "String",
+				"kind": "SCALAR",
+				"description": null,
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "Subscription",
+				"kind": "OBJECT",
+				"description": null,
+				"fields": [
+					{
+						"name": "incentive",
+						"description": null,
+						"args": [
+							{
+								"name": "id",
+								"description": null,
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "ID",
+										"kind": "SCALAR"
+									}
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": "Incentive",
+							"kind": "OBJECT",
+							"ofType": null
+						}
+					},
+					{
+						"name": "incentives",
+						"description": null,
+						"args": [
+							{
+								"name": "skip",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "0"
+							},
+							{
+								"name": "first",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "100"
+							},
+							{
+								"name": "orderBy",
+								"description": null,
+								"type": {
+									"name": "Incentive_orderBy",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "orderDirection",
+								"description": null,
+								"type": {
+									"name": "OrderDirection",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "where",
+								"description": null,
+								"type": {
+									"name": "Incentive_filter",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": null,
+								"kind": "LIST",
+								"ofType": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "Incentive",
+										"kind": "OBJECT"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "stake",
+						"description": null,
+						"args": [
+							{
+								"name": "id",
+								"description": null,
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "ID",
+										"kind": "SCALAR"
+									}
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": "Stake",
+							"kind": "OBJECT",
+							"ofType": null
+						}
+					},
+					{
+						"name": "stakes",
+						"description": null,
+						"args": [
+							{
+								"name": "skip",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "0"
+							},
+							{
+								"name": "first",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "100"
+							},
+							{
+								"name": "orderBy",
+								"description": null,
+								"type": {
+									"name": "Stake_orderBy",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "orderDirection",
+								"description": null,
+								"type": {
+									"name": "OrderDirection",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "where",
+								"description": null,
+								"type": {
+									"name": "Stake_filter",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": null,
+								"kind": "LIST",
+								"ofType": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "Stake",
+										"kind": "OBJECT"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "deposit",
+						"description": null,
+						"args": [
+							{
+								"name": "id",
+								"description": null,
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "ID",
+										"kind": "SCALAR"
+									}
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": "Deposit",
+							"kind": "OBJECT",
+							"ofType": null
+						}
+					},
+					{
+						"name": "deposits",
+						"description": null,
+						"args": [
+							{
+								"name": "skip",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "0"
+							},
+							{
+								"name": "first",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "100"
+							},
+							{
+								"name": "orderBy",
+								"description": null,
+								"type": {
+									"name": "Deposit_orderBy",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "orderDirection",
+								"description": null,
+								"type": {
+									"name": "OrderDirection",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "where",
+								"description": null,
+								"type": {
+									"name": "Deposit_filter",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": null,
+								"kind": "LIST",
+								"ofType": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "Deposit",
+										"kind": "OBJECT"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "rewardsClaimed",
+						"description": null,
+						"args": [
+							{
+								"name": "id",
+								"description": null,
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "ID",
+										"kind": "SCALAR"
+									}
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": "RewardsClaimed",
+							"kind": "OBJECT",
+							"ofType": null
+						}
+					},
+					{
+						"name": "rewardsClaimeds",
+						"description": null,
+						"args": [
+							{
+								"name": "skip",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "0"
+							},
+							{
+								"name": "first",
+								"description": null,
+								"type": {
+									"name": "Int",
+									"kind": "SCALAR",
+									"ofType": null
+								},
+								"defaultValue": "100"
+							},
+							{
+								"name": "orderBy",
+								"description": null,
+								"type": {
+									"name": "RewardsClaimed_orderBy",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "orderDirection",
+								"description": null,
+								"type": {
+									"name": "OrderDirection",
+									"kind": "ENUM",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "where",
+								"description": null,
+								"type": {
+									"name": "RewardsClaimed_filter",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "block",
+								"description": "The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.",
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							},
+							{
+								"name": "subgraphError",
+								"description": "Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.",
+								"type": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "_SubgraphErrorPolicy_",
+										"kind": "ENUM"
+									}
+								},
+								"defaultValue": "deny"
+							}
+						],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": null,
+								"kind": "LIST",
+								"ofType": {
+									"name": null,
+									"kind": "NON_NULL",
+									"ofType": {
+										"name": "RewardsClaimed",
+										"kind": "OBJECT"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "_meta",
+						"description": "Access to subgraph metadata",
+						"args": [
+							{
+								"name": "block",
+								"description": null,
+								"type": {
+									"name": "Block_height",
+									"kind": "INPUT_OBJECT",
+									"ofType": null
+								},
+								"defaultValue": null
+							}
+						],
+						"type": {
+							"name": "_Meta_",
+							"kind": "OBJECT",
+							"ofType": null
+						}
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "Timestamp",
+				"kind": "SCALAR",
+				"description": "A string representation of microseconds UNIX timestamp (16 digits)\n",
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "_Block_",
+				"kind": "OBJECT",
+				"description": null,
+				"fields": [
+					{
+						"name": "hash",
+						"description": "The hash of the block",
+						"args": [],
+						"type": {
+							"name": "Bytes",
+							"kind": "SCALAR",
+							"ofType": null
+						}
+					},
+					{
+						"name": "number",
+						"description": "The block number",
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "Int",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "timestamp",
+						"description": "Integer representation of the timestamp stored in blocks for the chain",
+						"args": [],
+						"type": {
+							"name": "Int",
+							"kind": "SCALAR",
+							"ofType": null
+						}
+					},
+					{
+						"name": "parentHash",
+						"description": "The hash of the parent block",
+						"args": [],
+						"type": {
+							"name": "Bytes",
+							"kind": "SCALAR",
+							"ofType": null
+						}
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "_Meta_",
+				"kind": "OBJECT",
+				"description": "The type for the top-level _meta field",
+				"fields": [
+					{
+						"name": "block",
+						"description": "Information about a specific subgraph block. The hash of the block\nwill be null if the _meta field has a block constraint that asks for\na block number. It will be filled if the _meta field has no block constraint\nand therefore asks for the latest  block\n",
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "_Block_",
+								"kind": "OBJECT",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "deployment",
+						"description": "The deployment ID",
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "String",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					},
+					{
+						"name": "hasIndexingErrors",
+						"description": "If `true`, the subgraph encountered indexing errors at some past block",
+						"args": [],
+						"type": {
+							"name": null,
+							"kind": "NON_NULL",
+							"ofType": {
+								"name": "Boolean",
+								"kind": "SCALAR",
+								"ofType": null
+							}
+						}
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"name": "_SubgraphErrorPolicy_",
+				"kind": "ENUM",
+				"description": null,
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": [
+					{
+						"name": "allow",
+						"description": "Data will be returned even if the subgraph has indexing errors"
+					},
+					{
+						"name": "deny",
+						"description": "If the subgraph has indexing errors, data will be omitted. The default."
+					}
+				],
+				"possibleTypes": null
+			}
+		]
+	}
+}

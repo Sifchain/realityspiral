@@ -1,25 +1,25 @@
-import { elizaLogger } from "@elizaos/core";
-import type { ContractHelper } from "@realityspiral/plugin-coinbase";
+import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
 import { ethers } from "ethers";
 import { ABIS, POOL_FEES } from "../constants";
 import type { SwapResult, TransactionReceipt } from "../types";
+import { invokeContract, readContract } from "./ethersHelper";
 
 /**
  * Service for handling token swaps on Neby DEX
  */
 export class SwapService {
-	private contractHelper: ContractHelper;
+	private runtime: IAgentRuntime;
 	private networkId: string;
 	private swapRouterAddress: string;
 	private quoterAddress: string;
 
 	constructor(
-		contractHelper: ContractHelper,
+		runtime: IAgentRuntime,
 		networkId: string,
 		swapRouterAddress: string,
 		quoterAddress: string,
 	) {
-		this.contractHelper = contractHelper;
+		this.runtime = runtime;
 		this.networkId = networkId;
 		this.swapRouterAddress = swapRouterAddress;
 		this.quoterAddress = quoterAddress;
@@ -34,20 +34,28 @@ export class SwapService {
 		amount: string,
 	): Promise<string> {
 		try {
-			elizaLogger.info("Getting swap quote", { fromToken, toToken, amount });
+			elizaLogger.info("Getting swap quote using quoteExactInput", {
+				fromToken,
+				toToken,
+				amount,
+			});
 
-			// Use the quoter contract to get the expected output amount
-			const result = await this.contractHelper.invokeContract({
+			// TODO: Add logic to determine the best fee tier instead of defaulting
+			const fee = POOL_FEES.MEDIUM; // Default to medium fee tier
+
+			// Encode the path for quoteExactInput: tokenIn, fee, tokenOut
+			const path = ethers.solidityPacked(
+				["address", "uint24", "address"],
+				[fromToken, fee, toToken],
+			);
+
+			// Use readContract from ethersHelper
+			const result = await readContract<string>({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: this.quoterAddress,
-				method: "quoteExactInputSingle",
-				args: [
-					fromToken,
-					toToken,
-					POOL_FEES.MEDIUM, // Default to medium fee tier
-					amount,
-					0, // No price limit
-				],
+				method: "quoteExactInput",
+				args: [path, amount],
 				abi: ABIS.QUOTER,
 			});
 
@@ -80,7 +88,9 @@ export class SwapService {
 				amount,
 			});
 
-			const result = await this.contractHelper.invokeContract({
+			// Use invokeContract from ethersHelper
+			const result = await invokeContract({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: tokenAddress,
 				method: "approve",
@@ -88,7 +98,7 @@ export class SwapService {
 				abi: ABIS.ERC20,
 			});
 
-			return result;
+			return result; // ethersHelper.invokeContract returns TransactionReceipt
 		} catch (error) {
 			elizaLogger.error("Failed to approve token spending", {
 				error:
@@ -132,23 +142,34 @@ export class SwapService {
 				sqrtPriceLimitX96: 0, // No price limit
 			};
 
-			// Execute the swap
-			const result = await this.contractHelper.invokeContract({
+			// Use invokeContract from ethersHelper
+			const invokeResult = await invokeContract({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: this.swapRouterAddress,
 				method: "exactInputSingle",
 				args: [params],
 				abi: ABIS.SWAP_ROUTER,
-				value: "0", // Set value if swapping from native token
+				// value: "0", // TODO: Set value if swapping *from* native token
 			});
+
+			// TODO: How to get amountOut? The invokeContract helper currently only returns
+			// TransactionReceipt (hash, status, block). The actual return value of the
+			// 'exactInputSingle' method (amountOut) is not captured.
+			// This needs adjustment in invokeContract or a separate read call after tx confirmation.
+			// For now, returning a placeholder.
+			const amountOutPlaceholder = "0"; // Placeholder
+			elizaLogger.warn(
+				"Swap executed, but amountOut not retrieved from invokeContract result.",
+			);
 
 			// Parse and return the result
 			return {
 				fromToken,
 				toToken,
 				amountIn: amount,
-				amountOut: result.toString(),
-				transactionHash: result.transactionHash,
+				amountOut: amountOutPlaceholder,
+				transactionHash: invokeResult.transactionHash,
 				timestamp: Date.now(),
 			};
 		} catch (error) {

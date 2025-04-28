@@ -1,34 +1,33 @@
-import { elizaLogger } from "@elizaos/core";
-import type { ContractHelper } from "@realityspiral/plugin-coinbase";
+import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
 import { ethers } from "ethers";
 import {
 	ABIS,
 	POOL_FEES,
 	SAPPHIRE_MAINNET,
 	SAPPHIRE_TESTNET,
+	UNISWAP_V3_POOL_ABI,
+	UNISWAP_V3_QUOTER_ABI,
 } from "../constants";
-import { UNISWAP_V3_POOL_ABI, UNISWAP_V3_QUOTER_ABI } from "../constants";
-import type { ArbitrageOpportunity, PriceInfo } from "../types";
-import type { PluginConfig } from "../types";
-import { ENDPOINTS, sortTokens } from "./utils";
-import { getProvider } from "./utils";
+import type { ArbitrageOpportunity, PluginConfig, PriceInfo } from "../types";
+import { readContract } from "./ethersHelper";
+import { sortTokens } from "./utils";
 
 /**
  * Service for monitoring prices and finding arbitrage opportunities
  */
 export class PriceService {
-	private contractHelper: ContractHelper;
+	private runtime: IAgentRuntime;
 	private networkId: string;
 	private quoterAddress: string;
 	private factoryAddress: string;
 
 	constructor(
-		contractHelper: ContractHelper,
+		runtime: IAgentRuntime,
 		networkId: string,
 		quoterAddress: string,
 		factoryAddress: string,
 	) {
-		this.contractHelper = contractHelper;
+		this.runtime = runtime;
 		this.networkId = networkId;
 		this.quoterAddress = quoterAddress;
 		this.factoryAddress = factoryAddress;
@@ -43,23 +42,28 @@ export class PriceService {
 		fee: number = POOL_FEES.MEDIUM,
 	): Promise<string> {
 		try {
-			elizaLogger.info("Getting price for token pair", { tokenA, tokenB, fee });
+			elizaLogger.info("Getting price for token pair using quoteExactInput", {
+				tokenA,
+				tokenB,
+				fee,
+			});
 
 			// For price quotes, we use the smallest possible amount (1 wei) to minimize price impact
 			const amountIn = "1";
 
-			// Try to get price quote
-			const amountOut = await this.contractHelper.invokeContract({
+			// Encode the path for quoteExactInput: tokenIn, fee, tokenOut
+			const path = ethers.solidityPacked(
+				["address", "uint24", "address"],
+				[tokenA, fee, tokenB],
+			);
+
+			// Use readContract from ethersHelper
+			const amountOut = await readContract<string>({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: this.quoterAddress,
-				method: "quoteExactInputSingle",
-				args: [
-					tokenA,
-					tokenB,
-					fee,
-					amountIn,
-					0, // No price limit
-				],
+				method: "quoteExactInput",
+				args: [path, amountIn],
 				abi: ABIS.QUOTER,
 			});
 
@@ -359,7 +363,8 @@ export class PriceService {
 			const [token0, token1] = sortTokens(tokenA, tokenB);
 
 			// Get pool address
-			const poolAddress = await this.contractHelper.invokeContract({
+			const poolAddress = await readContract<string>({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: this.factoryAddress,
 				method: "getPool",
@@ -367,12 +372,13 @@ export class PriceService {
 				abi: ABIS.V3_CORE_FACTORY,
 			});
 
-			if (!poolAddress) {
+			if (!poolAddress || poolAddress === ethers.ZeroAddress) {
 				throw new Error("Pool not found");
 			}
 
 			// Get pool slots (contains liquidity, last observation, etc.)
-			const slot0 = await this.contractHelper.invokeContract({
+			const slot0 = await readContract<any>({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: poolAddress,
 				method: "slot0",
@@ -397,7 +403,8 @@ export class PriceService {
 			});
 
 			// Get liquidity
-			const liquidity = await this.contractHelper.invokeContract({
+			const liquidity = await readContract<string>({
+				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: poolAddress,
 				method: "liquidity",
@@ -419,9 +426,9 @@ export class PriceService {
 				token0,
 				token1,
 				fee,
-				sqrtPriceX96: slot0.sqrtPriceX96.toString(),
+				sqrtPriceX96: slot0.sqrtPriceX96,
 				tick: slot0.tick,
-				liquidity: liquidity.toString(),
+				liquidity: liquidity,
 				unlocked: slot0.unlocked,
 			};
 		} catch (error) {
@@ -435,235 +442,5 @@ export class PriceService {
 				`Failed to get pool info: ${error instanceof Error ? error.message : "Unknown error"}`,
 			);
 		}
-	}
-}
-
-// USDC address - commonly used as price reference
-const USDC_ADDRESS = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-
-/**
- * Gets the current price of a token relative to another token (usually USDC)
- */
-export async function getTokenPrice(
-	tokenAddress: string,
-	config: PluginConfig,
-	logger: typeof elizaLogger,
-	baseTokenAddress: string = USDC_ADDRESS,
-): Promise<PriceInfo> {
-	logger.debug("Getting token price", { tokenAddress, baseTokenAddress });
-
-	try {
-		const provider = getProvider(config);
-
-		// Get token details
-		const tokenContract = new ethers.Contract(
-			tokenAddress,
-			[
-				"function decimals() view returns (uint8)",
-				"function symbol() view returns (string)",
-			],
-			provider,
-		);
-
-		const baseTokenContract = new ethers.Contract(
-			baseTokenAddress,
-			[
-				"function decimals() view returns (uint8)",
-				"function symbol() view returns (string)",
-			],
-			provider,
-		);
-
-		const [tokenDecimals, tokenSymbol, baseTokenDecimals, baseTokenSymbol] =
-			await Promise.all([
-				tokenContract.decimals(),
-				tokenContract.symbol(),
-				baseTokenContract.decimals(),
-				baseTokenContract.symbol(),
-			]);
-
-		// Find a pool for this pair on Uniswap V3
-		// This is a simplified approach - in production, you'd want to:
-		// 1. Check multiple fee tiers (0.05%, 0.3%, 1%)
-		// 2. Possibly use the Quoter contract for more accurate pricing
-
-		// For this example, we'll just use the 0.3% fee tier
-		const feeTier = 3000;
-
-		// Get pool address
-		const factoryAddress = "0x1F98431c8aD98523631AE4a59f267346ea31F984"; // Uniswap V3 Factory
-		const factory = new ethers.Contract(
-			factoryAddress,
-			[
-				"function getPool(address tokenA, address tokenB, uint24 fee) view returns (address pool)",
-			],
-			provider,
-		);
-
-		const poolAddress = await factory.getPool(
-			tokenAddress,
-			baseTokenAddress,
-			feeTier,
-		);
-
-		// Check if pool exists
-		if (poolAddress === "0x0000000000000000000000000000000000000000") {
-			throw new Error(`No pool found for ${tokenSymbol}/${baseTokenSymbol}`);
-		}
-
-		// Get pool info
-		const pool = new ethers.Contract(
-			poolAddress,
-			UNISWAP_V3_POOL_ABI,
-			provider,
-		);
-
-		const [slot0, token0] = await Promise.all([pool.slot0(), pool.token0()]);
-
-		const sqrtPriceX96 = slot0.sqrtPriceX96;
-
-		// Calculate price from sqrtPriceX96
-		const token0IsBaseToken =
-			token0.toLowerCase() === baseTokenAddress.toLowerCase();
-
-		// Calculate price from sqrtPriceX96
-		// Price = (sqrtPriceX96 / 2^96)^2
-		// Convert to BigInt to handle multiplication safely
-		const sqrtPriceX96BigInt = BigInt(sqrtPriceX96.toString());
-		const priceX96Squared = sqrtPriceX96BigInt * sqrtPriceX96BigInt;
-		const denominator = BigInt(2) ** BigInt(192); // 2^(96*2)
-		let rawPrice =
-			(priceX96Squared *
-				BigInt(10) **
-					BigInt(token0IsBaseToken ? tokenDecimals : baseTokenDecimals)) /
-			denominator /
-			BigInt(10) **
-				BigInt(token0IsBaseToken ? baseTokenDecimals : tokenDecimals);
-
-		// If token0 is not the base token, we need to invert the price
-		if (!token0IsBaseToken) {
-			// Instead of division which can lead to precision issues, we use fixed point math
-			const PRECISION = BigInt(10) ** BigInt(18);
-			rawPrice = (PRECISION * PRECISION) / rawPrice;
-		}
-
-		// Convert to decimal string for consistent representation
-		const priceString = rawPrice.toString();
-
-		return {
-			tokenA: tokenAddress,
-			tokenB: baseTokenAddress,
-			poolFee: feeTier,
-			price: priceString,
-			updatedAt: Date.now(),
-		};
-	} catch (error) {
-		const errorMessage = error instanceof Error ? error.message : String(error);
-		logger.error("Error getting token price", {
-			error: errorMessage,
-			tokenAddress,
-		});
-		throw new Error(`Failed to get price for ${tokenAddress}: ${errorMessage}`);
-	}
-}
-
-/**
- * Finds potential arbitrage opportunities across DEXes
- */
-export async function findArbitrageOpportunities(
-	config: PluginConfig,
-	logger: typeof elizaLogger,
-	tokenAddresses?: string[],
-	minProfitPercentage = 0.5, // 0.5% minimum profit
-	maxHops = 3,
-): Promise<ArbitrageOpportunity[]> {
-	logger.debug("Finding arbitrage opportunities", {
-		tokenCount: tokenAddresses?.length,
-		minProfitPercentage,
-		maxHops,
-	});
-
-	// Use popular tokens if none specified
-	const tokens = tokenAddresses || [
-		USDC_ADDRESS, // USDC
-		"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
-		"0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", // WBTC
-		"0x6B175474E89094C44Da98b954EedeAC495271d0F", // DAI
-		"0x514910771AF9Ca656af840dff83E8264EcF986CA", // LINK
-	];
-
-	// In a real implementation, we would:
-	// 1. Check prices across multiple DEXes (Uniswap, Sushiswap, etc.)
-	// 2. Find paths where buying on one DEX and selling on another yields profit
-	// 3. Calculate gas costs and verify the arbitrage is profitable
-
-	// For this example, we'll simulate finding a few opportunities
-	const opportunities: ArbitrageOpportunity[] = [];
-
-	try {
-		// Just as an example, we'll create a simulated opportunity
-		// In a real implementation, this would come from price differences between DEXes
-
-		// Get the provider
-		const provider = getProvider(config);
-
-		// Check just a couple of token pairs as an example
-		for (let i = 0; i < tokens.length; i++) {
-			for (let j = i + 1; j < tokens.length; j++) {
-				// Skip if we've already found a few opportunities (for example purposes)
-				if (opportunities.length >= 3) continue;
-
-				const tokenA = tokens[i];
-				const tokenB = tokens[j];
-
-				try {
-					// Get token info
-					const tokenAContract = new ethers.Contract(
-						tokenA,
-						["function symbol() view returns (string)"],
-						provider,
-					);
-
-					const tokenBContract = new ethers.Contract(
-						tokenB,
-						["function symbol() view returns (string)"],
-						provider,
-					);
-
-					const [symbolA, symbolB] = await Promise.all([
-						tokenAContract.symbol(),
-						tokenBContract.symbol(),
-					]);
-
-					// Simulate finding an opportunity with a random profit between 0.5% and 2%
-					const profitPercentage = Math.random() * 1.5 + minProfitPercentage;
-
-					// Only include if it meets the minimum profit requirement
-					if (profitPercentage >= minProfitPercentage) {
-						opportunities.push({
-							routeDescription: `${symbolA} → ${symbolB} arbitrage opportunity`,
-							profitToken: "USDC",
-							estimatedProfit: ((1000 * profitPercentage) / 100).toFixed(2),
-							confidence: "medium",
-						});
-					}
-				} catch (error) {
-					const errorMessage =
-						error instanceof Error ? error.message : String(error);
-					logger.warn(`Error checking pair ${tokenA}/${tokenB}`, {
-						error: errorMessage,
-					});
-					// Continue with other pairs
-				}
-			}
-		}
-
-		return opportunities;
-	} catch (error) {
-		const errorMessage = error instanceof Error ? error.message : String(error);
-		logger.error("Error finding arbitrage opportunities", {
-			error: errorMessage,
-		});
-		throw new Error(`Failed to find arbitrage opportunities: ${errorMessage}`);
 	}
 }

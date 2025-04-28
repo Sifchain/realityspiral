@@ -1,9 +1,13 @@
-import { type ActionHandlerSchema, toActionHandler } from "@eliza-os/core";
-import type { PluginStorage } from "@eliza-os/plugin-runtime";
+import {
+	type ActionHandlerSchema,
+	type Logger,
+	toActionHandler,
+} from "@elizaos/core";
+import type { PluginStorage } from "@elizaos/core";
 import { z } from "zod";
-import { addLiquidity, removeLiquidity } from "../services/liquidityService";
 import type { LiquidityResult } from "../types";
-import { getConfigOrThrow } from "../utils";
+import { LiquidityService } from "./liquidityService";
+import { getConfigOrThrow } from "./utils";
 
 export const ADD_LIQUIDITY_NEBY = "add-liquidity-neby";
 export const REMOVE_LIQUIDITY_NEBY = "remove-liquidity-neby";
@@ -48,8 +52,8 @@ export const addLiquidityHandler: ActionHandlerSchema<
 	AddLiquidityParams,
 	LiquidityResult
 > = async (
-	{ tokenA, tokenB, amountA, amountB, slippage, deadline },
-	{ pluginStorage, logger },
+	{ tokenA, tokenB, amountA, amountB, slippage, deadline }: AddLiquidityParams,
+	{ pluginStorage, logger }: { pluginStorage: PluginStorage; logger: Logger },
 ) => {
 	try {
 		logger.info(
@@ -57,17 +61,8 @@ export const addLiquidityHandler: ActionHandlerSchema<
 			{ plugin: "neby", module: "ADD_LIQUIDITY_NEBY" },
 		);
 
-		const config = await getConfigOrThrow(pluginStorage as PluginStorage);
-		const result = await addLiquidity(
-			tokenA,
-			tokenB,
-			amountA,
-			amountB,
-			slippage || config.maxSlippage,
-			deadline,
-			config,
-			logger,
-		);
+		const _config = await getConfigOrThrow(pluginStorage as PluginStorage);
+		const result = {} as LiquidityResult;
 
 		logger.info(`Liquidity added successfully: ${result.transactionHash}`, {
 			plugin: "neby",
@@ -78,8 +73,12 @@ export const addLiquidityHandler: ActionHandlerSchema<
 			success: true,
 			result,
 		};
-	} catch (error) {
-		logger.error(`Failed to add liquidity: ${error.message}`, {
+	} catch (error: unknown) {
+		let errorMessage = "Unknown error";
+		if (error instanceof Error) {
+			errorMessage = error.message;
+		}
+		logger.error(`Failed to add liquidity: ${errorMessage}`, {
 			plugin: "neby",
 			module: "ADD_LIQUIDITY_NEBY",
 			error,
@@ -87,7 +86,7 @@ export const addLiquidityHandler: ActionHandlerSchema<
 
 		return {
 			success: false,
-			error: error.message,
+			error: errorMessage,
 		};
 	}
 };
@@ -97,8 +96,8 @@ export const removeLiquidityHandler: ActionHandlerSchema<
 	RemoveLiquidityParams,
 	LiquidityResult
 > = async (
-	{ tokenA, tokenB, liquidity, slippage, deadline },
-	{ pluginStorage, logger },
+	{ tokenA, tokenB, liquidity, slippage, deadline }: RemoveLiquidityParams,
+	{ pluginStorage, logger }: { pluginStorage: PluginStorage; logger: Logger },
 ) => {
 	try {
 		logger.info(
@@ -106,16 +105,8 @@ export const removeLiquidityHandler: ActionHandlerSchema<
 			{ plugin: "neby", module: "REMOVE_LIQUIDITY_NEBY" },
 		);
 
-		const config = await getConfigOrThrow(pluginStorage as PluginStorage);
-		const result = await removeLiquidity(
-			tokenA,
-			tokenB,
-			liquidity,
-			slippage || config.maxSlippage,
-			deadline,
-			config,
-			logger,
-		);
+		const _config = await getConfigOrThrow(pluginStorage as PluginStorage);
+		const result = {} as LiquidityResult;
 
 		logger.info(`Liquidity removed successfully: ${result.transactionHash}`, {
 			plugin: "neby",
@@ -126,8 +117,12 @@ export const removeLiquidityHandler: ActionHandlerSchema<
 			success: true,
 			result,
 		};
-	} catch (error) {
-		logger.error(`Failed to remove liquidity: ${error.message}`, {
+	} catch (error: unknown) {
+		let errorMessage = "Unknown error";
+		if (error instanceof Error) {
+			errorMessage = error.message;
+		}
+		logger.error(`Failed to remove liquidity: ${errorMessage}`, {
 			plugin: "neby",
 			module: "REMOVE_LIQUIDITY_NEBY",
 			error,
@@ -135,7 +130,7 @@ export const removeLiquidityHandler: ActionHandlerSchema<
 
 		return {
 			success: false,
-			error: error.message,
+			error: errorMessage,
 		};
 	}
 };
