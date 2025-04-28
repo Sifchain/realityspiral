@@ -184,7 +184,7 @@ const getConfigAndNetwork = (runtime: IAgentRuntime) => {
 	return { fullConfig, networkConfig, networkId };
 };
 
-/**
+	/**
  * Implementation of the Accumulated Finance plugin for Oasis Sapphire
  */
 export const accumulatedFinancePlugin = (
@@ -258,7 +258,7 @@ export const accumulatedFinancePlugin = (
 			});
 			const { signer } = await getProviderAndSigner(runtime, networkConfig);
 			const wrappedRoseContract = new ethers.Contract(
-				networkConfig.CONTRACTS.UNSTAKED_ROSE,
+				networkConfig.CONTRACTS.WRAPPED_ROSE,
 				ABIS.WSTROSE,
 				signer,
 			);
@@ -299,9 +299,10 @@ export const accumulatedFinancePlugin = (
 				ABIS.WSTROSE,
 				signer,
 			);
+			const amountWei = convertToWeiString(amount);
 
 			const withdrawTx = await wrappedRoseContract.withdraw(
-				amount,
+				amountWei,
 				receiver,
 				owner,
 				{ gasLimit: 300000 },
@@ -861,7 +862,45 @@ export const stakeAction: Action = {
 	description: "Stake ROSE tokens on Accumulated Finance",
 	similes: ["STAKE_ON_ACCUMULATED", "DEPOSIT_ROSE_ACCUMULATED"],
 	examples: [
-		// ... examples ...
+		[
+			{
+				user: "{{user}}",
+				content: { text: "I want to stake 10 ROSE on Accumulated Finance" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Staked 10 ROSE. Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_STAKE",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "Stake 5.5 ROSE to earn rewards" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Staked 5.5 ROSE. Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_STAKE",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "Deposit 0.05 ROSE to Accumulated Finance" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Staked 0.05 ROSE. Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_STAKE",
+				},
+			},
+		],
 	],
 	validate: async (runtime: IAgentRuntime) => {
 		try {
@@ -924,7 +963,45 @@ export const unstakeAction: Action = {
 	description: "Unstake ROSE tokens from Accumulated Finance",
 	similes: ["UNSTAKE_FROM_ACCUMULATED", "WITHDRAW_ROSE_ACCUMULATED"],
 	examples: [
-		// ... examples ...
+		[
+			{
+				user: "{{user}}",
+				content: { text: "I want to unstake 10 ROSE from Accumulated Finance" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Unstake initiated for 10 ROSE. Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_UNSTAKE",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "Withdraw 5 ROSE from my stake" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Unstake initiated for 5 ROSE. Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_UNSTAKE",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "Remove 2.5 ROSE from Accumulated Finance staking" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Unstake initiated for 2.5 ROSE. Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_UNSTAKE",
+				},
+			},
+		],
 	],
 	validate: stakeAction.validate, // Same validation as stake
 	handler: async (
@@ -978,7 +1055,47 @@ export const getRewardsAction: Action = {
 	description: "Get accumulated staking rewards from Accumulated Finance",
 	similes: ["CHECK_ACCUMULATED_REWARDS"],
 	examples: [
-		// ... examples ...
+		[
+			{
+				user: "{{user}}",
+				content: {
+					text: "How much reward have I earned on Accumulated Finance?",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Pending rewards: 0.25 ROSE",
+					action: "ACCUMULATED_FINANCE_GET_REWARDS",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "Check my staking rewards" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Pending rewards: 1.5 ROSE",
+					action: "ACCUMULATED_FINANCE_GET_REWARDS",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "What are my current accumulated rewards?" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Pending rewards: 0.05 ROSE",
+					action: "ACCUMULATED_FINANCE_GET_REWARDS",
+				},
+			},
+		],
 	],
 	validate: stakeAction.validate, // Requires wallet info to read balance
 	handler: async (
@@ -1028,7 +1145,45 @@ export const claimRewardsAction: Action = {
 	description: "Claim staking rewards from Accumulated Finance (syncs rewards)",
 	similes: ["CLAIM_ACCUMULATED_REWARDS", "SYNC_ACCUMULATED_REWARDS"],
 	examples: [
-		// ... examples ...
+		[
+			{
+				user: "{{user}}",
+				content: { text: "Claim my staking rewards from Accumulated Finance" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Successfully claimed rewards (synced). Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_CLAIM_REWARDS",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "Sync my Accumulated Finance rewards" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Successfully claimed rewards (synced). Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_CLAIM_REWARDS",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "I'd like to claim my staking yield" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Successfully claimed rewards (synced). Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_CLAIM_REWARDS",
+				},
+			},
+		],
 	],
 	validate: stakeAction.validate, // Requires signer
 	handler: async (
@@ -1079,7 +1234,47 @@ export const getStakingStrategiesAction: Action = {
 	description: "Get available staking strategies for Accumulated Finance",
 	similes: ["LIST_ACCUMULATED_STRATEGIES"],
 	examples: [
-		// ... examples ...
+		[
+			{
+				user: "{{user}}",
+				content: {
+					text: "What staking strategies are available on Accumulated Finance?",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Available strategy: Accumulated Finance wstROSE Vault",
+					action: "ACCUMULATED_FINANCE_GET_STRATEGIES",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "Show me the staking options for ROSE" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Available strategy: Accumulated Finance wstROSE Vault",
+					action: "ACCUMULATED_FINANCE_GET_STRATEGIES",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "List Accumulated Finance strategies" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Available strategy: Accumulated Finance wstROSE Vault",
+					action: "ACCUMULATED_FINANCE_GET_STRATEGIES",
+				},
+			},
+		],
 	],
 	validate: async () => true, // No specific validation needed
 	handler: async (
@@ -1130,7 +1325,45 @@ export const getStakedBalanceAction: Action = {
 	description: "Get the staked ROSE balance from Accumulated Finance",
 	similes: ["CHECK_ACCUMULATED_BALANCE"],
 	examples: [
-		// ... examples ...
+		[
+			{
+				user: "{{user}}",
+				content: { text: "What's my staked balance on Accumulated Finance?" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Your staked balance is 25.5 ROSE",
+					action: "ACCUMULATED_FINANCE_GET_STAKED_BALANCE",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "How much ROSE do I have staked?" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Your staked balance is 10 ROSE",
+					action: "ACCUMULATED_FINANCE_GET_STAKED_BALANCE",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "Check my staked ROSE balance" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Your staked balance is 5.25 ROSE",
+					action: "ACCUMULATED_FINANCE_GET_STAKED_BALANCE",
+				},
+			},
+		],
 	],
 	validate: stakeAction.validate, // Requires wallet info
 	handler: async (
@@ -1179,7 +1412,45 @@ export const wrapRoseAction: Action = {
 	description: "Wrap native ROSE into wstROSE (equivalent to staking)",
 	similes: ["WRAP_ROSE_ACCUMULATED"],
 	examples: [
-		// ... examples ...
+		[
+			{
+				user: "{{user}}",
+				content: { text: "Wrap 10 ROSE to wstROSE" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Wrap ROSE initiated. Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_WRAP_ROSE",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "Convert 5 ROSE to wrapped tokens" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Wrap ROSE initiated. Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_WRAP_ROSE",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "I want to wrap 0.05 ROSE" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Wrap ROSE initiated. Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_WRAP_ROSE",
+				},
+			},
+		],
 	],
 	validate: stakeAction.validate, // Same as staking
 	handler: async (
@@ -1230,7 +1501,45 @@ export const unwrapRoseAction: Action = {
 	description: "Unwrap wstROSE into native ROSE (equivalent to unstaking)",
 	similes: ["UNWRAP_ROSE_ACCUMULATED", "UNSTAKE_ROSE"],
 	examples: [
-		// ... examples ...
+		[
+			{
+				user: "{{user}}",
+				content: { text: "Unwrap 10 wstROSE to ROSE" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Unwrap wstROSE initiated. Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_UNWRAP_ROSE",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "Convert 5 wstROSE back to ROSE" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Unwrap wstROSE initiated. Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_UNWRAP_ROSE",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: { text: "I want to unwrap 0.05 wstROSE" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Unwrap wstROSE initiated. Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_UNWRAP_ROSE",
+				},
+			},
+		],
 	],
 	validate: unstakeAction.validate, // Same as unstaking
 	handler: async (
@@ -1338,26 +1647,26 @@ export const mintAction: Action = {
 				schema: MintSchema,
 			});
 
-			// Safety check for generateObject result
 			if (
 				!mintDetails ||
 				typeof mintDetails.object !== "object" ||
 				mintDetails.object === null
 			) {
+				// Safety check for generateObject result
 				elizaLogger.error(
 					"Mint action: Failed to extract details object from generateObject",
 				);
 				throw new Error("Failed to extract mint details.");
 			}
 
-			// Refine the user's check to address potential type issues and linter errors
-			// Note: The purpose of mapping "null" string to a hardcoded address is unclear.
-			// Check if receiver exists and is the string "null"
 			if (
 				"receiver" in mintDetails.object &&
 				typeof mintDetails.object.receiver === "string" &&
 				mintDetails.object.receiver.toLowerCase() === "null"
 			) {
+				// Refine the user's check to address potential type issues and linter errors
+				// Note: The purpose of mapping "null" string to a hardcoded address is unclear.
+				// Check if receiver exists and is the string "null"
 				elizaLogger.warn(
 					"Mint action: receiver input was 'null', overriding with hardcoded address.",
 				);
@@ -1572,6 +1881,7 @@ export const redeemAction: Action = {
 
 			// Add specific checks if receiver/owner can be "null" string like in mint
 			// ... (similar logic as mintAction if needed)
+			redeemDetails.object.owner = process.env.WALLET_PUBLIC_KEY;
 
 			// *** IMPORTANT: Adapt isRedeemContent check if schema changed ***
 			if (!isRedeemContent(redeemDetails.object)) {
@@ -1584,42 +1894,16 @@ export const redeemAction: Action = {
 				);
 			}
 
-			// --- Start of added logic ---
 			const {
 				shares: assetAmountDecimal,
 				receiver,
 				owner,
 			} = redeemDetails.object;
 
+			elizaLogger.log("Receiver ", receiver, "owner", owner);
+
 			// Get plugin instance *before* potential pre-deposit
 			const plugin = accumulatedFinancePlugin(runtime);
-
-			// --- Add minimal deposit logic --- >
-			const effectiveOwner =
-				owner ||
-				(await getUserAddressString(
-					runtime,
-					getConfigAndNetwork(runtime).networkId,
-				));
-			try {
-				elizaLogger.info(
-					"Attempting minimal pre-deposit (0.05 ROSE) before redeem calculation to handle potential empty vault...",
-				);
-				const minimalDepositAmount = "0.05";
-				elizaLogger.info("Minimal Deposit", minimalDepositAmount);
-				await plugin.deposit(minimalDepositAmount, effectiveOwner); // Use plugin.deposit (alias for stake)
-				elizaLogger.info(
-					"Minimal pre-deposit successful or vault already initialized.",
-				);
-			} catch (depositError) {
-				// Log the error but proceed; the vault might already be initialized,
-				// or the error might be unrelated to the redeem calculation itself.
-				elizaLogger.warn(
-					"Minimal pre-deposit failed, proceeding with redeem calculation anyway...",
-					{ depositError },
-				);
-			}
-			// < --- End minimal deposit logic ---
 
 			// Get provider/signer to interact with contract for conversion
 			const { networkConfig } = getConfigAndNetwork(runtime); // Get network config
@@ -1656,9 +1940,9 @@ export const redeemAction: Action = {
 
 			if (callback) {
 				// Report back based on the requested asset amount
-				callback({
-					text: `Redeemed shares for ${assetAmountDecimal} ROSE. Tx: ${result.transactionHash}`,
-				});
+					callback({
+						text: `Redeemed shares for ${assetAmountDecimal} ROSE. Tx: ${result.transactionHash}`,
+					});
 			}
 			return result;
 		} catch (error: unknown) {
