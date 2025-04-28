@@ -1,6 +1,6 @@
 import type { Plugin } from "@elizaos/core";
-import { getRoflKeyAction } from "./actions/getRoflKey";
 import { getAgentRoflKeyAction } from "./actions/getAgentRoflKey";
+import { getRoflKeyAction } from "./actions/getRoflKey";
 import { getRoflKeyProvider } from "./providers/getRoflKey";
 
 export const roflPlugin: Plugin = {
