@@ -26,17 +26,11 @@ The plugin requires the ROFL service to be running and accessible via the Unix d
 
 ### As an Action
 
-The plugin provides a `GET_ROFL_KEY` action that can be used to generate keys with specific parameters:
+The plugin provides a `GET_AGENT_ROFL_KEY` and `GET_ROFL_KEY` actions that can be used to generate and display keys with specific parameters:
 
-```typescript
-// Example usage in a conversation
-{
-    "action": "GET_ROFL_KEY",
-    "options": {
-        "key_id": "my-key",
-        "kind": "secp256k1"
-    }
-}
+```
+User: Show me the agent ROLF key
+System: Here is the agent ROFL key: <key>
 ```
 
 ### As a Provider
