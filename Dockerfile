@@ -21,6 +21,7 @@ COPY clients/client-coinbase/package.json ./clients/client-coinbase/
 COPY clients/client-direct/package.json ./clients/client-direct/
 COPY clients/client-github/package.json ./clients/client-github/
 COPY plugins/plugin-0x/package.json ./plugins/plugin-0x/
+COPY plugins/plugin-accumulated-finance/package.json ./plugins/plugin-accumulated-finance/
 COPY plugins/plugin-coinbase/package.json ./plugins/plugin-coinbase/
 COPY plugins/plugin-coinbase/advanced-sdk-ts/package.json ./plugins/plugin-coinbase/advanced-sdk-ts/
 COPY plugins/plugin-email/package.json ./plugins/plugin-email/
