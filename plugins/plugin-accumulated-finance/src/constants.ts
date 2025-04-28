@@ -5,7 +5,7 @@ export const SAPPHIRE_MAINNET = {
 	EXPLORER_URL: "https://explorer.oasis.io/mainnet/sapphire",
 	CONTRACTS: {
 		// UNSTAKE: "0x04faf6897cf5de4ab9f1052fa16ec9256c3ea44a", // Removed - Not used in current implementation
-		WRAPPED_ROSE: "0x3cabbe76ea8b4e7a2c0a69812cbe671800379ec8", // wstROSE contract (wrapped staked ROSE)
+		WRAPPED_ROSE: "0xEd57966f1566dE1a90042d07403021Ea52ad4724", // wstROSE contract (wrapped staked ROSE)
 		UNWRAPPED_ROSE: "0x3cabbe76ea8b4e7a2c0a69812cbe671800379ec8", // Native ROSE token
 		UNSTAKED_ROSE: "0x04fAf6897Cf5de4Ab9f1052fA16Ec9256c3ea44a", // Unstaked ROSE token
 	},

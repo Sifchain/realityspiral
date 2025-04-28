@@ -1,25 +1,25 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { IAgentRuntime, Memory, State } from "@elizaos/core";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ABIS, SAPPHIRE_MAINNET } from "../constants"; // Import constants for addresses/ABIs
 import {
+	approveAction,
+	claimRewardsAction,
+	getRewardsAction,
+	getStakedBalanceAction,
+	mintAction,
+	redeemAction,
 	// Import all actions that can be resolved
 	stakeAction,
 	unstakeAction,
-	getRewardsAction,
-	claimRewardsAction,
-	getStakedBalanceAction,
-	wrapRoseAction,
 	unwrapRoseAction,
-	mintAction,
-	approveAction,
-	redeemAction,
+	wrapRoseAction,
 	// We can't import getStakingStrategiesAction due to previous issues,
 	// so we'll keep the mock test for that one.
 } from "../plugins/accumulated";
-import { ABIS, SAPPHIRE_MAINNET } from "../constants"; // Import constants for addresses/ABIs
 import type {
-	Strategy,
 	RewardInfo,
 	StakingResult,
+	Strategy,
 	TransactionReceipt,
 } from "../types";
 
@@ -666,4 +666,4 @@ describe("Accumulated Finance Plugin Actions", () => {
 			}),
 		);
 	});
-}); 
+});
