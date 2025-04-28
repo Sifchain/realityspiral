@@ -38,6 +38,7 @@ export interface TransactionReceipt {
 	transactionHash: string;
 	status: boolean;
 	blockNumber: number;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	events?: Record<string, any>;
 }
 

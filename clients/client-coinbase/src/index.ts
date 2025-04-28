@@ -684,9 +684,9 @@ export async function getTotalBalanceUSD(
 					"USDC",
 					"base",
 				);
-				if (priceInquiry && priceInquiry.sellAmountBaseUnits) {
+				if (priceInquiry?.sellAmountBaseUnits) {
 					const quote = await getQuoteObj(runtime, priceInquiry, publicKey);
-					if (quote && quote.buyAmount) {
+					if (quote?.buyAmount) {
 						ethBalanceUSD = Number(quote.buyAmount) / 1e6;
 						elizaLogger.info(`ethBalanceUSD ${ethBalanceUSD}`);
 					}
@@ -735,13 +735,13 @@ export async function getTotalBalanceUSD(
 						"USDC",
 						"base",
 					);
-					if (cbbtcPriceInquiry && cbbtcPriceInquiry.sellAmountBaseUnits) {
+					if (cbbtcPriceInquiry?.sellAmountBaseUnits) {
 						const cbbtcQuote = await getQuoteObj(
 							runtime,
 							cbbtcPriceInquiry,
 							publicKey,
 						);
-						if (cbbtcQuote && cbbtcQuote.buyAmount) {
+						if (cbbtcQuote?.buyAmount) {
 							cbbtcBalanceUSD = Number(cbbtcQuote.buyAmount) / 1e6;
 							elizaLogger.info(`cbbtcBalanceUSD ${cbbtcBalanceUSD}`);
 						}

@@ -56,6 +56,7 @@ import {
 	type RuntimeInstrumentation,
 	getRuntimeInstrumentation,
 } from "@realityspiral/plugin-instrumentation";
+import { roflPlugin } from "@realityspiral/plugin-rofl";
 import synfuturesPlugin from "@realityspiral/plugin-synfutures";
 import Database from "better-sqlite3";
 import yargs from "yargs";
@@ -559,59 +560,62 @@ export async function createAgent(
 		character,
 		// character.plugins are handled when clients are added
 		plugins: [
-			// getSecret(character, "MARGIN_SHORT_TRADING_ENABLED") === "true"
-			// 	? synfuturesPlugin
-			// 	: null,
-			// getSecret(character, "COINBASE_COMMERCE_KEY")
-			// 	? coinbaseCommercePlugin
-			// 	: null,
+			getSecret(character, "MARGIN_SHORT_TRADING_ENABLED") === "true"
+				? synfuturesPlugin
+				: null,
+			getSecret(character, "COINBASE_COMMERCE_KEY")
+				? coinbaseCommercePlugin
+				: null,
 			accumulatedFinancePlugin,
-			// ...(getSecret(character, "COINBASE_API_KEY") &&
-			// getSecret(character, "COINBASE_PRIVATE_KEY")
-			// 	? [
-			// 			...(getSecret(
-			// 				character,
-			// 				"COINBASE_MASS_PAYMENTS_PAYMENT_ENABLED",
-			// 			) === "true"
-			// 				? [coinbaseMassPaymentsPlugin]
-			// 				: []),
-			// 			...(getSecret(character, "COINBASE_TRADE_PLUGIN_ENABLED") === "true"
-			// 				? [tradePlugin]
-			// 				: []),
-			// 			...(getSecret(
-			// 				character,
-			// 				"COINBASE_TOKEN_CONTRACT_PLUGIN_ENABLED",
-			// 			) === "true"
-			// 				? [tokenContractPlugin]
-			// 				: []),
-			// 			...(getSecret(
-			// 				character,
-			// 				"COINBASE_ADVANCED_TRADE_PLUGIN_ENABLED",
-			// 			) === "true"
-			// 				? [advancedTradePlugin]
-			// 				: []),
-			// 		]
-			// 	: []),
-			// getSecret(character, "COINBASE_API_KEY") &&
-			// getSecret(character, "COINBASE_PRIVATE_KEY") &&
-			// getSecret(character, "COINBASE_NOTIFICATION_URI")
-			// 	? webhookPlugin
-			// 	: null,
-			// ...(getSecret(character, "GITHUB_PLUGIN_ENABLED") === "true" &&
-			// getSecret(character, "GITHUB_API_TOKEN")
-			// 	? [
-			// 			githubInitializePlugin,
-			// 			githubCreateCommitPlugin,
-			// 			githubCreatePullRequestPlugin,
-			// 			githubCreateMemorizeFromFilesPlugin,
-			// 			githubCreateIssuePlugin,
-			// 			githubModifyIssuePlugin,
-			// 			githubIdeationPlugin,
-			// 			githubInteractWithIssuePlugin,
-			// 			githubInteractWithPRPlugin,
-			// 			githubOrchestratePlugin,
-			// 		]
-			// 	: []),
+			...(getSecret(character, "COINBASE_API_KEY") &&
+			getSecret(character, "COINBASE_PRIVATE_KEY")
+				? [
+						...(getSecret(
+							character,
+							"COINBASE_MASS_PAYMENTS_PAYMENT_ENABLED",
+						) === "true"
+							? [coinbaseMassPaymentsPlugin]
+							: []),
+						...(getSecret(character, "COINBASE_TRADE_PLUGIN_ENABLED") === "true"
+							? [tradePlugin]
+							: []),
+						...(getSecret(
+							character,
+							"COINBASE_TOKEN_CONTRACT_PLUGIN_ENABLED",
+						) === "true"
+							? [tokenContractPlugin]
+							: []),
+						...(getSecret(
+							character,
+							"COINBASE_ADVANCED_TRADE_PLUGIN_ENABLED",
+						) === "true"
+							? [advancedTradePlugin]
+							: []),
+					]
+				: []),
+			getSecret(character, "COINBASE_API_KEY") &&
+			getSecret(character, "COINBASE_PRIVATE_KEY") &&
+			getSecret(character, "COINBASE_NOTIFICATION_URI")
+				? webhookPlugin
+				: null,
+			...(getSecret(character, "GITHUB_PLUGIN_ENABLED") === "true" &&
+			getSecret(character, "GITHUB_API_TOKEN")
+				? [
+						githubInitializePlugin,
+						githubCreateCommitPlugin,
+						githubCreatePullRequestPlugin,
+						githubCreateMemorizeFromFilesPlugin,
+						githubCreateIssuePlugin,
+						githubModifyIssuePlugin,
+						githubIdeationPlugin,
+						githubInteractWithIssuePlugin,
+						githubInteractWithPRPlugin,
+						githubOrchestratePlugin,
+					]
+				: []),
+			...(getSecret(character, "ROFL_PLUGIN_ENABLED") === "true"
+				? [roflPlugin]
+				: []),
 		]
 			.flat()
 			.filter(Boolean),
