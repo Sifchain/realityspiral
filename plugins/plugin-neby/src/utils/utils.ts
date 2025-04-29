@@ -1,8 +1,8 @@
 import { elizaLogger } from "@elizaos/core";
 import type { ContractHelper } from "@realityspiral/plugin-coinbase";
 import { ethers } from "ethers";
-import { ERC20_ABI } from "../constants";
 import type * as pino from "pino";
+import { ERC20_ABI } from "../constants";
 
 /**
  * Utility functions for blockchain interactions
