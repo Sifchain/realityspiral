@@ -17,7 +17,7 @@ import { ERC20_ABI } from "../constants";
  */
 export function getChecksummedAddress(
 	address: string,
-	logger = elizaLogger,
+	logger: pino.Logger<string, boolean> = elizaLogger,
 ): string {
 	try {
 		return ethers.getAddress(address);
