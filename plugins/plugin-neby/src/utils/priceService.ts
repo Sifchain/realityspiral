@@ -379,6 +379,7 @@ export class PriceService {
 			}
 
 			// Get pool slots (contains liquidity, last observation, etc.)
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const slot0 = await readContract<any>({
 				runtime: this.runtime,
 				networkId: this.networkId,

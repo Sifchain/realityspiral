@@ -10,7 +10,7 @@ import {
 	TOKEN_ADDRESSES,
 } from "../constants";
 import {
-	getOptimalSwapPathAction,
+	getOptimalPathAction,
 	monitorPriceStabilityAction,
 	privateSwapAction,
 	swapAction,
@@ -74,16 +74,18 @@ describe("BitProtocol Plugin Actions", () => {
 		};
 
 		it("should validate valid options successfully", async () => {
-			await expect(swapAction.validate(validOptions as any)).resolves.toBe(
-				true,
-			);
+			await expect(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				swapAction.validate({} as any, validOptions as any),
+			).resolves.toBe(true);
 		});
 
 		it("should fail validation for invalid options", async () => {
 			const invalidOptions = { fromTokenSymbol: "ROSE" };
-			await expect(swapAction.validate(invalidOptions as any)).resolves.toBe(
-				false,
-			);
+			await expect(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				swapAction.validate({} as any, invalidOptions as any),
+			).resolves.toBe(false);
 		});
 
 		it("should perform a standard swap for non-native tokens", async () => {
@@ -214,6 +216,7 @@ describe("BitProtocol Plugin Actions", () => {
 
 		it("should validate valid options successfully", async () => {
 			await expect(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				privateSwapAction.validate(validOptions as any),
 			).resolves.toBe(true);
 		});
@@ -221,6 +224,7 @@ describe("BitProtocol Plugin Actions", () => {
 		it("should fail validation for invalid options", async () => {
 			const invalidOptions = { fromTokenSymbol: "ROSE" };
 			await expect(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				privateSwapAction.validate(invalidOptions as any),
 			).resolves.toBe(false);
 		});
@@ -328,7 +332,8 @@ describe("BitProtocol Plugin Actions", () => {
 	describe("monitorPriceStabilityAction", () => {
 		it("should validate successfully (no options)", async () => {
 			await expect(
-				monitorPriceStabilityAction.validate({} as any),
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				monitorPriceStabilityAction.validate({} as any, {} as any),
 			).resolves.toBe(true);
 		});
 

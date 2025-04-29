@@ -746,6 +746,7 @@ export async function getTotalBalanceUSD(
 							elizaLogger.info(`cbbtcBalanceUSD ${cbbtcBalanceUSD}`);
 						}
 					}
+					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				} catch (error: any) {
 					elizaLogger.error("Error getting cbBTC price:", error);
 				}
@@ -759,6 +760,7 @@ export async function getTotalBalanceUSD(
 		const totalBalanceUSD = ethBalanceUSD + usdcBalance + cbbtcBalanceUSD;
 		elizaLogger.info(`Total balance USD: ${totalBalanceUSD}`);
 		return totalBalanceUSD || 0; // Return 0 if totalBalanceUSD is NaN
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	} catch (error: any) {
 		elizaLogger.error("Error in getTotalBalanceUSD:", error);
 		return 1000; // Default value in case of error

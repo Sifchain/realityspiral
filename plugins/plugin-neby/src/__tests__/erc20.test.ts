@@ -42,6 +42,7 @@ describe("ERC20 Write Operations (via invokeContractDirectly)", () => {
 				`[Test Result] approve(${spenderChecksummed}, ${TEST_AMOUNT}) call initiated. Result:`,
 				JSON.stringify(result),
 			);
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (error: any) {
 			// We don't necessarily expect an error here if invokeContractDirectly is just submitting,
 			// but catch it just in case the helper throws during submission setup.

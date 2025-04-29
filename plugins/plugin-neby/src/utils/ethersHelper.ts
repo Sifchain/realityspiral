@@ -13,6 +13,7 @@ const serializeResult = (value: any): any => {
 	if (Array.isArray(value) && typeof value === "object") {
 		const serializedArray = value.map(serializeResult);
 		// Explicitly type resultObject to allow string keys
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const resultObject: Record<string, any> = { ...serializedArray }; // Copy array indices
 		// Copy named properties
 		for (const key of Object.keys(value)) {
@@ -20,6 +21,7 @@ const serializeResult = (value: any): any => {
 			if (Number.isNaN(Number(key))) {
 				// Accessing the original value array/object with a potential string key
 				// Need to assert value as any here if TS complains about string index on array type
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				resultObject[key] = serializeResult((value as any)[key]);
 			}
 		}
@@ -118,8 +120,9 @@ export const getUserAddress = async (
 /**
  * Reads data from a smart contract using ethers.js.
  */
+
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const readContract = async <T = any>({
-	runtime,
 	networkId,
 	contractAddress,
 	abi,
@@ -143,10 +146,12 @@ export const readContract = async <T = any>({
 	const contract = new ethers.Contract(contractAddress, abi, provider);
 
 	try {
-		// biome-ignore lint/suspicious/noExplicitAny: Accessing contract method dynamically
 		const contractMethod = contract[method] as ethers.ContractMethod<
+			// biome-ignore lint/suspicious/noExplicitAny: Accessing contract method dynamically
 			any[],
+			// biome-ignore lint/suspicious/noExplicitAny: Accessing contract method dynamically
 			any,
+			// biome-ignore lint/suspicious/noExplicitAny: Accessing contract method dynamically
 			any
 		>;
 		if (!contractMethod) {
@@ -155,6 +160,7 @@ export const readContract = async <T = any>({
 
 		// Determine if static call is appropriate (for non-view/pure methods called as read)
 		const functionFragment = contract.interface.getFunction(method);
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		let result: any;
 		if (
 			functionFragment &&
@@ -219,8 +225,8 @@ export const invokeContract = async ({
 	const contract = new ethers.Contract(contractAddress, abi, signer);
 
 	try {
-		// biome-ignore lint/suspicious/noExplicitAny: Accessing contract method dynamically
 		const contractMethod = contract[method] as ethers.ContractMethod<
+			// biome-ignore lint/suspicious/noExplicitAny: Accessing contract method dynamically
 			any[],
 			ethers.ContractTransactionResponse
 		>;
@@ -276,9 +282,13 @@ export const invokeContract = async ({
 		});
 		// Try to extract revert reason if available
 		let reason = "Unknown reason";
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		if (error instanceof Error && (error as any).data) {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			reason = (error as any).data;
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} else if (error instanceof Error && (error as any).reason) {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			reason = (error as any).reason;
 		}
 		throw new Error(

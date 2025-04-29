@@ -307,9 +307,7 @@ export const nebyPlugin = (
 		tokenA: string,
 		tokenB: string,
 		fee?: number,
-	): Promise<Record<string, unknown
-    
-    => {
+	): Promise<Record<string, unknown>> => {
 		try {
 			const effectiveFee = fee ?? POOL_FEES.MEDIUM;
 			return await priceService.getPoolInfo(tokenA, tokenB, effectiveFee);
@@ -950,4 +948,3 @@ export const getPoolInfoAction: Action = {
 		}
 	},
 };
-

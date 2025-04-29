@@ -45,6 +45,7 @@ describe("V3 Factory Read Operations (via invokeContractDirectly)", () => {
 	];
 
 	// Test each fee tier
+	// biome-ignore lint/complexity/noForEach: <explanation>
 	feeTiersToTest.forEach((feeTier) => {
 		it(`should check for wROSE/WETH pool with ${feeTier / 10000}% fee`, async () => {
 			const args = [token0Checksummed, token1Checksummed, feeTier];

@@ -34,7 +34,7 @@ async function getTokenDecimals(
 		const decimals = Number(decimalsResult);
 		elizaLogger.debug(`Token ${tokenAddress} decimals: ${decimals}`);
 		// Check if decimals is a valid number, otherwise fallback
-		if (isNaN(decimals) || decimals < 0 || decimals > 255) {
+		if (Number.isNaN(decimals) || decimals < 0 || decimals > 255) {
 			elizaLogger.warn(
 				`Invalid decimals value (${decimalsResult}) received for token ${tokenAddress}. Falling back.`,
 			);
@@ -110,7 +110,7 @@ export async function formatTokenAmount(
 			let fractionalStr = fractionalPart.toString().padStart(decimals, "0");
 			fractionalStr = fractionalStr.replace(/0+$/, ""); // Remove trailing zeros
 			if (fractionalStr.length > 0) {
-				formattedAmount += "." + fractionalStr;
+				formattedAmount += `.${fractionalStr}`;
 			}
 		}
 
