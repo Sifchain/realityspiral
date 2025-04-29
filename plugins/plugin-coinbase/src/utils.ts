@@ -10,10 +10,13 @@ import {
 	type WalletData,
 	type Webhook,
 	readContract,
+	readContract,
 } from "@coinbase/coinbase-sdk";
 import type { EthereumTransaction } from "@coinbase/coinbase-sdk/dist/client";
 import { type IAgentRuntime, elizaLogger, settings } from "@elizaos/core";
 import { createArrayCsvWriter } from "csv-writer";
+import { ABI } from "./constants";
+import { ContractHelper } from "./helpers/contractHelper";
 import { ABI } from "./constants";
 import { ContractHelper } from "./helpers/contractHelper";
 import type { Transaction } from "./types";
@@ -32,17 +35,13 @@ export type CoinbaseWallet = { wallet: Wallet; walletType: WalletType };
 // Map numeric chain IDs to Coinbase network identifiers
 const NETWORK_ID_MAP: Record<string, string> = {
 	// Mapping Chain IDs to Coinbase network names
-	"23294": "sapphire", // Oasis Sapphire mainnet
-	"23295": "sapphire-testnet", // Oasis Sapphire testnet
+	"23294": Coinbase.networks.BaseMainnet, // Oasis Sapphire mainnet -> use Base mainnet as fallback
+	"23295": Coinbase.networks.BaseSepolia, // Oasis Sapphire testnet -> use Base testnet as fallback
 	// Add more mappings as needed
 };
 
 // Map string network identifiers to Coinbase network identifiers
 const NETWORK_NAME_MAP: Record<string, string> = {
-	// Oasis Sapphire networks
-	sapphire: "sapphire",
-	"sapphire-testnet": "sapphire-testnet",
-
 	// Ethereum networks
 	"ethereum-mainnet": Coinbase.networks.EthereumMainnet,
 	eth: Coinbase.networks.EthereumMainnet,
@@ -150,12 +149,21 @@ export async function initializeWallet(
 		supportedNetworkId: supportedNetworkId,
 	});
 
+
+	// Convert numeric network ID to a supported network name
+	const supportedNetworkId = getSupportedNetwork(networkId);
+	elizaLogger.info("Using supported network for Coinbase SDK:", {
+		originalNetworkId: networkId,
+		supportedNetworkId: supportedNetworkId,
+	});
+
 	elizaLogger.info(
 		"Importing existing wallet using stored seed and wallet ID:",
 		{
 			seed,
 			walletId,
 			walletType,
+			networkId: supportedNetworkId,
 			networkId: supportedNetworkId,
 		},
 	);
@@ -164,6 +172,7 @@ export async function initializeWallet(
 		: runtime.character.name.toLowerCase();
 	if (!seed || seed === "") {
 		// No stored seed or wallet ID, creating a new wallet
+		wallet = await Wallet.create({ networkId: supportedNetworkId });
 		wallet = await Wallet.create({ networkId: supportedNetworkId });
 		elizaLogger.log("Created new wallet:", wallet.getId());
 		// Export wallet data directly
@@ -256,12 +265,69 @@ export async function initializeWallet(
 			throw walletError;
 		}
 
+		// We have a stored seed (private key) and possibly a wallet ID
+		elizaLogger.info("Attempting to initialize wallet with stored credentials");
+
+		try {
+			if (walletId) {
+				// If we have a wallet ID, fetch the existing wallet
+				elizaLogger.info(`Fetching wallet with ID: ${walletId}`);
+				wallet = await Wallet.fetch(walletId);
+				elizaLogger.info("Successfully fetched wallet by ID");
+
+				// Set the seed (private key) for signing
+				if (seed) {
+					elizaLogger.info("Setting seed for fetched wallet to enable signing");
+					wallet.setSeed(seed);
+				}
+			} else {
+				// No wallet ID, create a new wallet with the seed if available
+				if (seed) {
+					elizaLogger.info("Creating a new wallet with the provided seed");
+					wallet = await Wallet.createWithSeed({
+						seed: seed,
+						networkId: supportedNetworkId, // Use supported network ID
+					});
+					elizaLogger.info("Created new wallet with provided seed");
+				} else {
+					// No wallet ID, no seed, create entirely new wallet
+					elizaLogger.info(
+						"No wallet ID or seed available, creating a brand new wallet",
+					);
+					wallet = await Wallet.create({
+						networkId: supportedNetworkId, // Use supported network ID
+					});
+					elizaLogger.info("Created new wallet with random seed");
+				}
+				elizaLogger.info(
+					"New wallet address:",
+					await wallet.getDefaultAddress(),
+				);
+			}
+		} catch (walletError) {
+			elizaLogger.error("Failed to initialize wallet", {
+				error:
+					walletError instanceof Error
+						? {
+								message: walletError.message,
+								stack: walletError.stack,
+								name: walletError.name,
+							}
+						: walletError,
+				walletId,
+				networkId: supportedNetworkId,
+			});
+			// Rethrow or handle appropriately
+			throw walletError;
+		}
+
 		if (!walletId) {
 			try {
 				const characterFilePath = `characters/${sanitizedCharacterName}.character.json`;
 				const walletIDSave = await updateCharacterSecrets(
 					characterFilePath,
 					`COINBASE_${walletType.toUpperCase()}_WALLET_ID`,
+					walletId || wallet.getId(),
 					walletId || wallet.getId(),
 				);
 				if (walletIDSave) {
@@ -273,7 +339,10 @@ export async function initializeWallet(
 			}
 		}
 		elizaLogger.log("Wallet initialized for network:", supportedNetworkId);
+		elizaLogger.log("Wallet initialized for network:", supportedNetworkId);
 
+		// Logging wallet info
+		elizaLogger.log("Wallet address:", await wallet.getDefaultAddress());
 		// Logging wallet info
 		elizaLogger.log("Wallet address:", await wallet.getDefaultAddress());
 	}
@@ -717,19 +786,15 @@ export function getCharityAddress(
  * @param params Parameters for contract reading as a single object or multiple arguments
  * @returns The serialized contract response
  */
+// biome-ignore lint/suspicious/noExplicitAny: Needed for flexibility with different contract methods
 export async function readContractWrapper(
-	// biome-ignore lint/suspicious/noExplicitAny: Needed for flexibility with different contract methods
 	runtimeOrParams: IAgentRuntime | any,
 	contractAddress?: `0x${string}`,
 	method?: string,
-	// biome-ignore lint/suspicious/noExplicitAny: Needed for flexibility with different contract methods
 	args?: any,
 	networkId?: string,
-	// biome-ignore lint/suspicious/noExplicitAny: Needed for flexibility with different contract methods
 	abi?: any,
-	// biome-ignore lint/suspicious/noExplicitAny: Needed for flexibility with different contract methods
 ): Promise<any> {
-	// biome-ignore lint/suspicious/noExplicitAny: Needed for flexibility with different contract methods
 	let params: any;
 	let runtime: IAgentRuntime;
 

@@ -31,6 +31,7 @@ import { normalizeCharacter } from "@elizaos/plugin-di";
 import { CoinbaseClientInterface } from "@realityspiral/client-coinbase";
 import { DirectClient } from "@realityspiral/client-direct";
 import { GitHubClientInterface } from "@realityspiral/client-github";
+import { bitProtocolPlugin } from "@realityspiral/plugin-bitprotocol";
 import { accumulatedFinancePlugin } from "@realityspiral/plugin-accumulated-finance";
 import {
 	advancedTradePlugin,
@@ -562,6 +563,9 @@ export async function createAgent(
 		plugins: [
 			getSecret(character, "MARGIN_SHORT_TRADING_ENABLED") === "true"
 				? synfuturesPlugin
+				: null,
+			getSecret(character, "BITPROTOCOL_ENABLED") === "true"
+				? bitProtocolPlugin
 				: null,
 			getSecret(character, "COINBASE_COMMERCE_KEY")
 				? coinbaseCommercePlugin
