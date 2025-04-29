@@ -71,6 +71,7 @@ export class ContractHelper {
 
 			// Get the method definition from the ABI (use params.abi)
 			const methodAbi = params.abi.find(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				(item: any) => item.name === params.method,
 			);
 
@@ -82,6 +83,7 @@ export class ContractHelper {
 
 			// Check if method is read-only (view or pure)
 			const isReadOnly =
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				(methodAbi as any).constant === true ||
 				methodAbi.stateMutability === "view" ||
 				methodAbi.stateMutability === "pure";
@@ -95,6 +97,7 @@ export class ContractHelper {
 				return this.invokeContract(params);
 			}
 
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			let argsObject: Record<string, any> = {};
 
 			if (typeof params.args === "object" && !Array.isArray(params.args)) {
@@ -159,7 +162,7 @@ export class ContractHelper {
 				if (typeof value === "string" && value.includes("addressId:")) {
 					// Try to extract the addressId from the string representation
 					const match = value.match(/addressId: '(0x[a-fA-F0-9]+)'/);
-					if (match && match[1]) {
+					if (match?.[1]) {
 						elizaLogger.debug(
 							`Found addressId in string representation: ${match[1]}`,
 						);
@@ -226,6 +229,7 @@ export class ContractHelper {
 
 			// Get the input names from the ABI for this method
 			const methodAbi = params.abi.find(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				(item: any) =>
 					item.name === params.method && item.inputs && item.inputs.length > 0,
 			);
@@ -238,6 +242,7 @@ export class ContractHelper {
 
 			// Create named arguments object from array
 			const argsArray = Array.isArray(params.args) ? params.args : [];
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const argsObject: Record<string, any> = {};
 
 			elizaLogger.info("argsArray", argsArray);
@@ -308,7 +313,7 @@ export class ContractHelper {
 				if (typeof value === "string" && value.includes("addressId:")) {
 					// Try to extract the addressId from the string representation
 					const match = value.match(/addressId: '(0x[a-fA-F0-9]+)'/);
-					if (match && match[1]) {
+					if (match?.[1]) {
 						elizaLogger.debug(
 							`Found addressId in string representation: ${match[1]}`,
 						);
@@ -358,23 +363,22 @@ export class ContractHelper {
 	 * @returns The user's wallet address
 	 */
 	async getUserAddress(networkId?: string): Promise<string> {
-		// try {
-		// 	// Initialize the wallet to get the default address, using networkId if provided
-		// 	const { wallet } = await initializeWallet(this.runtime, networkId);
-		// 	const address = await wallet.getDefaultAddress();
-		// 	// Convert address to string if it's not already
-		// 	return typeof address === "string" ? address : address.toString();
-		// } catch (error) {
-		// 	elizaLogger.error("Error getting user address:", error);
+		try {
+			// Initialize the wallet to get the default address, using networkId if provided
+			const { wallet } = await initializeWallet(this.runtime, networkId);
+			const address = await wallet.getDefaultAddress();
+			// Convert address to string if it's not already
+			return typeof address === "string" ? address : address.toString();
+		} catch (error) {
+			elizaLogger.error("Error getting user address:", error);
 
-		// 	// If there's an error, try to get the address from settings
-		// 	const walletPublicKey = this.runtime.getSetting("WALLET_PUBLIC_KEY");
-		// 	if (walletPublicKey) {
-		// 		return walletPublicKey;
-		// 	}
+			// If there's an error, try to get the address from settings
+			const walletPublicKey = this.runtime.getSetting("WALLET_PUBLIC_KEY");
+			if (walletPublicKey) {
+				return walletPublicKey;
+			}
 
-		// 	throw new Error("Could not retrieve user wallet address");
-		// }
-		return "0xD952175d6A20187d7A5803DcC9741472F640A9b8";
+			throw new Error("Could not retrieve user wallet address");
+		}
 	}
 }

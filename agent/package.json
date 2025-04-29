@@ -30,6 +30,7 @@
 		"@realityspiral/plugin-email": "workspace:*",
 		"@realityspiral/plugin-github": "workspace:*",
 		"@realityspiral/plugin-instrumentation": "workspace:*",
+		"@realityspiral/plugin-rofl": "workspace:*",
 		"@realityspiral/plugin-twitter": "workspace:*",
 		"@realityspiral/plugin-accumulated-finance": "workspace:*",
 		"better-sqlite3": "11.6.0",
