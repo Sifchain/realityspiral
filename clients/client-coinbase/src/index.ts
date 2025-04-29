@@ -714,7 +714,7 @@ export async function getTotalBalanceUSD(
 		}
 
 		// 3. GET CBBTC BALANCE WITH VIEM DIRECTLY
-		const cbbtcBalanceUSD = 0;
+		let cbbtcBalanceUSD = 0;
 		try {
 			const cbbtcBalanceResult = await client.readContract({
 				address: TOKENS.cbBTC.address as `0x${string}`,
@@ -746,8 +746,9 @@ export async function getTotalBalanceUSD(
 							elizaLogger.info(`cbbtcBalanceUSD ${cbbtcBalanceUSD}`);
 						}
 					}
-				} catch (error) 
+				} catch (error: any) {
 					elizaLogger.error("Error getting cbBTC price:", error);
+				}
 			}
 		} catch (error) {
 			elizaLogger.error("Error reading cbBTC balance with viem:", error);
@@ -758,9 +759,10 @@ export async function getTotalBalanceUSD(
 		const totalBalanceUSD = ethBalanceUSD + usdcBalance + cbbtcBalanceUSD;
 		elizaLogger.info(`Total balance USD: ${totalBalanceUSD}`);
 		return totalBalanceUSD || 0; // Return 0 if totalBalanceUSD is NaN
-	} catch (error) 
+	} catch (error: any) {
 		elizaLogger.error("Error in getTotalBalanceUSD:", error);
 		return 1000; // Default value in case of error
+	}
 }
 
 export async function getBalance(

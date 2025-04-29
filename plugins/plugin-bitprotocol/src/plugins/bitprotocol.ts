@@ -243,7 +243,6 @@ const handleSwap: Action["handler"] = async (
 		const deadline = Math.floor(Date.now() / 1000) + 3600;
 		let txHash: string | undefined;
 		let txResponse: ethers.TransactionResponse | undefined;
-		let txReceipt: ethers.TransactionReceipt | null | undefined;
 
 		if (fromTokenSymbol === "ROSE") {
 			// Case 1: From ROSE (Native Token) to Token
@@ -314,7 +313,7 @@ const handleSwap: Action["handler"] = async (
 		}
 
 		// Wait for transaction confirmation
-		txReceipt = await txResponse.wait();
+		const txReceipt: ethers.TransactionReceipt | null = await txResponse.wait();
 
 		if (!txReceipt || txReceipt.status !== 1) {
 			throw new Error(
@@ -429,8 +428,8 @@ export const swapAction: Action = {
 const handleMonitorPriceStability: Action["handler"] = async (
 	runtime: IAgentRuntime,
 	_message: Memory,
-	state?: State,
-	options?: unknown,
+	_state?: State,
+	_options?: unknown,
 	callback?: HandlerCallback,
 ): Promise<PriceStabilityInfo> => {
 	elizaLogger.info("Executing BITPROTOCOL_MONITOR_PRICE action");
@@ -483,7 +482,6 @@ const handleMonitorPriceStability: Action["handler"] = async (
 		const lowerBound = 0.98; // 2% deviation threshold
 		const upperBound = 1.02;
 		const isStable = priceNum >= lowerBound && priceNum <= upperBound;
-		const stabilityStatus = isStable ? "Yes" : "No";
 
 		elizaLogger.info(`Stability check: Price of ROSE is $${priceString}`);
 
