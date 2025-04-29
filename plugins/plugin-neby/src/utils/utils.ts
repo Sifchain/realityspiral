@@ -1,8 +1,8 @@
 import { elizaLogger } from "@elizaos/core";
 import type { ContractHelper } from "@realityspiral/plugin-coinbase";
 import { ethers } from "ethers";
+import type * as pino from "pino";
 import { ERC20_ABI } from "../constants";
-import type { PluginConfig } from "../types";
 
 /**
  * Utility functions for blockchain interactions
@@ -17,7 +17,7 @@ import type { PluginConfig } from "../types";
  */
 export function getChecksummedAddress(
 	address: string,
-	logger = elizaLogger,
+	logger: pino.Logger<string, boolean> = elizaLogger,
 ): string {
 	try {
 		return ethers.getAddress(address);
@@ -122,7 +122,7 @@ export const getTokenDetails = async (
 	tokenAddress: string,
 	contractHelper: ContractHelper,
 	networkId: string,
-	logger = elizaLogger,
+	logger: pino.Logger<string, boolean> = elizaLogger,
 ): Promise<{ symbol: string; decimals: number }> => {
 	// Check cache first
 	const cacheKey = `${tokenAddress}-${networkId}`;
