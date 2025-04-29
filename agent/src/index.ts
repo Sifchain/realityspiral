@@ -32,6 +32,7 @@ import { CoinbaseClientInterface } from "@realityspiral/client-coinbase";
 import { DirectClient } from "@realityspiral/client-direct";
 import { GitHubClientInterface } from "@realityspiral/client-github";
 import { bitProtocolPlugin } from "@realityspiral/plugin-bitprotocol";
+import { accumulatedFinancePlugin } from "@realityspiral/plugin-accumulated-finance";
 import {
 	advancedTradePlugin,
 	coinbaseCommercePlugin,
@@ -56,6 +57,7 @@ import {
 	type RuntimeInstrumentation,
 	getRuntimeInstrumentation,
 } from "@realityspiral/plugin-instrumentation";
+import { roflPlugin } from "@realityspiral/plugin-rofl";
 import synfuturesPlugin from "@realityspiral/plugin-synfutures";
 import Database from "better-sqlite3";
 import yargs from "yargs";
@@ -568,6 +570,7 @@ export async function createAgent(
 			getSecret(character, "COINBASE_COMMERCE_KEY")
 				? coinbaseCommercePlugin
 				: null,
+			accumulatedFinancePlugin,
 			...(getSecret(character, "COINBASE_API_KEY") &&
 			getSecret(character, "COINBASE_PRIVATE_KEY")
 				? [
@@ -613,6 +616,9 @@ export async function createAgent(
 						githubInteractWithPRPlugin,
 						githubOrchestratePlugin,
 					]
+				: []),
+			...(getSecret(character, "ROFL_PLUGIN_ENABLED") === "true"
+				? [roflPlugin]
 				: []),
 		]
 			.flat()

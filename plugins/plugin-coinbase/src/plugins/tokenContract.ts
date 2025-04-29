@@ -526,7 +526,7 @@ export const tokenContractPlugin: Plugin = {
 		"Enables deployment, invocation, and reading of ERC20, ERC721, and ERC1155 token contracts using the Coinbase SDK",
 	actions: [
 		deployTokenContractAction,
-		invokeContractAction,
+		// invokeContractAction,
 		readContractAction,
 	],
 };

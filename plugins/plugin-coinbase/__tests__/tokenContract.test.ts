@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { SpyInstance } from "vitest";
 
 // Define the ElizaRuntime type inline to avoid importing it
-type ElizaRuntime = {
+type _ElizaRuntime = {
 	getSetting: (key: string) => string | undefined;
 	character: {
 		name: string;
@@ -79,7 +79,9 @@ describe("Token Contract Plugin Tests", () => {
 		mockGenerateObject = vi.fn();
 
 		// Override the imported functions with our mocks
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		(ContractHelper.prototype as any).readContract = vi.fn();
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		(ContractHelper.prototype as any).invokeContract = vi.fn();
 
 		// Mock the type validation functions
@@ -129,7 +131,9 @@ describe("Token Contract Plugin Tests", () => {
 		it("should validate correctly", async () => {
 			// Just a simple validation test that doesn't rely on mocks
 			const result = await readContractAction.validate(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockMessage as any,
 			);
 			expect(result).toBe(true);
@@ -149,11 +153,15 @@ describe("Token Contract Plugin Tests", () => {
 			});
 
 			// Patch the generateObject into the module internally
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			(globalThis as any).generateObject = mockGenerateObject;
 
 			await readContractAction.handler(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockMessage as any,
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockState as any,
 				{},
 				mockCallback,
