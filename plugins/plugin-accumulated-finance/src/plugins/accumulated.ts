@@ -51,6 +51,8 @@ import {
 	isWrapRoseContent,
 } from "../types";
 
+import { getProviderAndSigner } from "../utils";
+
 // Helper function to get user address from runtime
 const getUserAddressString = async (
 	runtime: IAgentRuntime,
@@ -128,34 +130,8 @@ const convertToWeiString = (decimalAmount: string, decimals = 18): string => {
 	}
 };
 
-// Helper function to create an ethers provider and signer
-const getProviderAndSigner = async (
-	runtime: IAgentRuntime,
-	networkConfig: typeof SAPPHIRE_MAINNET | typeof SAPPHIRE_TESTNET,
-): Promise<{ provider: ethers.JsonRpcProvider; signer: ethers.Wallet }> => {
-	// Create provider
-	const provider = new ethers.JsonRpcProvider(networkConfig.RPC_URL);
-
-	// Get private key from environment variables or runtime settings
-	const privateKey =
-		(runtime.getSetting("WALLET_PRIVATE_KEY") as string) ||
-		process.env.WALLET_PRIVATE_KEY;
-
-	if (!privateKey) {
-		throw new Error(
-			"Wallet private key not found. Ensure it is configured in runtime settings or environment variables.",
-		);
-	}
-
-	// Create signer
-	const signer = new ethers.Wallet(privateKey, provider);
-
-	return { provider, signer };
-};
-
 // Helper function to get configuration and network details
 const getConfigAndNetwork = (runtime: IAgentRuntime) => {
-	// TODO: How to pass config effectively? Maybe via runtime settings?
 	const config: Partial<PluginConfig> = {
 		network:
 			(runtime.getSetting(
@@ -184,7 +160,7 @@ const getConfigAndNetwork = (runtime: IAgentRuntime) => {
 	return { fullConfig, networkConfig, networkId };
 };
 
-	/**
+/**
  * Implementation of the Accumulated Finance plugin for Oasis Sapphire
  */
 export const accumulatedFinancePlugin = (
@@ -1940,9 +1916,9 @@ export const redeemAction: Action = {
 
 			if (callback) {
 				// Report back based on the requested asset amount
-					callback({
-						text: `Redeemed shares for ${assetAmountDecimal} ROSE. Tx: ${result.transactionHash}`,
-					});
+				callback({
+					text: `Redeemed shares for ${assetAmountDecimal} ROSE. Tx: ${result.transactionHash}`,
+				});
 			}
 			return result;
 		} catch (error: unknown) {
