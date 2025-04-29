@@ -1,6 +1,7 @@
 {
-	"name": "@realityspiral/plugin-accumulated-finance",
+	"name": "@realityspiral/plugin-bitprotocol",
 	"version": "0.1.0",
+	"description": "Eliza plugin for privacy-preserving stablecoin swaps on Oasis using BitProtocol",
 	"type": "module",
 	"main": "dist/index.js",
 	"module": "dist/index.js",
@@ -19,22 +20,24 @@
 	"dependencies": {
 		"@elizaos/core": "^0.1.9",
 		"@oasisprotocol/client": "latest",
-		"@realityspiral/plugin-instrumentation": "workspace:^",
-		"@realityspiral/plugin-coinbase": "workspace:^",
-		"@coinbase/coinbase-sdk": "0.15.0",
-		"zod": "3.23.8",
-		"ethers": "^6.13.5"
+		"@realityspiral/plugin-instrumentation": "workspace:*",
+		"@realityspiral/plugin-coinbase": "workspace:*",
+		"zod": "3.23.8"
 	},
 	"devDependencies": {
-		"tsup": "8.3.5",
-		"@types/node": "^20.0.0",
+		"tsup": "^8.0.0",
 		"typescript": "^5.0.0",
-		"vitest": "^1.0.0"
+		"@types/node": "^20.0.0",
+		"ethers": "^6.13.5"
 	},
 	"scripts": {
 		"build": "tsup --format esm --dts",
 		"dev": "tsup --format esm --dts --watch",
-		"test": "vitest run",
-		"test:watch": "vitest"
+		"clean": "rm -rf dist",
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"test:watch": "echo \"Error: no test specified\" && exit 1"
+	},
+	"engines": {
+		"node": ">=18.0.0"
 	}
 }

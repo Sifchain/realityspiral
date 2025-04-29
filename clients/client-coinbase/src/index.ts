@@ -684,9 +684,9 @@ export async function getTotalBalanceUSD(
 					"USDC",
 					"base",
 				);
-				if (priceInquiry && priceInquiry.sellAmountBaseUnits) {
+				if (priceInquiry?.sellAmountBaseUnits) {
 					const quote = await getQuoteObj(runtime, priceInquiry, publicKey);
-					if (quote && quote.buyAmount) {
+					if (quote?.buyAmount) {
 						ethBalanceUSD = Number(quote.buyAmount) / 1e6;
 						elizaLogger.info(`ethBalanceUSD ${ethBalanceUSD}`);
 					}
@@ -714,7 +714,7 @@ export async function getTotalBalanceUSD(
 		}
 
 		// 3. GET CBBTC BALANCE WITH VIEM DIRECTLY
-		let cbbtcBalanceUSD = 0;
+		const cbbtcBalanceUSD = 0;
 		try {
 			const cbbtcBalanceResult = await client.readContract({
 				address: TOKENS.cbBTC.address as `0x${string}`,
@@ -735,21 +735,19 @@ export async function getTotalBalanceUSD(
 						"USDC",
 						"base",
 					);
-					if (cbbtcPriceInquiry && cbbtcPriceInquiry.sellAmountBaseUnits) {
+					if (cbbtcPriceInquiry?.sellAmountBaseUnits) {
 						const cbbtcQuote = await getQuoteObj(
 							runtime,
 							cbbtcPriceInquiry,
 							publicKey,
 						);
-						if (cbbtcQuote && cbbtcQuote.buyAmount) {
+						if (cbbtcQuote?.buyAmount) {
 							cbbtcBalanceUSD = Number(cbbtcQuote.buyAmount) / 1e6;
 							elizaLogger.info(`cbbtcBalanceUSD ${cbbtcBalanceUSD}`);
 						}
 					}
-				} catch (error) {
+				} catch (error) 
 					elizaLogger.error("Error getting cbBTC price:", error);
-					// Continue with cbbtcBalanceUSD as 0
-				}
 			}
 		} catch (error) {
 			elizaLogger.error("Error reading cbBTC balance with viem:", error);
@@ -760,10 +758,9 @@ export async function getTotalBalanceUSD(
 		const totalBalanceUSD = ethBalanceUSD + usdcBalance + cbbtcBalanceUSD;
 		elizaLogger.info(`Total balance USD: ${totalBalanceUSD}`);
 		return totalBalanceUSD || 0; // Return 0 if totalBalanceUSD is NaN
-	} catch (error) {
+	} catch (error) 
 		elizaLogger.error("Error in getTotalBalanceUSD:", error);
 		return 1000; // Default value in case of error
-	}
 }
 
 export async function getBalance(
