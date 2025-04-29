@@ -1,14 +1,14 @@
 import {
 	type Action,
+	type Content,
 	type HandlerCallback,
 	type IAgentRuntime,
 	type Memory,
-	type State,
-	elizaLogger,
-	type Plugin,
 	ModelClass,
-	type Content,
+	type Plugin,
+	type State,
 	composeContext,
+	elizaLogger,
 	generateObject,
 } from "@elizaos/core";
 import { ethers } from "ethers";
@@ -19,6 +19,13 @@ import {
 	SAPPHIRE_MAINNET,
 	SAPPHIRE_TESTNET,
 } from "../constants";
+import {
+	AddLiquidityActionSchema,
+	GetPoolDetailsActionSchema,
+	MonitorPricesActionSchema,
+	RemoveLiquidityActionSchema,
+	SwapActionSchema,
+} from "../schemas";
 import {
 	addLiquidityTemplate,
 	getPoolDetailsTemplate,
@@ -39,13 +46,6 @@ import { getUserAddress } from "../utils/ethersHelper";
 import { LiquidityService } from "../utils/liquidityService";
 import { PriceService } from "../utils/priceService";
 import { SwapService } from "../utils/swapService";
-import {
-	SwapActionSchema,
-	AddLiquidityActionSchema,
-	RemoveLiquidityActionSchema,
-	MonitorPricesActionSchema,
-	GetPoolDetailsActionSchema,
-} from "../schemas";
 
 // Helper function to get user address via ethersHelper
 const getUserAddressString = async (
@@ -307,7 +307,9 @@ export const nebyPlugin = (
 		tokenA: string,
 		tokenB: string,
 		fee?: number,
-	): Promise<Record<string, unknown>> => {
+	): Promise<Record<string, unknown
+    
+    => {
 		try {
 			const effectiveFee = fee ?? POOL_FEES.MEDIUM;
 			return await priceService.getPoolInfo(tokenA, tokenB, effectiveFee);

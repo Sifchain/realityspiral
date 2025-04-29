@@ -9,14 +9,10 @@ import {
 	Wallet,
 	type WalletData,
 	type Webhook,
-	readContract,
-	readContract,
 } from "@coinbase/coinbase-sdk";
 import type { EthereumTransaction } from "@coinbase/coinbase-sdk/dist/client";
 import { type IAgentRuntime, elizaLogger, settings } from "@elizaos/core";
 import { createArrayCsvWriter } from "csv-writer";
-import { ABI } from "./constants";
-import { ContractHelper } from "./helpers/contractHelper";
 import { ABI } from "./constants";
 import { ContractHelper } from "./helpers/contractHelper";
 import type { Transaction } from "./types";
@@ -149,21 +145,12 @@ export async function initializeWallet(
 		supportedNetworkId: supportedNetworkId,
 	});
 
-
-	// Convert numeric network ID to a supported network name
-	const supportedNetworkId = getSupportedNetwork(networkId);
-	elizaLogger.info("Using supported network for Coinbase SDK:", {
-		originalNetworkId: networkId,
-		supportedNetworkId: supportedNetworkId,
-	});
-
 	elizaLogger.info(
 		"Importing existing wallet using stored seed and wallet ID:",
 		{
 			seed,
 			walletId,
 			walletType,
-			networkId: supportedNetworkId,
 			networkId: supportedNetworkId,
 		},
 	);
@@ -327,7 +314,6 @@ export async function initializeWallet(
 				const walletIDSave = await updateCharacterSecrets(
 					characterFilePath,
 					`COINBASE_${walletType.toUpperCase()}_WALLET_ID`,
-					walletId || wallet.getId(),
 					walletId || wallet.getId(),
 				);
 				if (walletIDSave) {
