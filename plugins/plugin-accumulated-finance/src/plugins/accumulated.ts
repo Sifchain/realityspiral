@@ -1,4 +1,3 @@
-import { EOL } from "os";
 import {
 	type Action,
 	type ActionExample,
@@ -109,7 +108,7 @@ const convertToWeiString = (decimalAmount: string, decimals = 18): string => {
 		if (
 			!decimalAmount ||
 			typeof decimalAmount !== "string" ||
-			isNaN(Number.parseFloat(decimalAmount))
+			Number.isNaN(Number.parseFloat(decimalAmount))
 		) {
 			throw new Error(
 				`Invalid input: "${decimalAmount}" is not a valid decimal number string.`,
@@ -165,7 +164,7 @@ const getConfigAndNetwork = (runtime: IAgentRuntime) => {
  */
 export const accumulatedFinancePlugin = (
 	runtime: IAgentRuntime,
-	pluginConfig: Partial<PluginConfig> = {},
+	_pluginConfig: Partial<PluginConfig> = {},
 ) => {
 	// Parse and validate configuration
 	const { fullConfig, networkConfig, networkId } = getConfigAndNetwork(runtime);
@@ -625,10 +624,7 @@ export const accumulatedFinancePlugin = (
 			// This needs the amount of *wstROSE* to unwrap, not underlying ROSE.
 			// Let's assume the user means the amount of *underlying* ROSE to receive.
 			// We need to convert this asset amount to shares first.
-			const { provider, signer } = await getProviderAndSigner(
-				runtime,
-				networkConfig,
-			);
+			const { signer } = await getProviderAndSigner(runtime, networkConfig);
 			const wrappedRoseContract = new ethers.Contract(
 				networkConfig.CONTRACTS.WRAPPED_ROSE,
 				ABIS.WSTROSE,
@@ -892,6 +888,7 @@ export const stakeAction: Action = {
 		runtime: IAgentRuntime,
 		_message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<StakingResult> => {
@@ -984,6 +981,7 @@ export const unstakeAction: Action = {
 		runtime: IAgentRuntime,
 		_message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
@@ -1078,6 +1076,7 @@ export const getRewardsAction: Action = {
 		runtime: IAgentRuntime,
 		_message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<RewardInfo> => {
@@ -1166,6 +1165,7 @@ export const claimRewardsAction: Action = {
 		runtime: IAgentRuntime,
 		_message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
@@ -1257,6 +1257,7 @@ export const getStakingStrategiesAction: Action = {
 		runtime: IAgentRuntime,
 		_message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<Strategy[]> => {
@@ -1346,6 +1347,7 @@ export const getStakedBalanceAction: Action = {
 		runtime: IAgentRuntime,
 		_message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<string> => {
@@ -1433,6 +1435,7 @@ export const wrapRoseAction: Action = {
 		runtime: IAgentRuntime,
 		_message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
@@ -1522,6 +1525,7 @@ export const unwrapRoseAction: Action = {
 		runtime: IAgentRuntime,
 		_message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
@@ -1610,6 +1614,7 @@ export const mintAction: Action = {
 		runtime: IAgentRuntime,
 		_message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<StakingResult> => {
@@ -1731,6 +1736,7 @@ export const approveAction: Action = {
 		runtime: IAgentRuntime,
 		_message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
@@ -1830,6 +1836,7 @@ export const redeemAction: Action = {
 		runtime: IAgentRuntime,
 		_message: Memory,
 		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options?: any,
 		callback?: HandlerCallback,
 	): Promise<TransactionReceipt> => {
