@@ -68,4 +68,4 @@ export const GetPoolDetailsActionSchema = z.object({
 		.number()
 		.optional()
 		.describe("Optional pool fee tier (e.g., 500, 3000, 10000)"),
-});
+}); 
