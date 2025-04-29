@@ -418,7 +418,7 @@ export const swapAction: Action = {
 			},
 		],
 	],
-	validate: async (options: unknown): Promise<boolean> => {
+	validate: async (_options: unknown): Promise<boolean> => {
 		// Basic validation or return true if generateObject handles it
 		return true;
 	},
@@ -538,7 +538,7 @@ export const monitorPriceStabilityAction: Action = {
 			},
 		],
 	],
-	validate: async (options: unknown): Promise<boolean> => {
+	validate: async (_options: unknown): Promise<boolean> => {
 		return true;
 	},
 };
@@ -904,7 +904,7 @@ export const getOptimalPathAction: Action = {
 			},
 		],
 	],
-	validate: async (options: unknown): Promise<boolean> => {
+	validate: async (_options: unknown): Promise<boolean> => {
 		return true;
 	},
 };

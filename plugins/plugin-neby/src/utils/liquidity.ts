@@ -52,7 +52,7 @@ export const addLiquidityHandler: ActionHandlerSchema<
 	AddLiquidityParams,
 	LiquidityResult
 > = async (
-	{ tokenA, tokenB, amountA, amountB, slippage, deadline }: AddLiquidityParams,
+	{ tokenA, tokenB, amountA, amountB }: AddLiquidityParams,
 	{ pluginStorage, logger }: { pluginStorage: PluginStorage; logger: Logger },
 ) => {
 	try {
@@ -96,7 +96,7 @@ export const removeLiquidityHandler: ActionHandlerSchema<
 	RemoveLiquidityParams,
 	LiquidityResult
 > = async (
-	{ tokenA, tokenB, liquidity, slippage, deadline }: RemoveLiquidityParams,
+	{ tokenA, tokenB, liquidity }: RemoveLiquidityParams,
 	{ pluginStorage, logger }: { pluginStorage: PluginStorage; logger: Logger },
 ) => {
 	try {

@@ -772,15 +772,19 @@ export function getCharityAddress(
  * @param params Parameters for contract reading as a single object or multiple arguments
  * @returns The serialized contract response
  */
-// biome-ignore lint/suspicious/noExplicitAny: Needed for flexibility with different contract methods
 export async function readContractWrapper(
+	// biome-ignore lint/suspicious/noExplicitAny: Needed for flexibility with different contract methods
 	runtimeOrParams: IAgentRuntime | any,
 	contractAddress?: `0x${string}`,
 	method?: string,
+	// biome-ignore lint/suspicious/noExplicitAny: Needed for flexibility with different contract methods
 	args?: any,
 	networkId?: string,
+	// biome-ignore lint/suspicious/noExplicitAny: Needed for flexibility with different contract methods
 	abi?: any,
+	// biome-ignore lint/suspicious/noExplicitAny: Needed for flexibility with different contract methods
 ): Promise<any> {
+	// biome-ignore lint/suspicious/noExplicitAny: Needed for flexibility with different contract methods
 	let params: any;
 	let runtime: IAgentRuntime;
 

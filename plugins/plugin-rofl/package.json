@@ -29,7 +29,8 @@
 		"@elizaos/core": "^0.1.9",
 		"whatwg-url": "7.1.0",
 		"@realityspiral/plugin-instrumentation": "workspace:*",
-		"@realityspiral/sentry": "workspace:*"
+		"@realityspiral/sentry": "workspace:*",
+		"axios": "^1.9.0"
 	},
 	"devDependencies": {
 		"tsup": "^8.0.1",

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Define valid token symbols based on constants.ts
-const validTokenSymbols = ["BitUSD", "ROSE", "wstROSE"] as const;
+const _validTokenSymbols = ["BitUSD", "ROSE", "wstROSE"] as const;
 
 // --- Swap Types ---
 export type SwapInput = {

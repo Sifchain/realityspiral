@@ -102,7 +102,7 @@ export const findArbitrageHandler: ActionHandlerSchema<
 		error?: string;
 	}
 > = async (
-	{ tokenAddresses, minProfitPercentage, maxHops }: FindArbitrageParams,
+	{ tokenAddresses }: FindArbitrageParams,
 	{ pluginStorage, logger }: { pluginStorage: PluginStorage; logger: Logger },
 ) => {
 	try {

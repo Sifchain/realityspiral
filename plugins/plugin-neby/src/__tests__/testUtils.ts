@@ -25,10 +25,12 @@ async function invokeContractDirectly({
 	contractAddress: string;
 	abi: ethers.InterfaceAbi;
 	method: string;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	args?: any[];
 	isWriteOperation?: boolean;
 	value?: string;
 	network?: "testnet" | "mainnet";
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 }): Promise<any> {
 	// Return type could be refined
 
@@ -110,6 +112,7 @@ async function invokeContractDirectly({
 		try {
 			// Check if the method ABI indicates it's non-view (nonpayable or payable)
 			const methodAbi = contract.interface.getFunction(method);
+			// biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
 			let result;
 			if (
 				methodAbi &&
