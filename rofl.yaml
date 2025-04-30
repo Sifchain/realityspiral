@@ -31,8 +31,8 @@ deployments:
           min_tcb_evaluation_data_number: 18
           tdx: {}
       enclaves:
-        - W/OVmu7RDF+XhF+Om4OjOKoOe3/aYmBFIDaU/4j4pLYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
-        - RQK+sj1qDPfnAWPiR0owEdaaoXGlWcgni2ukWyte1UsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - c49pbTGPU+dqHj++hQaYqUgBdw0+MXJ97qs1ez1hUvMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - 9cYzmEQlfHN0h4LHLWDkZ00j7YEOf6lSHyJq/cWZkigAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
       endorsements:
         - any: {}
       fees: endorsing_node
@@ -86,3 +86,11 @@ deployments:
         value: pGJwa1ggy/3sW1BrjDexi2gTQQD3ksTfrjXkQcwYW7PtyIfIdBJkbmFtZVgitrjbp5DCoFSIWC+zowWPGDJI1PmR0IijMr9Xz9zxdiESHGVub25jZU/Y44Jpm5xwHuKF19G0MMhldmFsdWVYUEUb8QhTyrLwECyqubqKxXZNuObByVzIx8K/l8IsX7jd4p8XRiD77hIp/cPqO2aAlACSG8/wtssthMSaPW3XvoTaiksY8FUBxa5YlEv2pOAn
       - name: WALLET_PUBLIC_KEY
         value: pGJwa1ggc9cGXSDYL02KW0wYBcEyqmKeotCJjyeR30hFqsQc0VRkbmFtZVghG4a2TIXqmwtjdKqLL8rPFAQEXYA492Pz7WB0UEWXnIp4ZW5vbmNlT0SEcKac3FTN75Aa++v53GV2YWx1ZVg6rg1g2q+VQE1DYrgsqCBeXvwJZ4K1MXUo1yLDzUbsu9o84vaxpXzWsFCPjQvVry2WRo7X1vbfEnNohQ==
+      - name: ACCUMULATED_FINANCE_ENABLED
+        value: pGJwa1gg7LbAC3ES0wlKw45CdFwGLJtr+umlYW3EH8KhHzlJXVtkbmFtZVgrvq2/muMAQbkJfN1yWImlkgSeTHp8ptFNuU1QpzzN36k+NfaVT89ktpYVrWVub25jZU8CZc+0zdKBcM4b8C5BoulldmFsdWVVV+YSBxFcbnXrLUMZrxUWUizWzCa9
+      - name: BITPROTOCOL_ENABLED
+        value: pGJwa1ggdySmB/Bu50gPgaCLzjLqRjNcmzsIthHgEaJ2YmR81QBkbmFtZVgjCNkGu0ZoHgmvHaBNMlzhYgZxoIM+fWtlPiWOiSuOyZD9dMVlbm9uY2VPHxD7+Up9cGEb3ZDghlYyZXZhbHVlVeYoOOoCN9JQUlAYRIaCsyiymSROmg==
+      - name: NEBY_ENABLED
+        value: pGJwa1ggl8Iy4WcLlwCfQZtG/d/jjKCtj0vGHTKn+kvHw/Crr05kbmFtZVgcgQhIjubV3GciCAC2cnXl+GpOdkiSCKR609Q2gmVub25jZU8Rxhx9tuHXNU/ff86RPtZldmFsdWVVElB3s/D8vNRD4ZzKKMPorHkO0u8I
+      - name: THORN_ENABLED
+        value: pGJwa1ggyKXyzWb0Hyg+MjNhaK7HN6clSmx7Uq0PFx7gARyowFpkbmFtZVgdpQu8CKXcivNvMi2FIU5npmyJPF835DJHLjJoks1lbm9uY2VPW7OBvuCrYBiMPT8Q/nZvZXZhbHVlVSKGjk7btVKNYQ1VVe/SAf3XSnOAQw==
