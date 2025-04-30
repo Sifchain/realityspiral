@@ -323,6 +323,11 @@ echo -n "false" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} USE_CHAR
 echo -n "log" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} DEFAULT_LOG_LEVEL -
 echo -n "false" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} LOG_JSON_FORMAT -
 echo -n "false" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} INSTRUMENTATION_ENABLED -
+echo -n "true" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} ROFL_PLUGIN_ENABLED -
+echo -n "false" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} ACCUMULATED_FINANCE_ENABLED -
+echo -n "false" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} BITPROTOCOL_ENABLED -
+echo -n "false" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} NEBY_ENABLED -
+echo -n "false" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} THORN_ENABLED -
 echo -n "" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} EXPRESS_MAX_PAYLOAD -
 echo -n "sk-proj-XXXX" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} OPENAI_API_KEY -
 echo -n "" | oasis rofl secret set --deployment ${DEPLOYMENT_NAME} OPENAI_API_URL -
