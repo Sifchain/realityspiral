@@ -31,6 +31,7 @@ COPY plugins/plugin-instrumentation/package.json ./plugins/plugin-instrumentatio
 COPY plugins/plugin-neby/package.json ./plugins/plugin-neby/
 COPY plugins/plugin-rofl/package.json ./plugins/plugin-rofl/
 COPY plugins/plugin-synfutures/package.json ./plugins/plugin-synfutures/
+COPY plugins/plugin-thorn/package.json ./plugins/plugin-thorn/
 COPY plugins/plugin-twitter/package.json ./plugins/plugin-twitter/
 COPY agent/package.json ./agent/
 COPY ui/package.json ./ui/
