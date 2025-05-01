@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Define the ElizaRuntime type inline
-type ElizaRuntime = {
+type _ElizaRuntime = {
 	getSetting: (key: string) => string | undefined;
 	character: {
 		name: string;
@@ -141,6 +141,7 @@ describe("Thorn Strategy Plugin Tests", () => {
 	describe("strategyProvider", () => {
 		it("should retrieve strategies from file storage", async () => {
 			const result = await strategyProvider.get(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
 				mockMessage,
 			);
@@ -153,11 +154,13 @@ describe("Thorn Strategy Plugin Tests", () => {
 
 		it("should handle errors and return empty array", async () => {
 			// Mock fs.promises.readFile to throw an error
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			(fs.promises.readFile as any).mockRejectedValueOnce(
 				new Error("Test error"),
 			);
 
 			const result = await strategyProvider.get(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
 				mockMessage,
 			);
@@ -170,6 +173,7 @@ describe("Thorn Strategy Plugin Tests", () => {
 	describe("createStrategyAction", () => {
 		it("should validate correctly when required settings are present", async () => {
 			const result = await setupStrategyAction.validate(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
 				mockMessage,
 			);
@@ -178,9 +182,11 @@ describe("Thorn Strategy Plugin Tests", () => {
 
 		it("should fail validation when required settings are missing", async () => {
 			// Mock getSetting to return undefined for required settings
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			(mockRuntime.getSetting as any).mockImplementation(() => undefined);
 
 			const result = await setupStrategyAction.validate(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
 				mockMessage,
 			);
@@ -191,8 +197,10 @@ describe("Thorn Strategy Plugin Tests", () => {
 			const mockCallback = vi.fn();
 
 			await setupStrategyAction.handler(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
 				mockMessage,
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockState as any,
 				{},
 				mockCallback,
@@ -218,8 +226,10 @@ describe("Thorn Strategy Plugin Tests", () => {
 			});
 
 			await setupStrategyAction.handler(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
 				mockMessage,
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockState as any,
 				{},
 				mockCallback,
@@ -236,6 +246,7 @@ describe("Thorn Strategy Plugin Tests", () => {
 	describe("executeStrategyAction", () => {
 		it("should validate correctly", async () => {
 			const result = await executeStrategyAction.validate(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
 				mockMessage,
 			);
@@ -246,8 +257,10 @@ describe("Thorn Strategy Plugin Tests", () => {
 			const mockCallback = vi.fn();
 
 			await executeStrategyAction.handler(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
 				mockMessage,
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockState as any,
 				{},
 				mockCallback,

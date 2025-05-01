@@ -10,9 +10,7 @@
 		"test": "jest"
 	},
 	"nodemonConfig": {
-		"watch": [
-			"src"
-		],
+		"watch": ["src"],
 		"ext": "ts,json",
 		"exec": "node --enable-source-maps --loader ts-node/esm src/index.ts"
 	},

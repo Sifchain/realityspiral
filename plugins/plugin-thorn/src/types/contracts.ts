@@ -54,6 +54,7 @@ export interface SwapQuote {
 // Types for contract actions
 export interface ContractAction {
 	functionName: string;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	args: any[];
 	value?: string;
 }

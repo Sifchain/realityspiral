@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Define the ElizaRuntime type inline
-type ElizaRuntime = {
+type _ElizaRuntime = {
 	getSetting: (key: string) => string | undefined;
 	character: {
 		name: string;
@@ -109,6 +109,7 @@ describe("Thorn Price Monitor Plugin Tests", () => {
 	describe("priceStabilityProvider", () => {
 		it("should retrieve price stability records from CSV", async () => {
 			const result = await priceStabilityProvider.get(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
 				mockMessage,
 			);
@@ -117,11 +118,15 @@ describe("Thorn Price Monitor Plugin Tests", () => {
 			expect(result.priceRecords).toHaveLength(4);
 
 			// Check specific records
-			const usdcRecord = result.priceRecords.find((r) => r.token === "USDC");
+			const usdcRecord = result.priceRecords.find(
+				(r: { token: string }) => r.token === "USDC",
+			);
 			expect(usdcRecord).toBeDefined();
 			expect(usdcRecord).toHaveProperty("isStable", true);
 
-			const fraxRecord = result.priceRecords.find((r) => r.token === "FRAX");
+			const fraxRecord = result.priceRecords.find(
+				(r: { token: string }) => r.token === "FRAX",
+			);
 			expect(fraxRecord).toBeDefined();
 			expect(fraxRecord).toHaveProperty("isStable", false);
 			expect(fraxRecord).toHaveProperty("deviation", 0.03);
@@ -129,11 +134,13 @@ describe("Thorn Price Monitor Plugin Tests", () => {
 
 		it("should handle errors and return empty arrays", async () => {
 			// Mock fs.promises.readFile to throw an error
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			(fs.promises.readFile as any).mockRejectedValueOnce(
 				new Error("Test error"),
 			);
 
 			const result = await priceStabilityProvider.get(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
 				mockMessage,
 			);
@@ -146,6 +153,7 @@ describe("Thorn Price Monitor Plugin Tests", () => {
 	describe("monitorPriceStabilityAction", () => {
 		it("should validate correctly when required settings are present", async () => {
 			const result = await monitorPriceStabilityAction.validate(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
 				mockMessage,
 			);
@@ -154,9 +162,11 @@ describe("Thorn Price Monitor Plugin Tests", () => {
 
 		it("should fail validation when required settings are missing", async () => {
 			// Mock getSetting to return undefined for required settings
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			(mockRuntime.getSetting as any).mockImplementation(() => undefined);
 
 			const result = await monitorPriceStabilityAction.validate(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
 				mockMessage,
 			);
@@ -167,8 +177,10 @@ describe("Thorn Price Monitor Plugin Tests", () => {
 			const mockCallback = vi.fn();
 
 			await monitorPriceStabilityAction.handler(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
 				mockMessage,
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockState as any,
 				{},
 				mockCallback,
@@ -193,8 +205,10 @@ describe("Thorn Price Monitor Plugin Tests", () => {
 			});
 
 			await monitorPriceStabilityAction.handler(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
 				mockMessage,
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockState as any,
 				{},
 				mockCallback,

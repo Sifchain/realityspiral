@@ -35,7 +35,7 @@ import { StrategySchema, isStrategyContent } from "../types";
  * Provider for retrieving swap strategy information
  */
 export const strategyProvider: Provider = {
-	get: async (runtime: IAgentRuntime, _message: Memory) => {
+	get: async (_runtime: IAgentRuntime, _message: Memory) => {
 		elizaLogger.debug("Starting strategyProvider.get function");
 		try {
 			// Check if the CSV file exists; if not, create it with headers
@@ -73,6 +73,7 @@ export const strategyProvider: Provider = {
 			elizaLogger.info(`Found ${records.length} strategy records in CSV`);
 
 			// Transform records to the expected format
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const strategies = records.map((record: any) => ({
 				name: record.Name,
 				targetToken: record["Target Token"],
@@ -89,7 +90,8 @@ export const strategyProvider: Provider = {
 			return {
 				strategies,
 			};
-		} catch (error) {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		} catch (error: any) {
 			elizaLogger.error("Error in strategyProvider: ", error.message);
 			return {
 				strategies: [],
@@ -121,16 +123,17 @@ export const setupStrategyAction: Action = {
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
-		state: State,
+		state: State | undefined,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
-		callback: HandlerCallback,
+		callback?: HandlerCallback,
 	) => {
 		elizaLogger.debug("Starting SETUP_SWAP_STRATEGY handler...");
 
 		try {
 			// Compose context and extract strategy parameters
 			const context = composeContext({
-				state,
+				state: state || ({} as State),
 				template: strategyTemplate,
 			});
 
@@ -142,7 +145,7 @@ export const setupStrategyAction: Action = {
 			});
 
 			if (!isStrategyContent(strategyDetails.object)) {
-				callback(
+				callback?.(
 					{
 						text: "Invalid strategy parameters. Please provide a valid strategy configuration.",
 					},
@@ -189,6 +192,7 @@ export const setupStrategyAction: Action = {
 
 				// Check if the strategy already exists
 				const existingStrategyIndex = existingStrategies.findIndex(
+					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 					(s: any) => s.Name.toLowerCase() === name.toLowerCase(),
 				);
 
@@ -238,18 +242,20 @@ export const setupStrategyAction: Action = {
 			// Verify all tokens have addresses
 			const invalidTokens = [];
 
-			if (!tokenAddresses[targetToken]) {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			if (!(tokenAddresses as any)[targetToken]) {
 				invalidTokens.push(targetToken);
 			}
 
 			for (const token of sourceTokens) {
-				if (!tokenAddresses[token]) {
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				if (!(tokenAddresses as any)[token]) {
 					invalidTokens.push(token);
 				}
 			}
 
 			if (invalidTokens.length > 0) {
-				callback(
+				callback?.(
 					{
 						text: `Warning: The following tokens are not available on ${network}: ${invalidTokens.join(", ")}. The strategy has been saved but may not execute properly.`,
 					},
@@ -261,9 +267,7 @@ export const setupStrategyAction: Action = {
 			// Format source tokens for display
 			const sourceTokensDisplay =
 				sourceTokens.length > 1
-					? sourceTokens.slice(0, -1).join(", ") +
-						" and " +
-						sourceTokens[sourceTokens.length - 1]
+					? `${sourceTokens.slice(0, -1).join(", ")} and ${sourceTokens[sourceTokens.length - 1]}`
 					: sourceTokens[0];
 
 			// Prepare success message
@@ -279,15 +283,16 @@ export const setupStrategyAction: Action = {
 
 			resultMessage += `The strategy will automatically execute swaps when any of the source tokens deviates from the target token by more than ${triggerThreshold * 100}%.`;
 
-			callback(
+			callback?.(
 				{
 					text: resultMessage,
 				},
 				[],
 			);
-		} catch (error) {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		} catch (error: any) {
 			elizaLogger.error("Error in SETUP_SWAP_STRATEGY handler:", error);
-			callback(
+			callback?.(
 				{
 					text: `An error occurred while setting up the swap strategy: ${error.message}`,
 				},
@@ -345,9 +350,10 @@ export const executeStrategyAction: Action = {
 	handler: async (
 		runtime: IAgentRuntime,
 		message: Memory,
-		state: State,
+		_state: State | undefined,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
-		callback: HandlerCallback,
+		callback?: HandlerCallback,
 	) => {
 		elizaLogger.debug("Starting EXECUTE_STRATEGY handler...");
 
@@ -375,24 +381,28 @@ export const executeStrategyAction: Action = {
 				});
 
 				if (strategies.length === 0) {
-					callback(
+					callback?.(
 						{
 							text: "No swap strategies found. Please create a strategy first using the SETUP_SWAP_STRATEGY action.",
 						},
 						[],
 					);
 					return;
-				} else if (strategies.length === 1) {
+				}
+
+				if (strategies.length === 1) {
 					// If only one strategy exists, use that
 					targetStrategyName = strategies[0].Name;
 				} else {
 					// List available strategies
 					let strategyList = "Available strategies:\n";
+					// biome-ignore lint/complexity/noForEach: <explanation>
+					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 					strategies.forEach((strategy: any) => {
 						strategyList += `- ${strategy.Name} (${strategy["Target Token"]})\n`;
 					});
 
-					callback(
+					callback?.(
 						{
 							text: `Please specify which strategy to execute. ${strategyList}`,
 						},
@@ -403,7 +413,7 @@ export const executeStrategyAction: Action = {
 			}
 
 			if (!targetStrategyName) {
-				callback(
+				callback?.(
 					{
 						text: "Could not determine which strategy to execute. Please specify a strategy name or create one first.",
 					},
@@ -414,7 +424,7 @@ export const executeStrategyAction: Action = {
 
 			// Load the specified strategy
 			if (!fs.existsSync(STRATEGY_CSV_FILE_PATH)) {
-				callback(
+				callback?.(
 					{
 						text: "No strategies found. Please create a strategy first using the SETUP_SWAP_STRATEGY action.",
 					},
@@ -433,11 +443,12 @@ export const executeStrategyAction: Action = {
 			});
 
 			const strategy = strategies.find(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				(s: any) => s.Name.toLowerCase() === targetStrategyName.toLowerCase(),
 			);
 
 			if (!strategy) {
-				callback(
+				callback?.(
 					{
 						text: `Strategy "${targetStrategyName}" not found. Please check the name or create it first.`,
 					},
@@ -459,7 +470,7 @@ export const executeStrategyAction: Action = {
 			};
 
 			if (!strategyDetails.isActive) {
-				callback(
+				callback?.(
 					{
 						text: `Strategy "${strategyDetails.name}" is inactive. Please activate it first by updating the strategy.`,
 					},
@@ -471,16 +482,16 @@ export const executeStrategyAction: Action = {
 			// Initialize network configuration
 			const network =
 				runtime.getSetting("OASIS_NETWORK") || OASIS_NETWORKS.TESTNET;
-			const networkId = getNetworkId(runtime);
+			const _networkId = getNetworkId(runtime);
 
 			// Get contract addresses for the network
-			const contracts =
+			const _contracts =
 				network === OASIS_NETWORKS.MAINNET
 					? THORN_CONTRACTS.MAINNET
 					: THORN_CONTRACTS.TESTNET;
 
 			// Use ContractHelper
-			const contractHelper = createContractHelper(runtime);
+			const _contractHelper = createContractHelper(runtime);
 
 			// Get token addresses
 			const tokenAddresses =
@@ -489,9 +500,12 @@ export const executeStrategyAction: Action = {
 					: TOKEN_ADDRESSES.TESTNET;
 
 			// Verify all tokens have addresses
-			const targetTokenAddress = tokenAddresses[strategyDetails.targetToken];
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			const targetTokenAddress = (tokenAddresses as any)[
+				strategyDetails.targetToken
+			];
 			if (!targetTokenAddress) {
-				callback(
+				callback?.(
 					{
 						text: `Target token ${strategyDetails.targetToken} is not available on ${network}. Cannot execute strategy.`,
 					},
@@ -506,7 +520,8 @@ export const executeStrategyAction: Action = {
 
 			// For each source token, check price and execute swap if needed
 			for (const sourceToken of strategyDetails.sourceTokens) {
-				const sourceTokenAddress = tokenAddresses[sourceToken];
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				const sourceTokenAddress = (tokenAddresses as any)[sourceToken];
 				if (!sourceTokenAddress) {
 					elizaLogger.warn(
 						`Source token ${sourceToken} address not found, skipping`,
@@ -543,7 +558,7 @@ export const executeStrategyAction: Action = {
 								Number.parseFloat(swapAmount) * actualRatio
 							).toString(),
 							exchangeRate: actualRatio.toString(),
-							txHash: "0x" + Math.random().toString(16).substr(2, 40),
+							txHash: `0x${Math.random().toString(16).substr(2, 40)}`,
 						};
 
 						swapsExecuted++;
@@ -563,7 +578,7 @@ export const executeStrategyAction: Action = {
 
 			// Generate response based on results
 			if (swapsExecuted === 0) {
-				callback(
+				callback?.(
 					{
 						text: `Executed strategy "${strategyDetails.name}" but no swaps were needed. All tokens are within the ${strategyDetails.triggerThreshold * 100}% deviation threshold.`,
 					},
@@ -580,16 +595,17 @@ export const executeStrategyAction: Action = {
 					resultMessage += `• Transaction: ${result.txHash}\n\n`;
 				});
 
-				callback(
+				callback?.(
 					{
 						text: resultMessage,
 					},
 					[],
 				);
 			}
-		} catch (error) {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		} catch (error: any) {
 			elizaLogger.error("Error in EXECUTE_STRATEGY handler:", error);
-			callback(
+			callback?.(
 				{
 					text: `An error occurred while executing the strategy: ${error.message}`,
 				},
@@ -645,6 +661,7 @@ async function saveStrategyToCsv({
 	privacyLevel: string;
 	isActive: boolean;
 	isUpdate: boolean;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	existingStrategies: any[];
 }) {
 	try {
@@ -674,6 +691,7 @@ async function saveStrategyToCsv({
 				],
 			});
 
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const records = existingStrategies.map((strategy: any) => [
 				strategy.Name,
 				strategy["Target Token"],

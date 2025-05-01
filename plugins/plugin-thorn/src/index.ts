@@ -212,7 +212,7 @@ export const thornProtocolPlugin = (
 		// Parse amount to number (simplified approach)
 		const amountValue = Number.parseFloat(amount);
 
-		if (isNaN(amountValue)) {
+		if (Number.isNaN(amountValue)) {
 			throw new Error("Invalid amount format");
 		}
 
@@ -250,6 +250,7 @@ export const thornProtocolPlugin = (
 		let fromTokenAddress = "";
 		let toTokenAddress = "";
 
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		if (STABLECOIN_TOKENS.includes(fromToken as any)) {
 			fromTokenAddress =
 				TOKEN_ADDRESSES[network][
@@ -259,6 +260,7 @@ export const thornProtocolPlugin = (
 			throw new Error(`Token address not found for ${fromToken}`);
 		}
 
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		if (STABLECOIN_TOKENS.includes(toToken as any)) {
 			toTokenAddress =
 				TOKEN_ADDRESSES[network][
@@ -504,12 +506,12 @@ export const thornProtocolPlugin = (
 					const token0Symbol =
 						tokenEntries.find(
 							([_, address]) => address.toLowerCase() === token0.toLowerCase(),
-						)?.[0] || token0.substring(0, 8) + "...";
+						)?.[0] || `${token0.substring(0, 8)}...`;
 
 					const token1Symbol =
 						tokenEntries.find(
 							([_, address]) => address.toLowerCase() === token1.toLowerCase(),
-						)?.[0] || token1.substring(0, 8) + "...";
+						)?.[0] || `${token1.substring(0, 8)}...`;
 
 					// Calculate privacy level based on pool characteristics
 					let privacyLevel: "low" | "medium" | "high" = "medium";
@@ -534,7 +536,7 @@ export const thornProtocolPlugin = (
 						token1: token1Symbol,
 						reserve0: reserves ? reserves[0].toString() : "0",
 						reserve1: reserves ? reserves[1].toString() : "0",
-						fee: fee ? (Number(fee) / 100).toString() + "%" : "0.3%",
+						fee: fee ? `${(Number(fee) / 100).toString()}%` : "0.3%",
 						privacyLevel,
 					});
 				} catch (error) {
@@ -599,6 +601,7 @@ export const thornProtocolPlugin = (
 
 			// Map token addresses to symbols for easier reading
 			const addressToSymbol = new Map<string, string>();
+			// biome-ignore lint/complexity/noForEach: <explanation>
 			Object.entries(TOKEN_ADDRESSES[network]).forEach(([symbol, address]) => {
 				addressToSymbol.set(address.toLowerCase(), symbol);
 			});
@@ -626,10 +629,10 @@ export const thornProtocolPlugin = (
 					// Extract relevant info from the parsed event
 					const fromToken =
 						addressToSymbol.get(parsedLog.args.token1.toLowerCase()) ||
-						parsedLog.args.token1.substring(0, 8) + "...";
+						`${parsedLog.args.token1.substring(0, 8)}...`;
 					const toToken =
 						addressToSymbol.get(parsedLog.args.token2.toLowerCase()) ||
-						parsedLog.args.token2.substring(0, 8) + "...";
+						`${parsedLog.args.token2.substring(0, 8)}...`;
 
 					// Calculate actual exchange rate
 					const sentAmount = parsedLog.args.amountIn.toString();
@@ -658,6 +661,7 @@ export const thornProtocolPlugin = (
 						fee: ethers.formatEther(txFee),
 						txHash: log.transactionHash,
 						timestamp,
+						// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 						privacyLevel: fullConfig.privacyLevel as any,
 					});
 				} catch (error) {
@@ -696,6 +700,7 @@ export const thornProtocolPlugin = (
 
 		// Filter and validate tokens
 		const validTokens = tokens.filter((token) =>
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			STABLECOIN_TOKENS.includes(token as any),
 		);
 
@@ -829,6 +834,7 @@ export const thornProtocolPlugin = (
 		targetToken: string,
 		sourceTokens: string[],
 		budget: string,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options: any = {},
 	) => {
 		// Validate inputs
@@ -839,6 +845,7 @@ export const thornProtocolPlugin = (
 		}
 
 		// Validate tokens
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		if (!STABLECOIN_TOKENS.includes(targetToken as any)) {
 			throw new Error(
 				`Invalid target token. Supported tokens: ${STABLECOIN_TOKENS.join(", ")}`,
@@ -846,6 +853,7 @@ export const thornProtocolPlugin = (
 		}
 
 		for (const token of sourceTokens) {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			if (!STABLECOIN_TOKENS.includes(token as any)) {
 				throw new Error(
 					`Invalid source token: ${token}. Supported tokens: ${STABLECOIN_TOKENS.join(", ")}`,

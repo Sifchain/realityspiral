@@ -49,6 +49,7 @@ describe("Contract Utilities", () => {
 
 	describe("getNetworkId", () => {
 		it("should return correct network ID for testnet", () => {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const networkId = getNetworkId(mockRuntime as any);
 			expect(networkId).toBe("oasis-sapphire-testnet");
 		});
@@ -58,6 +59,7 @@ describe("Contract Utilities", () => {
 				...mockRuntime,
 				getSetting: vi.fn().mockReturnValue(OASIS_NETWORKS.MAINNET),
 			};
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const networkId = getNetworkId(mainnetRuntime as any);
 			expect(networkId).toBe("oasis-sapphire");
 		});
@@ -67,6 +69,7 @@ describe("Contract Utilities", () => {
 				...mockRuntime,
 				getSetting: vi.fn().mockReturnValue(undefined),
 			};
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const networkId = getNetworkId(noNetworkRuntime as any);
 			expect(networkId).toBe("oasis-sapphire-testnet");
 		});
@@ -74,6 +77,7 @@ describe("Contract Utilities", () => {
 
 	describe("getUserAddressString", () => {
 		it("should return the wallet address from private key", () => {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const address = getUserAddressString(mockRuntime as any);
 			expect(address).toBe("0xmockaddress");
 		});
@@ -85,6 +89,7 @@ describe("Contract Utilities", () => {
 			};
 
 			expect(() =>
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				getUserAddressString(invalidKeyRuntime as any),
 			).not.toThrow();
 			// In actual implementation, this might throw or return a fallback
@@ -93,6 +98,7 @@ describe("Contract Utilities", () => {
 
 	describe("createContractHelper", () => {
 		it("should create a contract helper instance", () => {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const helper = createContractHelper(mockRuntime as any);
 			expect(helper).toBeDefined();
 			expect(typeof helper.readContract).toBe("function");
@@ -100,6 +106,7 @@ describe("Contract Utilities", () => {
 		});
 
 		it("should be able to read from a contract", async () => {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const helper = createContractHelper(mockRuntime as any);
 
 			const result = await helper.readContract({
@@ -116,6 +123,7 @@ describe("Contract Utilities", () => {
 		});
 
 		it("should be able to invoke a contract", async () => {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const helper = createContractHelper(mockRuntime as any);
 
 			const result = await helper.invokeContract({

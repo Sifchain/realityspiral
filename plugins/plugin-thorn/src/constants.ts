@@ -30,6 +30,7 @@ export const SwapSchema = {
 };
 
 // Type guard for SwapContent
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export function isSwapContent(obj: any): obj is SwapContent {
 	return (
 		obj &&

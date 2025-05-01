@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { SpyInstance } from "vitest";
 
 // Define the ElizaRuntime type inline to avoid importing it
-type ElizaRuntime = {
+type _ElizaRuntime = {
 	getSetting: (key: string) => string | undefined;
 	character: {
 		name: string;
@@ -131,7 +131,11 @@ describe("Thorn Swap Plugin Tests", () => {
 
 	describe("swapProvider", () => {
 		it("should retrieve swap history from CSV", async () => {
-			const result = await swapProvider.get(mockRuntime as any, mockMessage);
+			const result = await swapProvider.get(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				mockRuntime as any,
+				mockMessage,
+			);
 
 			expect(result).toHaveProperty("swapHistory");
 			expect(result).toHaveProperty("liquidityPools");
@@ -142,11 +146,16 @@ describe("Thorn Swap Plugin Tests", () => {
 
 		it("should handle errors and return empty arrays", async () => {
 			// Mock fs.promises.readFile to throw an error
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			(fs.promises.readFile as any).mockRejectedValueOnce(
 				new Error("Test error"),
 			);
 
-			const result = await swapProvider.get(mockRuntime as any, mockMessage);
+			const result = await swapProvider.get(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				mockRuntime as any,
+				mockMessage,
+			);
 
 			expect(result).toHaveProperty("swapHistory");
 			expect(result).toHaveProperty("liquidityPools");
@@ -158,7 +167,9 @@ describe("Thorn Swap Plugin Tests", () => {
 	describe("executeSwapAction", () => {
 		it("should validate correctly when required settings are present", async () => {
 			const result = await executeSwapAction.validate(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockMessage as any,
 			);
 			expect(result).toBe(true);
@@ -166,10 +177,13 @@ describe("Thorn Swap Plugin Tests", () => {
 
 		it("should fail validation when required settings are missing", async () => {
 			// Mock getSetting to return undefined for required settings
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			(mockRuntime.getSetting as any).mockImplementationOnce(() => undefined);
 
 			const result = await executeSwapAction.validate(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockMessage as any,
 			);
 			expect(result).toBe(false);
@@ -179,8 +193,11 @@ describe("Thorn Swap Plugin Tests", () => {
 			const mockCallback = vi.fn();
 
 			await executeSwapAction.handler(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockMessage as any,
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockState as any,
 				{},
 				mockCallback,
@@ -205,8 +222,11 @@ describe("Thorn Swap Plugin Tests", () => {
 			});
 
 			await executeSwapAction.handler(
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockRuntime as any,
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockMessage as any,
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				mockState as any,
 				{},
 				mockCallback,

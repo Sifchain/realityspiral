@@ -45,6 +45,7 @@ export interface SwapContent {
 }
 
 // Type guard for SwapContent
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const isSwapContent = (object: any): object is SwapContent => {
 	return SwapSchema.safeParse(object).success;
 };
@@ -63,6 +64,7 @@ export interface PriceMonitorContent {
 }
 
 export const isPriceMonitorContent = (
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	object: any,
 ): object is PriceMonitorContent => {
 	return PriceMonitorSchema.safeParse(object).success;
@@ -91,6 +93,7 @@ export interface StrategyContent {
 	isActive: boolean;
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const isStrategyContent = (object: any): object is StrategyContent => {
 	return StrategySchema.safeParse(object).success;
 };

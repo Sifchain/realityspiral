@@ -60,10 +60,10 @@ import {
 import { nebyPlugin } from "@realityspiral/plugin-neby";
 import { roflPlugin } from "@realityspiral/plugin-rofl";
 import synfuturesPlugin from "@realityspiral/plugin-synfutures";
+import { thornPlugin } from "@realityspiral/plugin-thorn";
 import Database from "better-sqlite3";
 import yargs from "yargs";
 import { z } from "zod";
-import { thornPlugin } from "@realityspiral/plugin-thorn";
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory

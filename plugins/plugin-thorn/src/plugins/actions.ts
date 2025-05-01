@@ -67,14 +67,15 @@ export const executeSwapAction: Action = {
 		try {
 			createContractHelper(runtime);
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	},
 	handler: async (
 		runtime: IAgentRuntime,
-		message: Memory,
-		state: State | undefined,
+		_message: Memory,
+		_state: State | undefined,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options: any,
 		callback?: HandlerCallback,
 	): Promise<SwapResult | null> => {
@@ -111,13 +112,13 @@ export const executeSwapAction: Action = {
 			const networkId = getNetworkId(runtime);
 			const network =
 				runtime.getSetting("OASIS_NETWORK") || OASIS_NETWORKS.TESTNET;
-			const contracts =
+			const _contracts =
 				network === OASIS_NETWORKS.MAINNET
 					? THORN_CONTRACTS.MAINNET
 					: THORN_CONTRACTS.TESTNET;
 
 			// Create contract helper
-			const contractHelper = createContractHelper(runtime);
+			const _contractHelper = createContractHelper(runtime);
 
 			// Perform the swap (simplified implementation)
 			const userAddress = await getUserAddressString(runtime, networkId);
@@ -188,14 +189,15 @@ export const monitorPriceAction: Action = {
 		try {
 			createContractHelper(runtime);
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	},
 	handler: async (
-		runtime: IAgentRuntime,
-		message: Memory,
-		state: State | undefined,
+		_runtime: IAgentRuntime,
+		_message: Memory,
+		_state: State | undefined,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options: any,
 		callback?: HandlerCallback,
 	) => {
@@ -256,14 +258,15 @@ export const createStrategyAction: Action = {
 		try {
 			createContractHelper(runtime);
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	},
 	handler: async (
-		runtime: IAgentRuntime,
-		message: Memory,
-		state: State | undefined,
+		_runtime: IAgentRuntime,
+		_message: Memory,
+		_state: State | undefined,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options: any,
 		callback?: HandlerCallback,
 	) => {
@@ -341,10 +344,11 @@ export const getSwapHistoryAction: Action = {
 	],
 	validate: async () => true,
 	handler: async (
-		runtime: IAgentRuntime,
-		message: Memory,
-		state: State | undefined,
-		options: any,
+		_runtime: IAgentRuntime,
+		_message: Memory,
+		_state: State | undefined,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		_options: any,
 		callback?: HandlerCallback,
 	): Promise<SwapResult[]> => {
 		try {
@@ -397,9 +401,10 @@ export const getOptimalPathAction: Action = {
 	],
 	validate: async () => true,
 	handler: async (
-		runtime: IAgentRuntime,
-		message: Memory,
-		state: State | undefined,
+		_runtime: IAgentRuntime,
+		_message: Memory,
+		_state: State | undefined,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		options: any,
 		callback?: HandlerCallback,
 	) => {
@@ -465,14 +470,15 @@ export const getLiquidityPoolsAction: Action = {
 	],
 	validate: async () => true,
 	handler: async (
-		runtime: IAgentRuntime,
-		message: Memory,
-		state: State | undefined,
-		options: any,
+		_runtime: IAgentRuntime,
+		_message: Memory,
+		_state: State | undefined,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		_options: any,
 		callback?: HandlerCallback,
 	): Promise<Pool[]> => {
 		try {
-			const { tokens, minLiquidity } = options || {};
+			// const { tokens, minLiquidity } = options || {};
 
 			// Implementation would query pools directly from blockchain
 

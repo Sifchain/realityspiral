@@ -76,7 +76,7 @@ export const swapProvider: Provider = {
 			// Initialize network configuration
 			const network =
 				runtime.getSetting("OASIS_NETWORK") || OASIS_NETWORKS.TESTNET;
-			const apiUrl =
+			const _apiUrl =
 				runtime.getSetting("THORN_API_URL") || THORN_DEFAULT_API_URL;
 
 			// Create ContractHelper using our utility function
@@ -99,6 +99,7 @@ export const swapProvider: Provider = {
 			});
 
 			return {
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				swapHistory: records.map((record: any) => ({
 					timestamp: record.Timestamp,
 					fromToken: record["From Token"],
@@ -106,13 +107,14 @@ export const swapProvider: Provider = {
 					sentAmount: record["Sent Amount"],
 					receivedAmount: record["Received Amount"],
 					exchangeRate: record["Exchange Rate"],
-					fee: record["Fee"],
+					fee: record.Fee,
 					privacyLevel: record["Privacy Level"],
 					txHash: record["Transaction Hash"],
 				})),
 				liquidityPools: poolsResult || [],
 			};
-		} catch (error) {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		} catch (error: any) {
 			elizaLogger.error("Error in swapProvider: ", error.message);
 			return {
 				swapHistory: [],
@@ -148,16 +150,17 @@ export const executeSwapAction: Action = {
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
-		state: State,
+		state: State | undefined,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
-		callback: HandlerCallback,
+		callback?: HandlerCallback,
 	) => {
 		elizaLogger.debug("Starting EXECUTE_SWAP handler...");
 
 		try {
 			// Compose context and extract swap parameters
 			const context = composeContext({
-				state,
+				state: state || ({} as State),
 				template: swapTemplate,
 			});
 
@@ -169,7 +172,7 @@ export const executeSwapAction: Action = {
 			});
 
 			if (!isSwapContent(swapDetails.object)) {
-				callback(
+				callback?.(
 					{
 						text: "Invalid swap parameters. Please provide valid token symbols, amount, and slippage.",
 					},
@@ -209,11 +212,13 @@ export const executeSwapAction: Action = {
 					? TOKEN_ADDRESSES.MAINNET
 					: TOKEN_ADDRESSES.TESTNET;
 
-			const fromTokenAddress = tokenAddresses[fromToken];
-			const toTokenAddress = tokenAddresses[toToken];
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			const fromTokenAddress = (tokenAddresses as any)[fromToken];
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			const toTokenAddress = (tokenAddresses as any)[toToken];
 
 			if (!fromTokenAddress || !toTokenAddress) {
-				callback(
+				callback?.(
 					{
 						text: `Invalid token symbols: ${fromToken} or ${toToken}. Please check the available tokens.`,
 					},
@@ -226,7 +231,7 @@ export const executeSwapAction: Action = {
 			const walletAddress = await getUserAddressString(runtime, networkId);
 
 			if (!walletAddress) {
-				callback(
+				callback?.(
 					{
 						text: "Failed to get wallet address. Please ensure your wallet is connected.",
 					},
@@ -250,9 +255,10 @@ export const executeSwapAction: Action = {
 				});
 
 				elizaLogger.info(`Approval transaction: ${approveResult.status}`);
-			} catch (approveError) {
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			} catch (approveError: any) {
 				elizaLogger.error("Failed to approve token spending:", approveError);
-				callback(
+				callback?.(
 					{
 						text: `Failed to approve token spending: ${approveError.message}`,
 					},
@@ -299,24 +305,26 @@ export const executeSwapAction: Action = {
 					privacyLevel,
 				});
 
-				callback(
+				callback?.(
 					{
 						text: `Successfully executed swap from ${fromToken} to ${toToken}. Transaction hash: ${txHash}`,
 					},
 					[],
 				);
-			} catch (swapError) {
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			} catch (swapError: any) {
 				elizaLogger.error("Failed to execute swap:", swapError);
-				callback(
+				callback?.(
 					{
 						text: `Failed to execute swap: ${swapError.message}`,
 					},
 					[],
 				);
 			}
-		} catch (error) {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		} catch (error: any) {
 			elizaLogger.error("Error in EXECUTE_SWAP handler:", error);
-			callback(
+			callback?.(
 				{
 					text: `An error occurred while processing the swap: ${error.message}`,
 				},
@@ -378,16 +386,17 @@ export const getSwapQuoteAction: Action = {
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
-		state: State,
+		state: State | undefined,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
-		callback: HandlerCallback,
+		callback?: HandlerCallback,
 	) => {
 		elizaLogger.debug("Starting GET_SWAP_QUOTE handler...");
 
 		try {
 			// Compose context and extract swap parameters
 			const context = composeContext({
-				state,
+				state: state || ({} as State),
 				template: swapTemplate,
 			});
 
@@ -399,7 +408,7 @@ export const getSwapQuoteAction: Action = {
 			});
 
 			if (!isSwapContent(swapDetails.object)) {
-				callback(
+				callback?.(
 					{
 						text: "Invalid swap parameters. Please provide valid token symbols and amount.",
 					},
@@ -430,11 +439,13 @@ export const getSwapQuoteAction: Action = {
 					? TOKEN_ADDRESSES.MAINNET
 					: TOKEN_ADDRESSES.TESTNET;
 
-			const fromTokenAddress = tokenAddresses[fromToken];
-			const toTokenAddress = tokenAddresses[toToken];
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			const fromTokenAddress = (tokenAddresses as any)[fromToken];
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			const toTokenAddress = (tokenAddresses as any)[toToken];
 
 			if (!fromTokenAddress || !toTokenAddress) {
-				callback(
+				callback?.(
 					{
 						text: `Invalid token symbols: ${fromToken} or ${toToken}. Please check the available tokens.`,
 					},
@@ -455,7 +466,7 @@ export const getSwapQuoteAction: Action = {
 				});
 
 				if (!quoteResult || !quoteResult[1]) {
-					callback(
+					callback?.(
 						{
 							text: "Failed to get swap quote. The requested token pair may not have sufficient liquidity.",
 						},
@@ -476,7 +487,7 @@ export const getSwapQuoteAction: Action = {
 					6,
 				);
 
-				callback(
+				callback?.(
 					{
 						text: `Swap Quote for ${amount} ${fromToken} to ${toToken}:
 - Expected Output: ${expectedOutput} ${toToken}
@@ -485,18 +496,20 @@ export const getSwapQuoteAction: Action = {
 					},
 					[],
 				);
-			} catch (quoteError) {
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			} catch (quoteError: any) {
 				elizaLogger.error("Failed to get swap quote:", quoteError);
-				callback(
+				callback?.(
 					{
 						text: `Failed to get swap quote: ${quoteError.message}`,
 					},
 					[],
 				);
 			}
-		} catch (error) {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		} catch (error: any) {
 			elizaLogger.error("Error in GET_SWAP_QUOTE handler:", error);
-			callback(
+			callback?.(
 				{
 					text: `An error occurred while getting the swap quote: ${error.message}`,
 				},
@@ -577,7 +590,7 @@ async function logSwapToCsv(swapResult: {
 
 		// Read existing records
 		const csvData = await fs.promises.readFile(SWAP_CSV_FILE_PATH, "utf-8");
-		const records = parse(csvData, {
+		const _records = parse(csvData, {
 			columns: true,
 			skip_empty_lines: true,
 		});

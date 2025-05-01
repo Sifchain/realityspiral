@@ -33,7 +33,7 @@ import { PriceMonitorSchema, isPriceMonitorContent } from "../types";
  * Provider for retrieving price stability information
  */
 export const priceStabilityProvider: Provider = {
-	get: async (runtime: IAgentRuntime, _message: Memory) => {
+	get: async (_runtime: IAgentRuntime, _message: Memory) => {
 		elizaLogger.debug("Starting priceStabilityProvider.get function");
 		try {
 			// Check if the CSV file exists; if not, create it with headers
@@ -62,6 +62,7 @@ export const priceStabilityProvider: Provider = {
 			elizaLogger.info(`Found ${records.length} price monitor records in CSV`);
 
 			// Transform records to the expected format
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const priceRecords = records.map((record: any) => ({
 				timestamp: record.Timestamp,
 				token: record.Token,
@@ -73,7 +74,8 @@ export const priceStabilityProvider: Provider = {
 			return {
 				priceRecords,
 			};
-		} catch (error) {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		} catch (error: any) {
 			elizaLogger.error("Error in priceStabilityProvider: ", error.message);
 			return {
 				priceRecords: [],
@@ -105,16 +107,17 @@ export const monitorPriceStabilityAction: Action = {
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
-		state: State,
+		state: State | undefined,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		_options: any,
-		callback: HandlerCallback,
+		callback?: HandlerCallback,
 	) => {
 		elizaLogger.debug("Starting MONITOR_PRICE_STABILITY handler...");
 
 		try {
 			// Compose context and extract monitor parameters
 			const context = composeContext({
-				state,
+				state: state || ({} as State),
 				template: priceMonitorTemplate,
 			});
 
@@ -126,7 +129,7 @@ export const monitorPriceStabilityAction: Action = {
 			});
 
 			if (!isPriceMonitorContent(monitorDetails.object)) {
-				callback(
+				callback?.(
 					{
 						text: "Invalid price monitoring parameters. Please provide valid token symbols, alert threshold, and interval.",
 					},
@@ -146,16 +149,16 @@ export const monitorPriceStabilityAction: Action = {
 			// Initialize network configuration
 			const network =
 				runtime.getSetting("OASIS_NETWORK") || OASIS_NETWORKS.TESTNET;
-			const networkId = getNetworkId(runtime);
+			const _networkId = getNetworkId(runtime);
 
 			// Get contract addresses for the network
-			const contracts =
+			const _contracts =
 				network === OASIS_NETWORKS.MAINNET
 					? THORN_CONTRACTS.MAINNET
 					: THORN_CONTRACTS.TESTNET;
 
 			// Use ContractHelper directly
-			const contractHelper = createContractHelper(runtime);
+			const _contractHelper = createContractHelper(runtime);
 
 			// Get token addresses
 			const tokenAddresses =
@@ -168,7 +171,8 @@ export const monitorPriceStabilityAction: Action = {
 			const unstableTokens = [];
 
 			for (const token of tokens) {
-				const tokenAddress = tokenAddresses[token];
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				const tokenAddress = (tokenAddresses as any)[token];
 				if (!tokenAddress) {
 					elizaLogger.warn(`Token address not found for ${token}, skipping`);
 					continue;
@@ -214,6 +218,7 @@ export const monitorPriceStabilityAction: Action = {
 			// Prepare result message
 			let resultMessage = `Price stability monitoring completed for ${tokens.join(", ")}:\n\n`;
 
+			// biome-ignore lint/complexity/noForEach: <explanation>
 			priceResults.forEach((result) => {
 				resultMessage += `${result.token}: $${result.price} (${result.deviation}% deviation) - ${result.isStable ? "✅ Stable" : "⚠️ Unstable"}\n`;
 			});
@@ -226,15 +231,16 @@ export const monitorPriceStabilityAction: Action = {
 
 			resultMessage += `\n\nMonitoring will continue every ${intervalMinutes} minutes.`;
 
-			callback(
+			callback?.(
 				{
 					text: resultMessage,
 				},
 				[],
 			);
-		} catch (error) {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		} catch (error: any) {
 			elizaLogger.error("Error in MONITOR_PRICE_STABILITY handler:", error);
-			callback(
+			callback?.(
 				{
 					text: `An error occurred while monitoring price stability: ${error.message}`,
 				},
