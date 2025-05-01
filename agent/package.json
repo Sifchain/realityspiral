@@ -35,6 +35,7 @@
 		"@realityspiral/plugin-bitprotocol": "workspace:*",
 		"@realityspiral/plugin-accumulated-finance": "workspace:*",
 		"@realityspiral/plugin-neby": "workspace:*",
+		"@realityspiral/plugin-thorn": "workspace:*",
 		"better-sqlite3": "11.6.0",
 		"dotenv": "16.4.5",
 		"readline": "1.3.0",
