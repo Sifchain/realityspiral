@@ -60,7 +60,7 @@ import {
 import { nebyPlugin } from "@realityspiral/plugin-neby";
 import { roflPlugin } from "@realityspiral/plugin-rofl";
 import synfuturesPlugin from "@realityspiral/plugin-synfutures";
-import { thornPlugin } from "@realityspiral/plugin-thorn";
+import { thornSwapPlugin } from "@realityspiral/plugin-thorn";
 import Database from "better-sqlite3";
 import yargs from "yargs";
 import { z } from "zod";
@@ -576,7 +576,9 @@ export async function createAgent(
 				? accumulatedFinancePlugin
 				: null,
 			getSecret(character, "NEBY_ENABLED") === "true" ? nebyPlugin : null,
-			getSecret(character, "THORN_ENABLED") === "true" ? thornPlugin : null,
+			...(getSecret(character, "THORN_ENABLED") === "true"
+				? [thornSwapPlugin]
+				: []),
 			...(getSecret(character, "COINBASE_API_KEY") &&
 			getSecret(character, "COINBASE_PRIVATE_KEY")
 				? [

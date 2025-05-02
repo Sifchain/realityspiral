@@ -25,13 +25,10 @@ import {
 
 // Import the action definitions
 import "./plugins/actions"; // temporary import to satisfy TypeScript while we transition
-import {
-	createStrategyAction,
-	executeSwapAction,
-	getLiquidityPoolsAction,
-	getOptimalPathAction,
-	getSwapHistoryAction,
-} from "./plugins/actions";
+import { thornSwapPlugin } from "./plugins/swap";
+
+// Export the thornSwapPlugin
+export { thornSwapPlugin };
 
 /**
  * Thorn Protocol plugin factory function
@@ -998,13 +995,7 @@ export const thornPlugin: Plugin = {
 	name: "thorn",
 	description:
 		"Plugin for privacy-preserving stablecoin operations with Thorn Protocol",
-	actions: [
-		executeSwapAction,
-		getOptimalPathAction,
-		getLiquidityPoolsAction,
-		getSwapHistoryAction,
-		createStrategyAction,
-	],
+	actions: [],
 	providers: [],
 };
 
