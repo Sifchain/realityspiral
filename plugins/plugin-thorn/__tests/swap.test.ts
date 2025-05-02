@@ -36,8 +36,8 @@ vi.mock("node:fs", () => ({
 			readFile: vi
 				.fn()
 				.mockResolvedValue(
-					"Timestamp,From Token,To Token,Sent Amount,Received Amount,Exchange Rate,Fee,Privacy Level,Transaction Hash\n" +
-						"1622548800000,USDC,USDT,100,99.5,0.995,0.5,high,0x123456789abcdef",
+					"Timestamp,From Token,To Token,Sent Amount,Received Amount,Exchange Rate,Fee,Transaction Hash\n" +
+						"1622548800000,USDC,USDT,100,99.5,0.995,0.5,0x123456789abcdef",
 				),
 		},
 		writeFileSync: vi.fn(),
@@ -95,7 +95,6 @@ vi.mock("../src/helpers/contractUtils", () => ({
 				reserve0: "1000000",
 				reserve1: "1000000",
 				fee: "0.05",
-				privacyLevel: "high",
 			},
 		]),
 		invokeContract: vi.fn().mockResolvedValue({
@@ -124,7 +123,6 @@ describe("Thorn Swap Plugin Tests", () => {
 				toToken: "USDT",
 				amount: "100",
 				slippage: 0.5,
-				privacyLevel: "high",
 			},
 		});
 	});

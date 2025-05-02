@@ -6,19 +6,13 @@ import {
 	type State,
 	elizaLogger,
 } from "@elizaos/core";
-import { ContractHelper } from "@realityspiral/plugin-coinbase";
-import {
-	ABIS,
-	OASIS_NETWORKS,
-	OASIS_NETWORK_IDS,
-	THORN_CONTRACTS,
-} from "../constants";
+import { OASIS_NETWORKS, THORN_CONTRACTS } from "../constants";
 import {
 	createContractHelper,
 	getNetworkId,
 	getUserAddressString,
 } from "../helpers/contractUtils";
-import { PRIVACY_LEVELS, STABLECOIN_TOKENS } from "../types";
+import { AVAILABLE_TOKENS } from "src/types";
 
 // Type definition for swap result
 interface SwapResult {
@@ -47,8 +41,7 @@ interface Pool {
 export const executeSwapAction: Action = {
 	name: "EXECUTE_SWAP",
 	similes: ["MAKE_SWAP", "PERFORM_SWAP", "EXCHANGE_TOKENS", "THORN_SWAP"],
-	description:
-		"Execute a privacy-preserving stablecoin swap using Thorn Protocol",
+	description: "Execute a privacy-preserving token swap using Thorn Protocol",
 	examples: [
 		[
 			{
@@ -80,13 +73,7 @@ export const executeSwapAction: Action = {
 		callback?: HandlerCallback,
 	): Promise<SwapResult | null> => {
 		try {
-			const {
-				fromToken,
-				toToken,
-				amount,
-				slippage = 0.5,
-				privacyLevel = "high",
-			} = options || {};
+			const { fromToken, toToken, amount, slippage = 0.5 } = options || {};
 
 			// Validate inputs
 			if (!fromToken || !toToken || !amount) {
@@ -98,12 +85,12 @@ export const executeSwapAction: Action = {
 			}
 
 			if (
-				!STABLECOIN_TOKENS.includes(fromToken) ||
-				!STABLECOIN_TOKENS.includes(toToken)
+				!AVAILABLE_TOKENS.includes(fromToken) ||
+				!AVAILABLE_TOKENS.includes(toToken)
 			) {
 				if (callback)
 					callback({
-						text: `Invalid token. Supported tokens: ${STABLECOIN_TOKENS.join(", ")}`,
+						text: `Invalid token. Supported tokens: ${AVAILABLE_TOKENS.join(", ")}`,
 					});
 				return null;
 			}
@@ -129,7 +116,6 @@ export const executeSwapAction: Action = {
 				toToken,
 				amount,
 				slippage,
-				privacyLevel,
 				userAddress,
 			});
 
@@ -278,7 +264,6 @@ export const createStrategyAction: Action = {
 				budget,
 				maxSlippage = 0.5,
 				triggerThreshold = 0.005,
-				privacyLevel = "high",
 			} = options || {};
 
 			if (!name || !targetToken || !sourceTokens || !budget) {
@@ -299,7 +284,6 @@ export const createStrategyAction: Action = {
 				budget,
 				maxSlippage,
 				triggerThreshold,
-				privacyLevel,
 				active: true,
 				created: Date.now(),
 			};
@@ -425,7 +409,6 @@ export const getOptimalPathAction: Action = {
 				steps: [],
 				totalExchangeRate: "0",
 				estimatedGas: "0",
-				privacyScore: 0,
 			};
 
 			if (callback)

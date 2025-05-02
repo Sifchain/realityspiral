@@ -21,9 +21,10 @@ import { parse } from "csv-parse/sync";
 import { createArrayCsvWriter } from "csv-writer";
 import {
 	ABIS,
+	MAINNET_TOKEN_ADDRESSES,
 	OASIS_NETWORKS,
-	PRIVACY_LEVEL_VALUES,
 	SWAP_CSV_FILE_PATH,
+	TESTNET_TOKEN_ADDRESSES,
 	THORN_CONTRACTS,
 	THORN_DEFAULT_API_URL,
 	TOKEN_ADDRESSES,
@@ -56,7 +57,6 @@ export const swapProvider: Provider = {
 						"Received Amount",
 						"Exchange Rate",
 						"Fee",
-						"Privacy Level",
 						"Transaction Hash",
 					],
 				});
@@ -108,7 +108,6 @@ export const swapProvider: Provider = {
 					receivedAmount: record["Received Amount"],
 					exchangeRate: record["Exchange Rate"],
 					fee: record.Fee,
-					privacyLevel: record["Privacy Level"],
 					txHash: record["Transaction Hash"],
 				})),
 				liquidityPools: poolsResult || [],
@@ -125,7 +124,7 @@ export const swapProvider: Provider = {
 };
 
 /**
- * Action for executing a privacy-preserving stablecoin swap
+ * Action for executing a privacy-preserving token swap
  */
 export const executeSwapAction: Action = {
 	name: "EXECUTE_SWAP",
@@ -139,13 +138,13 @@ export const executeSwapAction: Action = {
 		"PRIVATE_SWAP",
 		"THORN_SWAP",
 	],
-	description:
-		"Execute a privacy-preserving stablecoin swap using Thorn Protocol",
-	validate: async (runtime: IAgentRuntime, _message: Memory) => {
+	description: "Execute a privacy-preserving token swap using Thorn Protocol",
+	validate: async (_runtime: IAgentRuntime, _message: Memory) => {
 		elizaLogger.info("Validating runtime for EXECUTE_SWAP...");
-		return !!(
-			runtime.getSetting("THORN_API_URL") && runtime.getSetting("OASIS_NETWORK")
-		);
+		// return !!(
+		// 	runtime.getSetting("THORN_API_URL") && runtime.getSetting("OASIS_NETWORK")
+		// );
+		return true;
 	},
 	handler: async (
 		runtime: IAgentRuntime,
@@ -181,20 +180,18 @@ export const executeSwapAction: Action = {
 				return;
 			}
 
-			const { fromToken, toToken, amount, slippage, privacyLevel } =
-				swapDetails.object;
+			const { fromToken, toToken, amount, slippage } = swapDetails.object;
 
 			elizaLogger.info("Swap details:", {
 				fromToken,
 				toToken,
 				amount,
 				slippage,
-				privacyLevel,
 			});
 
 			// Initialize network configuration
 			const network =
-				runtime.getSetting("OASIS_NETWORK") || OASIS_NETWORKS.TESTNET;
+				runtime.getSetting("OASIS_NETWORK") || OASIS_NETWORKS.MAINNET;
 			const networkId = getNetworkId(runtime);
 
 			// Get contract addresses for the network
@@ -209,8 +206,8 @@ export const executeSwapAction: Action = {
 			// Get token addresses
 			const tokenAddresses =
 				network === OASIS_NETWORKS.MAINNET
-					? TOKEN_ADDRESSES.MAINNET
-					: TOKEN_ADDRESSES.TESTNET;
+					? MAINNET_TOKEN_ADDRESSES
+					: TESTNET_TOKEN_ADDRESSES;
 
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			const fromTokenAddress = (tokenAddresses as any)[fromToken];
@@ -242,49 +239,44 @@ export const executeSwapAction: Action = {
 
 			elizaLogger.info(`Using wallet address: ${walletAddress}`);
 
-			// Step 1: Approve token spending if needed
-			try {
-				elizaLogger.info(`Approving ${fromToken} for spending`);
+			// // Step 1: Approve token spending if needed
+			// try {
+			// 	elizaLogger.info(`Approving ${fromToken} for spending`);
 
-				const approveResult = await contractHelper.invokeContract({
-					networkId,
-					contractAddress: fromTokenAddress,
-					method: "approve",
-					args: [contracts.STABLE_SWAP_ROUTER, amount],
-					abi: ABIS.STABLE_SWAP_ROUTER, // We're using the ERC20 standard approve function
-				});
+			// 	const approveResult = await contractHelper.invokeContract({
+			// 		networkId,
+			// 		contractAddress: fromTokenAddress,
+			// 		method: "approve",
+			// 		args: [contracts.STABLE_SWAP_ROUTER, amount],
+			// 		abi: ABIS.STABLE_SWAP_ROUTER, // We're using the ERC20 standard approve function
+			// 	});
 
-				elizaLogger.info(`Approval transaction: ${approveResult.status}`);
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			} catch (approveError: any) {
-				elizaLogger.error("Failed to approve token spending:", approveError);
-				callback?.(
-					{
-						text: `Failed to approve token spending: ${approveError.message}`,
-					},
-					[],
-				);
-				return;
-			}
+			// 	elizaLogger.info(`Approval transaction: ${approveResult.status}`);
+			// 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			// } catch (approveError: any) {
+			// 	elizaLogger.error("Failed to approve token spending:", approveError);
+			// 	callback?.(
+			// 		{
+			// 			text: `Failed to approve token spending: ${approveError.message}`,
+			// 		},
+			// 		[],
+			// 	);
+			// 	return;
+			// }
 
 			// Step 2: Execute the swap
 			try {
-				// Convert privacy level to numeric value for the contract
-				const privacyLevelValue =
-					PRIVACY_LEVEL_VALUES[privacyLevel] || PRIVACY_LEVEL_VALUES.high;
-
 				// Execute swap via contract helper
 				const swapResult = await contractHelper.invokeContract({
 					networkId,
 					contractAddress: contracts.STABLE_SWAP_ROUTER,
-					method: "swapExactTokensForTokens",
+					method: "exactInputStableSwap",
 					args: [
+						[fromTokenAddress, toTokenAddress], // swap path
+						[2], // flags
 						amount, // amount in
 						calculateMinimumOut(amount, slippage), // minimum amount out
-						[fromTokenAddress, toTokenAddress], // swap path
 						walletAddress, // recipient
-						Date.now() + 3600000, // deadline (1 hour from now)
-						privacyLevelValue, // privacy level
 					],
 					abi: ABIS.STABLE_SWAP_ROUTER,
 				});
@@ -302,7 +294,6 @@ export const executeSwapAction: Action = {
 					fee: "pending",
 					txHash,
 					timestamp: Date.now(),
-					privacyLevel,
 				});
 
 				callback?.(
@@ -337,7 +328,7 @@ export const executeSwapAction: Action = {
 			{
 				user: "{{user1}}",
 				content: {
-					text: "Swap 100 USDT to DAI with high privacy",
+					text: "Swap 100 ROSE to stROSE",
 				},
 			},
 			{
@@ -351,13 +342,13 @@ export const executeSwapAction: Action = {
 			{
 				user: "{{user2}}",
 				content: {
-					text: "Execute a swap from USDC to FRAX with 0.5% slippage",
+					text: "Execute a swap from USDC to USDT with 0.03% slippage",
 				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Successfully executed swap from USDC to FRAX. Transaction hash: 0xefgh5678...",
+					text: "Successfully executed swap from USDC to USDT. Transaction hash: 0xefgh5678...",
 				},
 			},
 		],
@@ -543,9 +534,12 @@ export const getSwapQuoteAction: Action = {
  */
 export const thornSwapPlugin: Plugin = {
 	name: "thornSwap",
-	description: "Privacy-preserving stablecoin swaps using Thorn Protocol",
-	actions: [executeSwapAction, getSwapQuoteAction],
-	providers: [swapProvider],
+	description: "Privacy-preserving token swaps using Thorn Protocol",
+	actions: [
+		executeSwapAction,
+		// getSwapQuoteAction,
+	],
+	// providers: [swapProvider],
 };
 
 /**
@@ -560,7 +554,6 @@ async function logSwapToCsv(swapResult: {
 	fee: string;
 	txHash: string;
 	timestamp: number;
-	privacyLevel: string;
 }) {
 	try {
 		// Ensure directory exists
@@ -581,7 +574,6 @@ async function logSwapToCsv(swapResult: {
 					"Received Amount",
 					"Exchange Rate",
 					"Fee",
-					"Privacy Level",
 					"Transaction Hash",
 				],
 			});
@@ -606,7 +598,6 @@ async function logSwapToCsv(swapResult: {
 				"Received Amount",
 				"Exchange Rate",
 				"Fee",
-				"Privacy Level",
 				"Transaction Hash",
 			],
 			append: true,
@@ -624,7 +615,6 @@ async function logSwapToCsv(swapResult: {
 				swapResult.receivedAmount,
 				swapResult.exchangeRate,
 				swapResult.fee,
-				swapResult.privacyLevel,
 				swapResult.txHash,
 			],
 		]);

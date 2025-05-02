@@ -3,8 +3,10 @@ import { ContractHelper } from "@realityspiral/plugin-coinbase";
 import { ethers } from "ethers";
 import {
 	ABIS,
+	MAINNET_TOKEN_ADDRESSES,
 	OASIS_NETWORKS,
 	OASIS_NETWORK_IDS,
+	TESTNET_TOKEN_ADDRESSES,
 	THORN_CONTRACTS,
 	TOKEN_ADDRESSES,
 } from "./constants";
@@ -14,11 +16,11 @@ import {
 	getUserAddressString,
 } from "./helpers/contractUtils";
 import {
+	AVAILABLE_TOKENS,
 	type LiquidityPool,
 	type PluginConfig,
 	PluginConfigSchema,
 	type PriceStabilityInfo,
-	STABLECOIN_TOKENS,
 	type SwapPath,
 	type SwapResult,
 } from "./types";
@@ -42,7 +44,6 @@ export const thornProtocolPlugin = (
 	const fullConfig = PluginConfigSchema.parse({
 		...config,
 		network: config.network || "mainnet",
-		privacyLevel: config.privacyLevel || "high",
 	});
 
 	// Create contract helper
@@ -64,11 +65,10 @@ export const thornProtocolPlugin = (
 	 * Execute a stablecoin swap
 	 */
 	const executeSwap = async (
-		fromToken: (typeof STABLECOIN_TOKENS)[number],
-		toToken: (typeof STABLECOIN_TOKENS)[number],
+		fromToken: (typeof AVAILABLE_TOKENS)[number],
+		toToken: (typeof AVAILABLE_TOKENS)[number],
 		amount: string,
 		slippage = 0.5,
-		privacyLevel: string = fullConfig.privacyLevel,
 	) => {
 		// Validate inputs
 		if (!fromToken || !toToken || !amount) {
@@ -78,11 +78,11 @@ export const thornProtocolPlugin = (
 		}
 
 		if (
-			!STABLECOIN_TOKENS.includes(fromToken) ||
-			!STABLECOIN_TOKENS.includes(toToken)
+			!AVAILABLE_TOKENS.includes(fromToken) ||
+			!AVAILABLE_TOKENS.includes(toToken)
 		) {
 			throw new Error(
-				`Invalid token. Supported tokens: ${STABLECOIN_TOKENS.join(", ")}`,
+				`Invalid token. Supported tokens: ${AVAILABLE_TOKENS.join(", ")}`,
 			);
 		}
 
@@ -98,7 +98,6 @@ export const thornProtocolPlugin = (
 			toToken,
 			amount,
 			slippage,
-			privacyLevel,
 			userAddress,
 		});
 
@@ -110,25 +109,39 @@ export const thornProtocolPlugin = (
 		let toTokenAddress = "";
 
 		if (
+			fromToken === "ROSE" ||
+			fromToken === "stROSE" ||
 			fromToken === "USDC" ||
 			fromToken === "USDT" ||
-			fromToken === "DAI" ||
-			fromToken === "BUSD" ||
-			fromToken === "FRAX"
+			fromToken === "bitUSDs" ||
+			fromToken === "OCEAN(Router)" ||
+			fromToken === "OCEAN(Celer)"
 		) {
-			fromTokenAddress = TOKEN_ADDRESSES[network][fromToken];
+			if (network === "MAINNET") {
+				fromTokenAddress = MAINNET_TOKEN_ADDRESSES[fromToken].address;
+			} else {
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				fromTokenAddress = (TESTNET_TOKEN_ADDRESSES as any)[fromToken].address;
+			}
 		} else {
 			throw new Error(`Token address not found for ${fromToken}`);
 		}
 
 		if (
+			toToken === "ROSE" ||
+			toToken === "stROSE" ||
 			toToken === "USDC" ||
 			toToken === "USDT" ||
-			toToken === "DAI" ||
-			toToken === "BUSD" ||
-			toToken === "FRAX"
+			toToken === "bitUSDs" ||
+			toToken === "OCEAN(Router)" ||
+			toToken === "OCEAN(Celer)"
 		) {
-			toTokenAddress = TOKEN_ADDRESSES[network][toToken];
+			if (network === "MAINNET") {
+				toTokenAddress = MAINNET_TOKEN_ADDRESSES[toToken].address;
+			} else {
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				toTokenAddress = (TESTNET_TOKEN_ADDRESSES as any)[toToken].address;
+			}
 		} else {
 			throw new Error(`Token address not found for ${toToken}`);
 		}
@@ -195,7 +208,6 @@ export const thornProtocolPlugin = (
 			exchangeRate: "0", // We would calculate this
 			fee: "0", // We would extract this from the transaction
 			timestamp: Date.now(),
-			privacyLevel,
 		};
 	};
 
@@ -248,7 +260,7 @@ export const thornProtocolPlugin = (
 		let toTokenAddress = "";
 
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		if (STABLECOIN_TOKENS.includes(fromToken as any)) {
+		if (AVAILABLE_TOKENS.includes(fromToken as any)) {
 			fromTokenAddress =
 				TOKEN_ADDRESSES[network][
 					fromToken as keyof (typeof TOKEN_ADDRESSES)[typeof network]
@@ -258,7 +270,7 @@ export const thornProtocolPlugin = (
 		}
 
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		if (STABLECOIN_TOKENS.includes(toToken as any)) {
+		if (AVAILABLE_TOKENS.includes(toToken as any)) {
 			toTokenAddress =
 				TOKEN_ADDRESSES[network][
 					toToken as keyof (typeof TOKEN_ADDRESSES)[typeof network]
@@ -302,12 +314,6 @@ export const thornProtocolPlugin = (
 				],
 				totalExchangeRate: estimatedRate,
 				estimatedGas: "300000", // Estimated gas for direct swap
-				privacyScore:
-					fullConfig.privacyLevel === "high"
-						? 90
-						: fullConfig.privacyLevel === "medium"
-							? 70
-							: 50,
 			};
 		}
 
@@ -399,12 +405,6 @@ export const thornProtocolPlugin = (
 						],
 						totalExchangeRate: totalRate,
 						estimatedGas: "600000", // Estimated gas for 2-hop swap
-						privacyScore:
-							fullConfig.privacyLevel === "high"
-								? 80
-								: fullConfig.privacyLevel === "medium"
-									? 60
-									: 40,
 					};
 				}
 			}
@@ -510,23 +510,6 @@ export const thornProtocolPlugin = (
 							([_, address]) => address.toLowerCase() === token1.toLowerCase(),
 						)?.[0] || `${token1.substring(0, 8)}...`;
 
-					// Calculate privacy level based on pool characteristics
-					let privacyLevel: "low" | "medium" | "high" = "medium";
-
-					// Larger pools generally provide better privacy
-					if (
-						reserves &&
-						Number(reserves[0]) > 1000000 &&
-						Number(reserves[1]) > 1000000
-					) {
-						privacyLevel = "high";
-					} else if (
-						reserves &&
-						(Number(reserves[0]) < 100000 || Number(reserves[1]) < 100000)
-					) {
-						privacyLevel = "low";
-					}
-
 					pools.push({
 						id: poolAddress,
 						token0: token0Symbol,
@@ -534,7 +517,6 @@ export const thornProtocolPlugin = (
 						reserve0: reserves ? reserves[0].toString() : "0",
 						reserve1: reserves ? reserves[1].toString() : "0",
 						fee: fee ? `${(Number(fee) / 100).toString()}%` : "0.3%",
-						privacyLevel,
 					});
 				} catch (error) {
 					elizaLogger.error(`Error fetching pool ${i} details`, { error });
@@ -658,8 +640,6 @@ export const thornProtocolPlugin = (
 						fee: ethers.formatEther(txFee),
 						txHash: log.transactionHash,
 						timestamp,
-						// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-						privacyLevel: fullConfig.privacyLevel as any,
 					});
 				} catch (error) {
 					elizaLogger.error("Error processing swap log", {
@@ -698,7 +678,7 @@ export const thornProtocolPlugin = (
 		// Filter and validate tokens
 		const validTokens = tokens.filter((token) =>
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			STABLECOIN_TOKENS.includes(token as any),
+			AVAILABLE_TOKENS.includes(token as any),
 		);
 
 		if (validTokens.length === 0) {
@@ -843,17 +823,17 @@ export const thornProtocolPlugin = (
 
 		// Validate tokens
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		if (!STABLECOIN_TOKENS.includes(targetToken as any)) {
+		if (!AVAILABLE_TOKENS.includes(targetToken as any)) {
 			throw new Error(
-				`Invalid target token. Supported tokens: ${STABLECOIN_TOKENS.join(", ")}`,
+				`Invalid target token. Supported tokens: ${AVAILABLE_TOKENS.join(", ")}`,
 			);
 		}
 
 		for (const token of sourceTokens) {
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			if (!STABLECOIN_TOKENS.includes(token as any)) {
+			if (!AVAILABLE_TOKENS.includes(token as any)) {
 				throw new Error(
-					`Invalid source token: ${token}. Supported tokens: ${STABLECOIN_TOKENS.join(", ")}`,
+					`Invalid source token: ${token}. Supported tokens: ${AVAILABLE_TOKENS.join(", ")}`,
 				);
 			}
 		}
@@ -994,7 +974,7 @@ export const thornProtocolPlugin = (
 export const thornPlugin: Plugin = {
 	name: "thorn",
 	description:
-		"Plugin for privacy-preserving stablecoin operations with Thorn Protocol",
+		"Plugin for privacy-preserving token operations with Thorn Protocol",
 	actions: [],
 	providers: [],
 };
