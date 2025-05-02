@@ -1,27 +1,23 @@
 import { z } from "zod";
 
 // Available stablecoin tokens on Thorn Protocol
-export const STABLECOIN_TOKENS = [
+export const AVAILABLE_TOKENS = [
+	"ROSE",
+	"stROSE",
 	"USDC",
+	"bitUSDs",
 	"USDT",
-	"DAI",
-	"BUSD",
-	"FRAX",
-	"TUSD",
-	"USDD",
-	"USDP",
-	"GUSD",
+	"OCEAN(Router)",
+	"OCEAN(Celer)",
 ] as const;
 
-// Privacy levels for swap operations
-export const PRIVACY_LEVELS = ["low", "medium", "high"] as const;
+export type AvailableToken = (typeof AVAILABLE_TOKENS)[number];
 
 // Plugin configuration schema for validation
 export const PluginConfigSchema = z.object({
 	network: z.enum(["mainnet", "testnet"]).default("mainnet"),
 	privateKey: z.string().optional(),
 	walletAddress: z.string().optional(),
-	privacyLevel: z.enum(PRIVACY_LEVELS).default("high"),
 	slippage: z.number().min(0).max(5).default(0.5),
 });
 
@@ -29,19 +25,17 @@ export type PluginConfig = z.infer<typeof PluginConfigSchema>;
 
 // Swap schema for validation
 export const SwapSchema = z.object({
-	fromToken: z.enum(STABLECOIN_TOKENS),
-	toToken: z.enum(STABLECOIN_TOKENS),
+	fromToken: z.enum(AVAILABLE_TOKENS),
+	toToken: z.enum(AVAILABLE_TOKENS),
 	amount: z.string().min(1),
 	slippage: z.number().min(0).max(5).default(0.5),
-	privacyLevel: z.enum(PRIVACY_LEVELS).default("high"),
 });
 
 export interface SwapContent {
-	fromToken: (typeof STABLECOIN_TOKENS)[number];
-	toToken: (typeof STABLECOIN_TOKENS)[number];
+	fromToken: (typeof AVAILABLE_TOKENS)[number];
+	toToken: (typeof AVAILABLE_TOKENS)[number];
 	amount: string;
 	slippage: number;
-	privacyLevel: (typeof PRIVACY_LEVELS)[number];
 }
 
 // Type guard for SwapContent
@@ -52,13 +46,13 @@ export const isSwapContent = (object: any): object is SwapContent => {
 
 // Price stability monitoring schema
 export const PriceMonitorSchema = z.object({
-	tokens: z.array(z.enum(STABLECOIN_TOKENS)),
+	tokens: z.array(z.enum(AVAILABLE_TOKENS)),
 	alertThreshold: z.number().min(0.001).max(0.1).default(0.01),
 	intervalMinutes: z.number().min(1).max(1440).default(30),
 });
 
 export interface PriceMonitorContent {
-	tokens: Array<(typeof STABLECOIN_TOKENS)[number]>;
+	tokens: Array<(typeof AVAILABLE_TOKENS)[number]>;
 	alertThreshold: number;
 	intervalMinutes: number;
 }
@@ -73,23 +67,21 @@ export const isPriceMonitorContent = (
 // Strategy configuration schema
 export const StrategySchema = z.object({
 	name: z.string().min(1),
-	targetToken: z.enum(STABLECOIN_TOKENS),
-	sourceTokens: z.array(z.enum(STABLECOIN_TOKENS)).min(1),
+	targetToken: z.enum(AVAILABLE_TOKENS),
+	sourceTokens: z.array(z.enum(AVAILABLE_TOKENS)).min(1),
 	totalBudget: z.string().min(1),
 	maxSlippage: z.number().min(0).max(5).default(0.5),
 	triggerThreshold: z.number().min(0.001).max(0.1).default(0.005),
-	privacyLevel: z.enum(PRIVACY_LEVELS).default("high"),
 	isActive: z.boolean().default(true),
 });
 
 export interface StrategyContent {
 	name: string;
-	targetToken: (typeof STABLECOIN_TOKENS)[number];
-	sourceTokens: Array<(typeof STABLECOIN_TOKENS)[number]>;
+	targetToken: (typeof AVAILABLE_TOKENS)[number];
+	sourceTokens: Array<(typeof AVAILABLE_TOKENS)[number]>;
 	totalBudget: string;
 	maxSlippage: number;
 	triggerThreshold: number;
-	privacyLevel: (typeof PRIVACY_LEVELS)[number];
 	isActive: boolean;
 }
 
@@ -108,7 +100,6 @@ export interface SwapResult {
 	fee: string;
 	txHash: string;
 	timestamp: number;
-	privacyLevel: (typeof PRIVACY_LEVELS)[number];
 }
 
 // Price stability info interface
@@ -130,7 +121,6 @@ export interface SwapPath {
 	}>;
 	totalExchangeRate: string;
 	estimatedGas: string;
-	privacyScore: number;
 }
 
 // Liquidity pool interface
@@ -141,5 +131,4 @@ export interface LiquidityPool {
 	reserve0: string;
 	reserve1: string;
 	fee: string;
-	privacyLevel: (typeof PRIVACY_LEVELS)[number];
 }

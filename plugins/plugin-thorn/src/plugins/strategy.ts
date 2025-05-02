@@ -21,7 +21,6 @@ import { createArrayCsvWriter } from "csv-writer";
 import {
 	ABIS,
 	OASIS_NETWORKS,
-	PRIVACY_LEVEL_VALUES,
 	STRATEGY_CSV_FILE_PATH,
 	THORN_CONTRACTS,
 	THORN_DEFAULT_API_URL,
@@ -50,7 +49,6 @@ export const strategyProvider: Provider = {
 						"Total Budget",
 						"Max Slippage",
 						"Trigger Threshold",
-						"Privacy Level",
 						"Is Active",
 						"Created At",
 						"Last Updated",
@@ -81,7 +79,6 @@ export const strategyProvider: Provider = {
 				totalBudget: record["Total Budget"],
 				maxSlippage: Number.parseFloat(record["Max Slippage"]),
 				triggerThreshold: Number.parseFloat(record["Trigger Threshold"]),
-				privacyLevel: record["Privacy Level"],
 				isActive: record["Is Active"].toLowerCase() === "true",
 				createdAt: record["Created At"],
 				lastUpdated: record["Last Updated"],
@@ -161,7 +158,6 @@ export const setupStrategyAction: Action = {
 				totalBudget,
 				maxSlippage,
 				triggerThreshold,
-				privacyLevel,
 				isActive,
 			} = strategyDetails.object;
 
@@ -172,7 +168,6 @@ export const setupStrategyAction: Action = {
 				totalBudget,
 				maxSlippage,
 				triggerThreshold,
-				privacyLevel,
 				isActive,
 			});
 
@@ -206,7 +201,6 @@ export const setupStrategyAction: Action = {
 						"Total Budget": totalBudget,
 						"Max Slippage": maxSlippage.toString(),
 						"Trigger Threshold": triggerThreshold.toString(),
-						"Privacy Level": privacyLevel,
 						"Is Active": isActive.toString(),
 						"Created At":
 							existingStrategies[existingStrategyIndex]["Created At"],
@@ -223,7 +217,6 @@ export const setupStrategyAction: Action = {
 				totalBudget,
 				maxSlippage,
 				triggerThreshold,
-				privacyLevel,
 				isActive,
 				isUpdate,
 				existingStrategies,
@@ -278,7 +271,6 @@ export const setupStrategyAction: Action = {
 			resultMessage += `• Total budget: ${totalBudget}\n`;
 			resultMessage += `• Trigger threshold: ${triggerThreshold * 100}%\n`;
 			resultMessage += `• Maximum slippage: ${maxSlippage}%\n`;
-			resultMessage += `• Privacy level: ${privacyLevel}\n`;
 			resultMessage += `• Status: ${isActive ? "Active" : "Inactive"}\n\n`;
 
 			resultMessage += `The strategy will automatically execute swaps when any of the source tokens deviates from the target token by more than ${triggerThreshold * 100}%.`;
@@ -318,7 +310,6 @@ export const setupStrategyAction: Action = {
 • Total budget: 1000
 • Trigger threshold: 0.5%
 • Maximum slippage: 0.5%
-• Privacy level: high
 • Status: Active
 
 The strategy will automatically execute swaps when any of the source tokens deviates from the target token by more than 0.5%.`,
@@ -465,7 +456,6 @@ export const executeStrategyAction: Action = {
 				totalBudget: strategy["Total Budget"],
 				maxSlippage: Number.parseFloat(strategy["Max Slippage"]),
 				triggerThreshold: Number.parseFloat(strategy["Trigger Threshold"]),
-				privacyLevel: strategy["Privacy Level"],
 				isActive: strategy["Is Active"].toLowerCase() === "true",
 			};
 
@@ -647,7 +637,6 @@ async function saveStrategyToCsv({
 	totalBudget,
 	maxSlippage,
 	triggerThreshold,
-	privacyLevel,
 	isActive,
 	isUpdate,
 	existingStrategies,
@@ -658,7 +647,6 @@ async function saveStrategyToCsv({
 	totalBudget: string;
 	maxSlippage: number;
 	triggerThreshold: number;
-	privacyLevel: string;
 	isActive: boolean;
 	isUpdate: boolean;
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -684,7 +672,6 @@ async function saveStrategyToCsv({
 					"Total Budget",
 					"Max Slippage",
 					"Trigger Threshold",
-					"Privacy Level",
 					"Is Active",
 					"Created At",
 					"Last Updated",
@@ -699,7 +686,6 @@ async function saveStrategyToCsv({
 				strategy["Total Budget"],
 				strategy["Max Slippage"],
 				strategy["Trigger Threshold"],
-				strategy["Privacy Level"],
 				strategy["Is Active"],
 				strategy["Created At"],
 				strategy["Last Updated"],
@@ -718,7 +704,6 @@ async function saveStrategyToCsv({
 						"Total Budget",
 						"Max Slippage",
 						"Trigger Threshold",
-						"Privacy Level",
 						"Is Active",
 						"Created At",
 						"Last Updated",
@@ -737,7 +722,6 @@ async function saveStrategyToCsv({
 					"Total Budget",
 					"Max Slippage",
 					"Trigger Threshold",
-					"Privacy Level",
 					"Is Active",
 					"Created At",
 					"Last Updated",
@@ -753,7 +737,6 @@ async function saveStrategyToCsv({
 					totalBudget,
 					maxSlippage.toString(),
 					triggerThreshold.toString(),
-					privacyLevel,
 					isActive.toString(),
 					now,
 					now,

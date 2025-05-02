@@ -39,7 +39,6 @@ vi.mock("node:fs", () => ({
 						totalBudget: "1000",
 						maxSlippage: 0.5,
 						triggerThreshold: 0.005,
-						privacyLevel: "high",
 						isActive: true,
 						createdAt: 1622548800000,
 						lastExecuted: 1622552400000,
@@ -105,7 +104,6 @@ vi.mock("../src/helpers/contractUtils", () => ({
 				reserve0: "1000000",
 				reserve1: "1000000",
 				fee: "0.05",
-				privacyLevel: "high",
 			},
 		]),
 		invokeContract: vi.fn().mockResolvedValue({
@@ -132,7 +130,6 @@ describe("Thorn Strategy Plugin Tests", () => {
 				totalBudget: "1000",
 				maxSlippage: 0.5,
 				triggerThreshold: 0.005,
-				privacyLevel: "high",
 				isActive: true,
 			},
 		});

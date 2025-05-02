@@ -34,7 +34,6 @@ export interface SwapResult {
 	exchangeRate: string;
 	fee: string;
 	timestamp: number;
-	privacyLevel: string;
 }
 
 // Types for swap quotes

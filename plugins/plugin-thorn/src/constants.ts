@@ -1,18 +1,11 @@
 import { ethers } from "ethers";
 
-// Privacy level type
-export type PrivacyLevel = "low" | "medium" | "high";
-
-// Default privacy level
-export const DEFAULT_PRIVACY_LEVEL: PrivacyLevel = "high";
-
 // Type for swap content in the generated objects
 export interface SwapContent {
 	fromToken: string;
 	toToken: string;
 	amount: string;
 	slippage: number;
-	privacyLevel: PrivacyLevel;
 }
 
 // Schema for SwapContent validation
@@ -23,7 +16,6 @@ export const SwapSchema = {
 		toToken: { type: "string" },
 		amount: { type: "string" },
 		slippage: { type: "number" },
-		privacyLevel: { type: "string", enum: ["low", "medium", "high"] },
 	},
 	required: ["fromToken", "toToken", "amount"],
 	additionalProperties: false,
@@ -38,10 +30,7 @@ export function isSwapContent(obj: any): obj is SwapContent {
 		typeof obj.fromToken === "string" &&
 		typeof obj.toToken === "string" &&
 		typeof obj.amount === "string" &&
-		(obj.slippage === undefined || typeof obj.slippage === "number") &&
-		(obj.privacyLevel === undefined ||
-			(typeof obj.privacyLevel === "string" &&
-				["low", "medium", "high"].includes(obj.privacyLevel)))
+		(obj.slippage === undefined || typeof obj.slippage === "number")
 	);
 }
 
@@ -361,11 +350,6 @@ export const ABIS = {
 					name: "deadline",
 					type: "uint256",
 				},
-				{
-					internalType: "uint8",
-					name: "privacyLevel",
-					type: "uint8",
-				},
 			],
 			name: "swapExactTokensForTokens",
 			outputs: [
@@ -671,8 +655,8 @@ export const OASIS_NETWORKS = {
 };
 
 export const OASIS_NETWORK_IDS = {
-	MAINNET: "42262",
-	TESTNET: "42261",
+	MAINNET: "23294",
+	TESTNET: "23295",
 };
 
 export const OASIS_RPC_URLS = {
@@ -684,7 +668,6 @@ export const OASIS_RPC_URLS = {
 export const THORN_DEFAULT_API_URL = "https://api.thornprotocol.com";
 export const THORN_DEFAULT_MAX_SLIPPAGE = 0.5;
 export const THORN_DEFAULT_MIN_LIQUIDITY = "1000";
-export const THORN_DEFAULT_PRIVACY_LEVEL = "high";
 
 // CSV file paths
 export const SWAP_CSV_FILE_PATH = "/tmp/thorn_swaps.csv";
@@ -698,18 +681,18 @@ export const DEFAULT_GAS_PRICE = ethers.parseUnits("10", "gwei").toString();
 // Thorn Protocol Core Infrastructure Contracts
 export const THORN_CONTRACTS = {
 	MAINNET: {
-		STABLE_SWAP_FACTORY: "0x5d41EA151C5929F3DCe8d392AB976E2960B4E5D6",
-		STABLE_SWAP_ROUTER: "0xEf1A6269D0Cb79096F6C596A352D6e3E12c26db8",
-		STABLE_SWAP_INFO: "0xf669F70fFd79a20A9622a6C2c7f13C2F3Bd5595D",
-		SMART_ROUTER_HELPER: "0x5cAD84695d142B7F8Ad12C37164D3dE1B2eB3DD8",
-		STRATEGY_FACTORY: "0x4D73A4771352Ec383Bb9A94C8F67bB76b47F9bD5",
+		STABLE_SWAP_FACTORY: "0x888099De8EA8068D92bB04b47A743B82195c4aD2",
+		STABLE_SWAP_ROUTER: "0xbfdcE45a9241870E7cF338BAaa3185972A550922",
+		STABLE_SWAP_INFO: "0xe50516bCC168B67b5391e15E877c6a4cc3e75f00",
+		SMART_ROUTER_HELPER: "0x68968cdE2fe5b61cEC87Ae6fdCB2fc39271893c2",
+		STRATEGY_FACTORY: "", // TBD: Add Oasis mainnet address
 	},
 	TESTNET: {
-		STABLE_SWAP_FACTORY: "0x00cEAaE12A697E96de86e97497C4337C39e558eB",
-		STABLE_SWAP_ROUTER: "0x6BF1e398e7D638BBBC32576D9C3703CE5A4c1B8C",
-		STABLE_SWAP_INFO: "0xfAA0FA42d4E2e5B12BD0114298A3CBF1B582117B",
-		SMART_ROUTER_HELPER: "0x20a6bDAc661367e8e2fb36ac50431d8A5cB39929",
-		STRATEGY_FACTORY: "0x58D594BB0B8d0755A8A42Fe2c4434C84C61a2d0e",
+		STABLE_SWAP_FACTORY: "",
+		STABLE_SWAP_ROUTER: "",
+		STABLE_SWAP_INFO: "",
+		SMART_ROUTER_HELPER: "",
+		STRATEGY_FACTORY: "",
 	},
 };
 
@@ -731,9 +714,82 @@ export const TOKEN_ADDRESSES = {
 	},
 };
 
-// Privacy level mapping
-export const PRIVACY_LEVEL_VALUES = {
-	low: 1,
-	medium: 2,
-	high: 3,
-};
+export const TESTNET_TOKEN_ADDRESSES = {
+	ROSE: {
+		address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+		decimals: 18,
+		isNativeToken: true,
+		img: "https://coin-images.coingecko.com/coins/images/13162/large/OASIS.jpg",
+	},
+} as const;
+
+export const MAINNET_TOKEN_ADDRESSES = {
+	ROSE: {
+		address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+		decimals: 18,
+		isNativeToken: true,
+		img: "https://coin-images.coingecko.com/coins/images/13162/large/OASIS.jpg",
+	},
+	stROSE: {
+		address: "0xEd57966f1566dE1a90042d07403021Ea52ad4724",
+		decimals: 18,
+		isNativeToken: false,
+		img: "https://coin-images.coingecko.com/coins/images/51115/large/strose.png",
+	},
+	USDC: {
+		address: "0x97eec1c29f745dC7c267F90292AA663d997a601D",
+		decimals: 6,
+		isNativeToken: false,
+		img: "https://assets.coingecko.com/coins/images/6319/standard/usdc.png",
+	},
+	bitUSDs: {
+		address: "0xA14167756d9F86Aed12b472C29B257BBdD9974C2",
+		decimals: 18,
+		isNativeToken: false,
+		img: "https://i.postimg.cc/Ghn9TW8Z/Je4-N9i-S-400x400.jpg",
+	},
+	USDT: {
+		address: "0x8C4aCd74Ff4385f3B7911432FA6787Aa14406f8B",
+		decimals: 6,
+		isNativeToken: false,
+		img: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+	},
+	"OCEAN(Router)": {
+		address: "0x2F301d3b045544A9D7Ec3FA090CD78986F11f2E7",
+		decimals: 18,
+		isNativeToken: false,
+		img: "https://assets.coingecko.com/coins/images/3687/standard/ocean-protocol-logo.jpg",
+	},
+	"OCEAN(Celer)": {
+		address: "0x39d22B78A7651A76Ffbde2aaAB5FD92666Aca520",
+		decimals: 18,
+		isNativeToken: false,
+		img: "https://assets.coingecko.com/coins/images/3687/standard/ocean-protocol-logo.jpg",
+	},
+} as const;
+
+export const LP_ADDRESSES = {
+	"ROSE/stROSE": {
+		address: "0xd6fDdb88bB0f1317310E152A1065dCF2B6cdB0D2",
+		decimals: 18,
+	},
+	"bitUSDs/USDC": {
+		address: "0x274186AA4Ad57eA887C5c12aC2aa5738d8254DE4",
+		decimals: 18,
+	},
+	"bitUSD/USDT": {
+		address: "0x4Fc812116776704056cBBa3E56a8c1935693b946",
+		decimals: 18,
+	},
+	"OCEAN/OCEAN": {
+		address: "0x1F33221947A0D98A6dCF689339137770420eE2e3",
+		decimals: 18,
+	},
+} as const;
+
+export const POOL_ADDRESSES = {
+	"ROSE-stROSE": "0x52B0F01751a4fa76B6C847081cD7C1dcC34FF877",
+	"bitUSDs-USDC": "0x4937cC76D5fb3040D3d146149B64a646f05cA8EC",
+	"bitUSDs-USDT": "0xc3999e264fF94cbE99A8464CbcF7Cdc45EE7aE07",
+	"OCEAN(Router)-OCEAN(Celer)": "0xb13BDf649a954aE62B8c91125949657f1ce5CA71",
+} as const;
