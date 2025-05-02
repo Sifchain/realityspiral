@@ -6,13 +6,13 @@ import {
 	type State,
 	elizaLogger,
 } from "@elizaos/core";
+import { AVAILABLE_TOKENS } from "src/types";
 import { OASIS_NETWORKS, THORN_CONTRACTS } from "../constants";
 import {
 	createContractHelper,
 	getNetworkId,
 	getUserAddressString,
 } from "../helpers/contractUtils";
-import { AVAILABLE_TOKENS } from "src/types";
 
 // Type definition for swap result
 interface SwapResult {
