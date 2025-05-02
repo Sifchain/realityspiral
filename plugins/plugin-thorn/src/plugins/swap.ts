@@ -19,6 +19,8 @@ import {
 } from "@realityspiral/plugin-instrumentation";
 import { parse } from "csv-parse/sync";
 import { createArrayCsvWriter } from "csv-writer";
+import { ethers } from "ethers";
+import { convertToWeiString, getProviderAndSigner } from "src/utils";
 import {
 	ABIS,
 	MAINNET_TOKEN_ADDRESSES,
@@ -75,7 +77,7 @@ export const swapProvider: Provider = {
 
 			// Initialize network configuration
 			const network =
-				runtime.getSetting("OASIS_NETWORK") || OASIS_NETWORKS.TESTNET;
+				runtime.getSetting("OASIS_NETWORK") || OASIS_NETWORKS.MAINNET;
 			const _apiUrl =
 				runtime.getSetting("THORN_API_URL") || THORN_DEFAULT_API_URL;
 
@@ -192,16 +194,13 @@ export const executeSwapAction: Action = {
 			// Initialize network configuration
 			const network =
 				runtime.getSetting("OASIS_NETWORK") || OASIS_NETWORKS.MAINNET;
-			const networkId = getNetworkId(runtime);
+			const _networkId = getNetworkId(runtime);
 
 			// Get contract addresses for the network
 			const contracts =
 				network === OASIS_NETWORKS.MAINNET
 					? THORN_CONTRACTS.MAINNET
 					: THORN_CONTRACTS.TESTNET;
-
-			// Use ContractHelper directly
-			const contractHelper = createContractHelper(runtime);
 
 			// Get token addresses
 			const tokenAddresses =
@@ -210,9 +209,9 @@ export const executeSwapAction: Action = {
 					: TESTNET_TOKEN_ADDRESSES;
 
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			const fromTokenAddress = (tokenAddresses as any)[fromToken];
+			const fromTokenAddress = (tokenAddresses as any)[fromToken].address;
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			const toTokenAddress = (tokenAddresses as any)[toToken];
+			const toTokenAddress = (tokenAddresses as any)[toToken].address;
 
 			if (!fromTokenAddress || !toTokenAddress) {
 				callback?.(
@@ -224,81 +223,83 @@ export const executeSwapAction: Action = {
 				return;
 			}
 
-			// Get wallet address
-			const walletAddress = await getUserAddressString(runtime, networkId);
+			const amountWei = convertToWeiString(amount);
+			elizaLogger.info("Internal swap helper", {
+				amount,
+				amountWei,
+			});
 
-			if (!walletAddress) {
+			const { signer } = await getProviderAndSigner(
+				runtime,
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				network.toUpperCase() as any,
+			);
+
+			if (!signer) {
 				callback?.(
 					{
-						text: "Failed to get wallet address. Please ensure your wallet is connected.",
+						text: "Failed to get signer. Please ensure your wallet is connected.",
 					},
 					[],
 				);
 				return;
 			}
 
-			elizaLogger.info(`Using wallet address: ${walletAddress}`);
+			elizaLogger.info(`Using wallet address: ${signer.address}`);
 
-			// // Step 1: Approve token spending if needed
-			// try {
-			// 	elizaLogger.info(`Approving ${fromToken} for spending`);
+			const stableSwapRouterContract = new ethers.Contract(
+				contracts.STABLE_SWAP_ROUTER,
+				ABIS.STABLE_SWAP_ROUTER,
+				signer,
+			);
 
-			// 	const approveResult = await contractHelper.invokeContract({
-			// 		networkId,
-			// 		contractAddress: fromTokenAddress,
-			// 		method: "approve",
-			// 		args: [contracts.STABLE_SWAP_ROUTER, amount],
-			// 		abi: ABIS.STABLE_SWAP_ROUTER, // We're using the ERC20 standard approve function
-			// 	});
-
-			// 	elizaLogger.info(`Approval transaction: ${approveResult.status}`);
-			// 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			// } catch (approveError: any) {
-			// 	elizaLogger.error("Failed to approve token spending:", approveError);
-			// 	callback?.(
-			// 		{
-			// 			text: `Failed to approve token spending: ${approveError.message}`,
-			// 		},
-			// 		[],
-			// 	);
-			// 	return;
-			// }
-
-			// Step 2: Execute the swap
+			// Execute the swap
 			try {
-				// Execute swap via contract helper
-				const swapResult = await contractHelper.invokeContract({
-					networkId,
-					contractAddress: contracts.STABLE_SWAP_ROUTER,
-					method: "exactInputStableSwap",
-					args: [
-						[fromTokenAddress, toTokenAddress], // swap path
-						[2], // flags
-						amount, // amount in
-						calculateMinimumOut(amount, slippage), // minimum amount out
-						walletAddress, // recipient
-					],
-					abi: ABIS.STABLE_SWAP_ROUTER,
+				elizaLogger.info("Executing swap", {
+					path: [fromTokenAddress, toTokenAddress],
+					flags: [2],
+					amount: amountWei,
+					minAmount: calculateMinimumOut(amountWei, slippage),
+					recipient: signer.address,
 				});
 
-				// Process result
-				const txHash = swapResult.transactionLink?.split("/").pop() || "";
+				// Execute swap via contract
+				const swapTx = await stableSwapRouterContract.exactInputStableSwap(
+					[fromTokenAddress, toTokenAddress], // swap path
+					[2], // flags
+					amountWei, // amount in
+					calculateMinimumOut(amountWei, slippage), // minimum amount out
+					signer.address, // recipient
+					{
+						value: amountWei,
+						gasLimit: 300000,
+					},
+				);
+
+				elizaLogger.info("Swap transaction sent", { hash: swapTx.hash });
+
+				const swapReceipt = await swapTx.wait();
+
+				elizaLogger.info("Swap transaction completed", {
+					hash: swapReceipt?.hash,
+					status: swapReceipt?.status,
+				});
 
 				// Log the swap to CSV
 				await logSwapToCsv({
 					fromToken,
 					toToken,
-					sentAmount: amount,
-					receivedAmount: "pending", // This would need to be extracted from transaction logs in a real implementation
+					sentAmount: amountWei,
+					receivedAmount: amountWei, // This would need to be extracted from transaction logs in a real implementation
 					exchangeRate: "pending",
 					fee: "pending",
-					txHash,
+					txHash: swapReceipt?.hash,
 					timestamp: Date.now(),
 				});
 
 				callback?.(
 					{
-						text: `Successfully executed swap from ${fromToken} to ${toToken}. Transaction hash: ${txHash}`,
+						text: `Successfully executed swap from ${fromToken} to ${toToken}. Transaction hash: ${swapReceipt?.hash}`,
 					},
 					[],
 				);
@@ -412,7 +413,7 @@ export const getSwapQuoteAction: Action = {
 
 			// Initialize network configuration
 			const network =
-				runtime.getSetting("OASIS_NETWORK") || OASIS_NETWORKS.TESTNET;
+				runtime.getSetting("OASIS_NETWORK") || OASIS_NETWORKS.MAINNET;
 			const networkId = getNetworkId(runtime);
 
 			// Get contract addresses for the network
