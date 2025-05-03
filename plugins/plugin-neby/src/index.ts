@@ -26,3 +26,4 @@ export const nebyPlugin: Plugin = {
 // Re-export types and constants for external use
 export * from "./types";
 export * from "./constants";
+export * from "./plugins/neby";

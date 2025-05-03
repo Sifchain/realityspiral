@@ -17,3 +17,4 @@ export const bitProtocolPlugin: Plugin = {
 };
 
 export * from "./types";
+export * from "./plugins/bitprotocol";

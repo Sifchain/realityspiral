@@ -27,10 +27,11 @@ import {
 
 // Import the action definitions
 import "./plugins/actions"; // temporary import to satisfy TypeScript while we transition
-import { thornSwapPlugin } from "./plugins/swap";
+import { executeSwapAction, thornSwapPlugin } from "./plugins/swap";
 
 // Export the thornSwapPlugin
 export { thornSwapPlugin };
+export * from "./plugins/swap";
 
 /**
  * Thorn Protocol plugin factory function

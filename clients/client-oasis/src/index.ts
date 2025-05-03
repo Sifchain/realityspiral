@@ -16,7 +16,6 @@ import {
 	getStakedBalanceAction,
 	getStakingStrategiesAction,
 	mintAction,
-	redeemAction,
 	stakeAction,
 	unstakeAction,
 	unwrapRoseAction,
@@ -39,7 +38,10 @@ import {
 	getAgentRoflKeyAction,
 	getRoflKeyAction,
 } from "@realityspiral/plugin-rofl";
-import { thornSwapPlugin } from "@realityspiral/plugin-thorn";
+import {
+	executeSwapAction,
+	getSwapQuoteAction,
+} from "@realityspiral/plugin-thorn";
 
 // Placeholder types - replace with actual types
 type RoflWallet = { address: string; secret: string };
@@ -60,17 +62,26 @@ export class OasisClient extends EventEmitter {
 		this.states = new Map();
 
 		this.actions = [
-			getRoflKeyAction,
-			getAgentRoflKeyAction,
-			nebySwapAction,
-			nebyAddLiquidityAction,
-			nebyRemoveLiquidityAction,
-			nebyMonitorPricesAction,
-			nebyGetPoolLiquidityAction,
-			nebyGetPoolInfoAction,
-			bitpSwapAction,
-			bitpMonitorPriceStabilityAction,
+			approveAction,
+			claimRewardsAction,
+			getRewardsAction,
+			getStakedBalanceAction,
+			getStakingStrategiesAction,
+			mintAction,
+			stakeAction,
+			unstakeAction,
+			unwrapRoseAction,
+			wrapRoseAction,
 			bitpGetOptimalPathAction,
+			bitpMonitorPriceStabilityAction,
+			bitpSwapAction,
+			nebyAddLiquidityAction,
+			nebyGetPoolInfoAction,
+			nebyGetPoolLiquidityAction,
+			executeSwapAction,
+			getSwapQuoteAction,
+			getAgentRoflKeyAction,
+			getRoflKeyAction,
 		];
 
 		this.start();
@@ -224,3 +235,15 @@ export const OasisClientInterface: Client = {
 };
 
 export default OasisClientInterface;
+
+export function registerActions(runtime: IAgentRuntime, actions: Action[]) {
+	for (const action of actions) {
+		runtime.registerAction(action);
+	}
+}
+
+export function unregisterActions(runtime: IAgentRuntime, actions: Action[]) {
+	runtime.actions = runtime.actions.filter(
+		(action) => !actions.map((a) => a.name).includes(action.name),
+	);
+}
