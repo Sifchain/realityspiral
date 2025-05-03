@@ -1,0 +1,43 @@
+{
+	"name": "@realityspiral/client-oasis",
+	"version": "0.0.1",
+	"description": "Oasis client utilizing rofl, accumulated-finance, bitprotocol, neby, and thorn plugins",
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"files": ["dist", "src"],
+	"scripts": {
+		"build": "tsup src/index.ts --format esm,cjs --dts",
+		"dev": "tsup src/index.ts --format esm,cjs --watch --dts",
+		"lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+		"clean": "rm -rf .turbo node_modules dist"
+	},
+	"keywords": [
+		"oasis",
+		"rofl",
+		"accumulated-finance",
+		"bitprotocol",
+		"neby",
+		"thorn",
+		"client"
+	],
+	"author": "Your Name <you@example.com>",
+	"license": "MIT",
+	"dependencies": {
+		"@oasisprotocol/client": "^0.0.0",
+		"@realityspiral/plugin-accumulated-finance": "workspace:*",
+		"@realityspiral/plugin-bitprotocol": "workspace:*",
+		"@realityspiral/plugin-neby": "workspace:*",
+		"@realityspiral/plugin-rofl": "workspace:*",
+		"@realityspiral/plugin-thorn": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/node": "^20.11.24",
+		"eslint": "^8.57.0",
+		"tsup": "^8.0.2",
+		"typescript": "^5.3.3"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}
