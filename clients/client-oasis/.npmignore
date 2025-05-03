@@ -1,6 +1,8 @@
-/node_modules
-/dist
-/.turbo
-.DS_Store
+node_modules/
+.turbo/
+src/
+__tests__/
+tsconfig.json
 tsup.config.ts
-tsconfig.json 
+*.tsbuildinfo
+*.log 

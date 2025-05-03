@@ -1,12 +1,21 @@
 import { defineConfig } from "tsup";
 
-export default defineConfig((options) => ({
-	entry: ["src/index.ts"],
-	splitting: false,
+export default defineConfig({
+	entry: ["./src/index.ts"],
+	format: ["esm"],
+	dts: true,
+	clean: true,
+	minify: false,
 	sourcemap: true,
-	clean: !options.watch, // clean dist folder only on production build
-	dts: true, // generate dts files
-	format: ["cjs", "esm"], // generate cjs and esm files
-	minify: !options.watch,
-	onSuccess: options.watch ? "node dist/index.js" : undefined,
-}));
+	external: [
+		"@elizaos/core",
+		"@oasisprotocol/client",
+		"@realityspiral/plugin-instrumentation",
+		"@realityspiral/plugin-coinbase",
+		"@coinbase/coinbase-sdk",
+		"zod",
+	],
+	esbuildOptions(options) {
+		options.target = ["es2020"];
+	},
+});

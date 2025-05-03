@@ -1,40 +1,80 @@
+import { EventEmitter } from "node:events";
 import {
+	type Action,
+	type Character,
 	type Client,
 	type IAgentRuntime,
 	type State,
+	type UUID,
 	elizaLogger,
 } from "@elizaos/core";
-import * as oasis from "@oasisprotoco/client";
-import * as accFinPlugin from "@realityspiral/plugin-accumulated-finance";
-import * as bitpPlugin from "@realityspiral/plugin-bitprotocol";
-import * as nebyPlugin from "@realityspiral/plugin-neby";
-// Placeholder imports - replace with actual exports from plugins
-import * as roflPlugin from "@realityspiral/plugin-rofl";
-import * as thornPlugin from "@realityspiral/plugin-thorn";
+import * as oasis from "@oasisprotocol/client";
+import {
+	approveAction,
+	claimRewardsAction,
+	getRewardsAction,
+	getStakedBalanceAction,
+	getStakingStrategiesAction,
+	mintAction,
+	redeemAction,
+	stakeAction,
+	unstakeAction,
+	unwrapRoseAction,
+	wrapRoseAction,
+} from "@realityspiral/plugin-accumulated-finance";
+import {
+	getOptimalPathAction as bitpGetOptimalPathAction,
+	monitorPriceStabilityAction as bitpMonitorPriceStabilityAction,
+	swapAction as bitpSwapAction,
+} from "@realityspiral/plugin-bitprotocol";
+import {
+	addLiquidityAction as nebyAddLiquidityAction,
+	getPoolInfoAction as nebyGetPoolInfoAction,
+	getPoolLiquidityAction as nebyGetPoolLiquidityAction,
+	monitorPricesAction as nebyMonitorPricesAction,
+	removeLiquidityAction as nebyRemoveLiquidityAction,
+	swapAction as nebySwapAction,
+} from "@realityspiral/plugin-neby";
+import {
+	getAgentRoflKeyAction,
+	getRoflKeyAction,
+} from "@realityspiral/plugin-rofl";
+import { thornSwapPlugin } from "@realityspiral/plugin-thorn";
 
 // Placeholder types - replace with actual types
 type RoflWallet = { address: string; secret: string };
-type PluginConfig = { [key: string]: any };
 type ActionResult = { success: boolean; data?: any; error?: any };
 
-export class OasisClient /* implements Client */ {
-	private runtime: IAgentRuntime;
-	private stopped: boolean;
-	// Add state management if needed, similar to GitHubClient
-	// private states: Map<UUID, State>;
-
-	// Store plugin instances or configurations if initialization is needed
-	// private rofl: ReturnType<typeof roflPlugin.initialize>;
+export class OasisClient extends EventEmitter {
+	runtime: IAgentRuntime;
+	character: Character;
+	stopped: boolean;
+	actions: Action[];
+	states: Map<UUID, State>;
 
 	constructor(runtime: IAgentRuntime) {
+		super();
 		this.runtime = runtime;
 		this.stopped = false;
-		// this.states = new Map(); // Initialize if using state map
-		elizaLogger.info(`Initializing OasisClient for agent ${runtime.agentId}`);
+		this.character = runtime.character;
+		this.states = new Map();
 
-		// Example: Initialize plugins if they require setup
-		// this.rofl = roflPlugin.initialize({ apiKey: runtime.getSetting('ROFL_API_KEY') });
-		// this.accFin = accFinPlugin.initialize(...);
+		this.actions = [
+			getRoflKeyAction,
+			getAgentRoflKeyAction,
+			nebySwapAction,
+			nebyAddLiquidityAction,
+			nebyRemoveLiquidityAction,
+			nebyMonitorPricesAction,
+			nebyGetPoolLiquidityAction,
+			nebyGetPoolInfoAction,
+			bitpSwapAction,
+			bitpMonitorPriceStabilityAction,
+			bitpGetOptimalPathAction,
+		];
+
+		this.start();
+		elizaLogger.info(`Initializing OasisClient for agent ${runtime.agentId}`);
 	}
 
 	/**
@@ -44,7 +84,6 @@ export class OasisClient /* implements Client */ {
 		elizaLogger.info(
 			`OasisClient initialized for agent ${this.runtime.agentId}.`,
 		);
-		// Example: await this.rofl.connect();
 	}
 
 	/**
@@ -52,10 +91,10 @@ export class OasisClient /* implements Client */ {
 	 */
 	async start(): Promise<void> {
 		elizaLogger.info(
-			`OasisClient starting for agent ${this.runtime.agentId}...`,
+			`Starting Oasis client for agent ${this.runtime.agentId}...`,
 		);
-		// If this client needs to react to events or run loops, start them here.
-		// E.g., Start monitoring for specific triggers or events
+
+		registerActions(this.runtime, this.actions);
 	}
 
 	/**
@@ -63,10 +102,10 @@ export class OasisClient /* implements Client */ {
 	 */
 	async stop(): Promise<void> {
 		this.stopped = true;
+		unregisterActions(this.runtime, this.actions);
 		elizaLogger.info(
 			`OasisClient stopping for agent ${this.runtime.agentId}...`,
 		);
-		// Clean up any listeners, connections, or intervals.
 	}
 
 	/**
