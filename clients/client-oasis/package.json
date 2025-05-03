@@ -24,7 +24,7 @@
 	"author": "Your Name <you@example.com>",
 	"license": "MIT",
 	"dependencies": {
-		"@oasisprotocol/client": "^0.0.0",
+		"@oasisprotocol/client": "1.1.0",
 		"@realityspiral/plugin-accumulated-finance": "workspace:*",
 		"@realityspiral/plugin-bitprotocol": "workspace:*",
 		"@realityspiral/plugin-neby": "workspace:*",

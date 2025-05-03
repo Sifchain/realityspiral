@@ -1,5 +1,10 @@
-import { elizaLogger } from "@elizaos/core";
-import * as oasis from "@oasisprotocol/client";
+import {
+	type Client,
+	type IAgentRuntime,
+	type State,
+	elizaLogger,
+} from "@elizaos/core";
+import * as oasis from "@oasisprotoco/client";
 import * as accFinPlugin from "@realityspiral/plugin-accumulated-finance";
 import * as bitpPlugin from "@realityspiral/plugin-bitprotocol";
 import * as nebyPlugin from "@realityspiral/plugin-neby";
@@ -8,102 +13,175 @@ import * as roflPlugin from "@realityspiral/plugin-rofl";
 import * as thornPlugin from "@realityspiral/plugin-thorn";
 
 // Placeholder types - replace with actual types
-type RoflWallet = any;
-type PluginConfig = any;
-type ActionResult = any;
+type RoflWallet = { address: string; secret: string };
+type PluginConfig = { [key: string]: any };
+type ActionResult = { success: boolean; data?: any; error?: any };
 
-export class OasisClient {
-	private config: PluginConfig;
-	private rofl: typeof roflPlugin;
-	private accFin: typeof accFinPlugin;
-	private bitp: typeof bitpPlugin;
-	private neby: typeof nebyPlugin;
-	private thorn: typeof thornPlugin;
+export class OasisClient /* implements Client */ {
+	private runtime: IAgentRuntime;
+	private stopped: boolean;
+	// Add state management if needed, similar to GitHubClient
+	// private states: Map<UUID, State>;
 
-	constructor(config: PluginConfig = {}) {
-		this.config = config;
-		// Initialize or configure plugin instances here if needed
-		this.rofl = roflPlugin;
-		this.accFin = accFinPlugin;
-		this.bitp = bitpPlugin;
-		this.neby = nebyPlugin;
-		this.thorn = thornPlugin;
-		elizaLogger.info("OasisClient initialized");
+	// Store plugin instances or configurations if initialization is needed
+	// private rofl: ReturnType<typeof roflPlugin.initialize>;
+
+	constructor(runtime: IAgentRuntime) {
+		this.runtime = runtime;
+		this.stopped = false;
+		// this.states = new Map(); // Initialize if using state map
+		elizaLogger.info(`Initializing OasisClient for agent ${runtime.agentId}`);
+
+		// Example: Initialize plugins if they require setup
+		// this.rofl = roflPlugin.initialize({ apiKey: runtime.getSetting('ROFL_API_KEY') });
+		// this.accFin = accFinPlugin.initialize(...);
+	}
+
+	/**
+	 * Perform any asynchronous setup required for the client.
+	 */
+	async initialize(): Promise<void> {
+		elizaLogger.info(
+			`OasisClient initialized for agent ${this.runtime.agentId}.`,
+		);
+		// Example: await this.rofl.connect();
+	}
+
+	/**
+	 * Start any ongoing processes or listeners for the client.
+	 */
+	async start(): Promise<void> {
+		elizaLogger.info(
+			`OasisClient starting for agent ${this.runtime.agentId}...`,
+		);
+		// If this client needs to react to events or run loops, start them here.
+		// E.g., Start monitoring for specific triggers or events
+	}
+
+	/**
+	 * Stop any ongoing processes and clean up resources.
+	 */
+	async stop(): Promise<void> {
+		this.stopped = true;
+		elizaLogger.info(
+			`OasisClient stopping for agent ${this.runtime.agentId}...`,
+		);
+		// Clean up any listeners, connections, or intervals.
 	}
 
 	/**
 	 * Creates a ROFL wallet and executes actions on other plugins.
+	 * This might be triggered by an action, event, or called internally.
 	 */
-	async initializeAndExecute(): Promise<{ [key: string]: ActionResult }> {
+	async executeWorkflow(
+		userId?: string /* Or other relevant identifiers */,
+	): Promise<{ [key: string]: ActionResult }> {
+		if (this.stopped) {
+			elizaLogger.warn("executeWorkflow called after client stopped.");
+			return {};
+		}
+
+		elizaLogger.info("Executing Oasis workflow...", { userId });
+
+		// --- TODO: Replace Mocks with Actual Plugin Logic & Config ---
+		const roflOptions = this.runtime.getSetting("ROFL_PLUGIN_OPTIONS") || {};
+		const accFinOptions =
+			this.runtime.getSetting("ACC_FIN_PLUGIN_OPTIONS") || {};
+		const bitpOptions = this.runtime.getSetting("BITP_PLUGIN_OPTIONS") || {};
+		const nebyOptions = this.runtime.getSetting("NEBY_PLUGIN_OPTIONS") || {};
+		const thornOptions = this.runtime.getSetting("THORN_PLUGIN_OPTIONS") || {};
+
 		elizaLogger.info("Creating ROFL wallet...");
-		// Replace with actual wallet creation logic from plugin-rofl
-		// const wallet: RoflWallet = await this.rofl.createWallet(this.config.roflOptions);
-		const wallet: RoflWallet = {
-			address: "mock_address",
-			secret: "mock_secret",
-		}; // Mock wallet
-		console.log(`Wallet created: ${wallet.address}`);
+		let wallet: RoflWallet;
+		try {
+			// wallet = await roflPlugin.createWallet(roflOptions);
+			wallet = { address: "mock_address", secret: "mock_secret" }; // Mock wallet
+			elizaLogger.info(`Wallet created: ${wallet.address}`);
+		} catch (error: any) {
+			elizaLogger.error("ROFL wallet creation failed:", error);
+			// Decide how to handle wallet creation failure - maybe throw or return error
+			return { rofl: { success: false, error: error.message } };
+		}
 
 		const results: { [key: string]: ActionResult } = {};
 
-		try {
-			console.log("Executing Accumulated Finance action...");
-			// Replace with actual call to plugin-accumulated-finance action
-			// results.accumulatedFinance = await this.accFin.someAction(wallet, this.config.accFinOptions);
-			results.accumulatedFinance = {
-				success: true,
-				data: "mock_acc_fin_result",
-			}; // Mock result
-			console.log("Accumulated Finance action complete.");
-		} catch (error) {
-			console.error("Accumulated Finance action failed:", error);
-			results.accumulatedFinance = { success: false, error: error };
-		}
+		// Helper function to execute plugin actions
+		const executeAction = async (
+			pluginName: string,
+			actionFn: () => Promise<any>, // Replace 'any' with specific result type if known
+		) => {
+			try {
+				elizaLogger.info(`Executing ${pluginName} action...`);
+				const resultData = await actionFn();
+				results[pluginName] = { success: true, data: resultData };
+				elizaLogger.info(`${pluginName} action complete.`);
+			} catch (error: any) {
+				elizaLogger.error(`${pluginName} action failed:`, error);
+				results[pluginName] = { success: false, error: error.message };
+			}
+		};
 
-		try {
-			console.log("Executing BitProtocol action...");
-			// Replace with actual call to plugin-bitprotocol action
-			// results.bitProtocol = await this.bitp.someAction(wallet, this.config.bitpOptions);
-			results.bitProtocol = { success: true, data: "mock_bitp_result" }; // Mock result
-			console.log("BitProtocol action complete.");
-		} catch (error) {
-			console.error("BitProtocol action failed:", error);
-			results.bitProtocol = { success: false, error: error };
-		}
+		await executeAction(
+			"accumulatedFinance",
+			async () =>
+				// await accFinPlugin.someAction(wallet, accFinOptions)
+				({ mockData: "mock_acc_fin_result" }), // Mock action
+		);
 
-		try {
-			console.log("Executing Neby action...");
-			// Replace with actual call to plugin-neby action
-			// results.neby = await this.neby.someAction(wallet, this.config.nebyOptions);
-			results.neby = { success: true, data: "mock_neby_result" }; // Mock result
-			console.log("Neby action complete.");
-		} catch (error) {
-			console.error("Neby action failed:", error);
-			results.neby = { success: false, error: error };
-		}
+		await executeAction(
+			"bitProtocol",
+			async () =>
+				// await bitpPlugin.someAction(wallet, bitpOptions)
+				({ mockData: "mock_bitp_result" }), // Mock action
+		);
 
-		try {
-			console.log("Executing Thorn action...");
-			// Replace with actual call to plugin-thorn action
-			// results.thorn = await this.thorn.someAction(wallet, this.config.thornOptions);
-			results.thorn = { success: true, data: "mock_thorn_result" }; // Mock result
-			console.log("Thorn action complete.");
-		} catch (error) {
-			console.error("Thorn action failed:", error);
-			results.thorn = { success: false, error: error };
-		}
+		await executeAction(
+			"neby",
+			async () =>
+				// await nebyPlugin.someAction(wallet, nebyOptions)
+				({ mockData: "mock_neby_result" }), // Mock action
+		);
 
-		console.log("All actions attempted.");
+		await executeAction(
+			"thorn",
+			async () =>
+				// await thornPlugin.someAction(wallet, thornOptions)
+				({ mockData: "mock_thorn_result" }), // Mock action
+		);
+		// --- End TODO ---
+
+		elizaLogger.info("Oasis workflow finished.");
 		return results;
 	}
 }
 
-// Example usage (for testing or demonstration)
-// async function runClient() {
-//   const client = new OasisClient();
-//   const results = await client.initializeAndExecute();
-//   console.log('\n--- Final Results ---');
-//   console.log(JSON.stringify(results, null, 2));
-// }
+// Export a Client interface object, similar to GitHubClientInterface
+export const OasisClientInterface: Client = {
+	start: async (runtime: IAgentRuntime): Promise<OasisClient> => {
+		elizaLogger.info(`Starting OasisClient for agent ${runtime.agentId}`);
+		const client = new OasisClient(runtime);
+		await client.initialize(); // Ensure initialization is complete
+		await client.start(); // Start any background processes
+		return client;
+	},
+	stop: async (runtime: IAgentRuntime): Promise<void> => {
+		try {
+			elizaLogger.info(`Stopping OasisClient for agent ${runtime.agentId}`);
+			if (runtime.clients?.oasis) {
+				await runtime.clients.oasis.stop();
+			} else {
+				elizaLogger.warn(
+					`OasisClient instance not found on runtime for agent ${runtime.agentId} during stop.`,
+				);
+			}
+		} catch (e: any) {
+			elizaLogger.error(
+				`OasisClient stop error for agent ${runtime.agentId}:`,
+				e,
+			);
+			// Optionally capture error: captureError(e, { agentId: runtime.agentId, action: "stop" });
+		}
+	},
+};
 
-// runClient();
+export default OasisClientInterface;
