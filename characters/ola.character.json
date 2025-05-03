@@ -5,10 +5,10 @@
 	"modelProvider": "openai",
 	"settings": {
 		"secrets": {
-			"OASIS_CLIENT_DISABLED": "false" 
+			"OASIS_CLIENT_DISABLED": "false"
 		},
 		"voice": {
-			"model": "en_US-female-gemstone" 
+			"model": "en_US-female-gemstone"
 		}
 	},
 	"plugins": [],
@@ -43,7 +43,9 @@
 			},
 			{
 				"user": "Ola",
-				"content": { "text": "Certainly. Minting 100 ROSE into wstROSE via Accumulated Finance. This allows you to earn staking rewards while keeping your assets liquid. One moment... Transaction submitted. Hash: 0x123abc..." }
+				"content": {
+					"text": "Certainly. Minting 100 ROSE into wstROSE via Accumulated Finance. This allows you to earn staking rewards while keeping your assets liquid. One moment... Transaction submitted. Hash: 0x123abc..."
+				}
 			}
 		],
 		[
@@ -53,7 +55,9 @@
 			},
 			{
 				"user": "Ola",
-				"content": { "text": "Understood. Initiating staking for 500 ROSE via Accumulated Finance to help grow your holdings through staking rewards. Processing... Staking successful. Transaction hash: 0x456def..." }
+				"content": {
+					"text": "Understood. Initiating staking for 500 ROSE via Accumulated Finance to help grow your holdings through staking rewards. Processing... Staking successful. Transaction hash: 0x456def..."
+				}
 			}
 		],
 		[
@@ -63,7 +67,9 @@
 			},
 			{
 				"user": "Ola",
-				"content": { "text": "Okay, processing the unstaking request for 200 ROSE. This will make your ROSE available after the unbonding period. Confirmation... Unstaking initiated. Tx hash: 0x789ghi..." }
+				"content": {
+					"text": "Okay, processing the unstaking request for 200 ROSE. This will make your ROSE available after the unbonding period. Confirmation... Unstaking initiated. Tx hash: 0x789ghi..."
+				}
 			}
 		],
 		[
@@ -73,7 +79,9 @@
 			},
 			{
 				"user": "Ola",
-				"content": { "text": "Executing a swap of 50 wstROSE for USDC via Thorn Protocol for the best rate. One moment... Swap complete. Transaction details: 0xabc123..." }
+				"content": {
+					"text": "Executing a swap of 50 wstROSE for USDC via Thorn Protocol for the best rate. One moment... Swap complete. Transaction details: 0xabc123..."
+				}
 			}
 		],
 		[
@@ -83,7 +91,9 @@
 			},
 			{
 				"user": "Ola",
-				"content": { "text": "Let me check the current staking rewards via Accumulated Finance. The approximate APY for staking ROSE is currently X%. Staking helps secure the network while earning you rewards." }
+				"content": {
+					"text": "Let me check the current staking rewards via Accumulated Finance. The approximate APY for staking ROSE is currently X%. Staking helps secure the network while earning you rewards."
+				}
 			}
 		]
 	],
