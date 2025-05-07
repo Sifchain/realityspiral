@@ -10,18 +10,60 @@ set -e
 LOG_FILE="${LOG_FILE:-/dev/stdout}"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
+# Color codes
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+MAGENTA='\033[0;35m'
+NC='\033[0m' # No Color
+
 # Function to log messages
 log() {
-    echo "[$TIMESTAMP] $1" >> "$LOG_FILE"
-    if [ "$LOG_FILE" != "/dev/stdout" ]; then
-        echo "[$TIMESTAMP] $1"
+    local color=$1
+    local message=$2
+    
+    # If no color specified, use default (blue for info)
+    if [ -z "$color" ]; then
+        color=$BLUE
     fi
+    
+    # Format the message with color
+    local colored_message="${color}[$TIMESTAMP] $message${NC}"
+    
+    # If logging to stdout, show colored output
+    if [ "$LOG_FILE" = "/dev/stdout" ]; then
+        echo -e "$colored_message"
+    else
+        # Otherwise write plain text to log file
+        echo "[$TIMESTAMP] $message" >> "$LOG_FILE"
+    fi
+}
+
+# Function to log error messages
+log_error() {
+    log "$RED" "$1"
+}
+
+# Function to log success messages
+log_success() {
+    log "$GREEN" "$1"
+}
+
+# Function to log warning messages
+log_warning() {
+    log "$YELLOW" "$1"
+}
+
+# Function to log info messages
+log_info() {
+    log "$BLUE" "$1"
 }
 
 # Function to check if a command exists
 check_command() {
     if ! command -v "$1" &> /dev/null; then
-        log "ERROR: $1 is required but not installed."
+        log_error "ERROR: $1 is required but not installed."
         exit 1
     fi
 }
@@ -29,33 +71,39 @@ check_command() {
 # Function to check if reboot is needed
 check_reboot_needed() {
     if [ -f "/var/run/reboot-required" ]; then
-        log "Reboot required. Please reboot the system and re-run the script."
+        log_error "Reboot required. Please reboot the system and re-run the script."
         exit 1
     fi
 }
 
+# Function to display colored prompt
+prompt() {
+    local message=$1
+    echo -e "${MAGENTA}$message${NC}"
+}
+
 # Function to display prerequisites and get confirmation
 check_prerequisites() {
-    log "======================================================"
-    log "PREREQUISITES CHECK"
-    log "======================================================"
+    log_info "======================================================"
+    log_info "PREREQUISITES CHECK"
+    log_info "======================================================"
     
     # Check if server is already deployed
-    read -p "Have you already deployed a Phoenix server? (yes/no): " server_deployed
+    read -p "$(prompt "Have you already deployed a Phoenix server? (yes/no): ")" server_deployed
     if [[ ! "$server_deployed" =~ ^[Yy][Ee][Ss]$ ]]; then
-        log "Please follow these steps to deploy a Phoenix server:"
-        log ""
-        log "1. Go to PhoenixNAP API Playground:"
-        log "   https://developers.phoenixnap.com/docs/bmc/1/routes/servers/post"
-        log ""
-        log "2. Click on Authorize and use your API credentials:"
-        log "   - If you don't have API credentials, generate them from your Phoenix account"
-        log "   - Go to Account -> API Credentials"
-        log ""
-        log "3. Use the 'POST /servers' endpoint"
-        log ""
-        log "4. Use this payload:"
-        log '{
+        log_info "Please follow these steps to deploy a Phoenix server:"
+        log_info ""
+        log_info "1. Go to PhoenixNAP API Playground:"
+        log_info "   https://developers.phoenixnap.com/docs/bmc/1/routes/servers/post"
+        log_info ""
+        log_info "2. Click on Authorize and use your API credentials:"
+        log_info "   - If you don't have API credentials, generate them from your Phoenix account"
+        log_info "   - Go to Account -> API Credentials"
+        log_info ""
+        log_info "3. Use the 'POST /servers' endpoint"
+        log_info ""
+        log_info "4. Use this payload:"
+        log_info '{
   "hostname": "oasis-node-1",
   "os": "ubuntu/noble",
   "type": "s4.x6.c6.large",
@@ -63,36 +111,36 @@ check_prerequisites() {
   "pricingModel": "HOURLY",
   "installDefaultSshKeys": true
 }'
-        log ""
-        log "5. Click Execute"
-        log ""
-        log "6. The response will include your server's IP address"
-        log ""
-        log "7. Use that IP address to connect to the server and run this script"
-        log ""
-        log "Please deploy the server and run this script again."
+        log_info ""
+        log_info "5. Click Execute"
+        log_info ""
+        log_info "6. The response will include your server's IP address"
+        log_info ""
+        log_info "7. Use that IP address to connect to the server and run this script"
+        log_info ""
+        log_info "Please deploy the server and run this script again."
         exit 1
     fi
 
     # Check if running on the Phoenix server
-    read -p "Are you running this script directly on the Phoenix server? (yes/no): " running_on_server
+    read -p "$(prompt "Are you running this script directly on the Phoenix server? (yes/no): ")" running_on_server
     if [[ ! "$running_on_server" =~ ^[Yy][Ee][Ss]$ ]]; then
-        log "ERROR: This script must be run directly on the Phoenix server."
-        log "Please SSH into your server and run the script there."
+        log_error "ERROR: This script must be run directly on the Phoenix server."
+        log_error "Please SSH into your server and run the script there."
         exit 1
     fi
 
-    log "======================================================"
-    log "Prerequisites check passed"
-    log "======================================================"
+    log_info "======================================================"
+    log_info "Prerequisites check passed"
+    log_info "======================================================"
 }
 
 # Function to setup TDX
 setup_tdx() {
-    log "Starting TDX setup..."
+    log_info "Starting TDX setup..."
 
     # Check for required tools
-    log "Checking for required tools..."
+    log_info "Checking for required tools..."
     check_command git
     check_command curl
     check_command tar
@@ -101,11 +149,11 @@ setup_tdx() {
     check_command dmesg
 
     # Update package lists
-    log "Updating package lists..."
+    log_info "Updating package lists..."
     sudo apt update -y >> "$LOG_FILE" 2>&1
 
     # Install dependencies
-    log "Installing dependencies..."
+    log_info "Installing dependencies..."
     sudo apt install -y bubblewrap apparmor msr-tools >> "$LOG_FILE" 2>&1
 
     # Check for installed tools
@@ -115,93 +163,93 @@ setup_tdx() {
     check_reboot_needed
 
     # Clone TDX repository
-    log "Cloning TDX repository..."
+    log_info "Cloning TDX repository..."
     git clone -b main https://github.com/canonical/tdx.git >> "$LOG_FILE" 2>&1
 
     # Setup TDX host
-    log "Setting up TDX host..."
+    log_info "Setting up TDX host..."
     cd tdx
     sudo ./setup-tdx-host.sh >> "$LOG_FILE" 2>&1
     cd ..
 
     # Check if reboot is required after TDX setup
     if [ -f "/var/run/reboot-required" ]; then
-        log "TDX setup requires a reboot. Rebooting now..."
+        log_warning "TDX setup requires a reboot. Rebooting now..."
         sudo reboot
     fi
 
     # Verify TDX and SGX
-    log "Verifying TDX..."
+    log_info "Verifying TDX..."
     if sudo dmesg | grep -i tdx | grep -q "module initialized"; then
-        log "TDX module initialized successfully"
+        log_success "TDX module initialized successfully"
     else
-        log "ERROR: TDX module not initialized"
+        log_error "ERROR: TDX module not initialized"
         exit 1
     fi
 
-    log "Verifying SGX..."
+    log_info "Verifying SGX..."
     if sudo dmesg | grep -i sgx | grep -q "EPC section"; then
-        log "SGX enabled successfully"
+        log_success "SGX enabled successfully"
     else
-        log "ERROR: SGX not enabled"
+        log_error "ERROR: SGX not enabled"
         exit 1
     fi
 
-    log "Running system report..."
+    log_info "Running system report..."
     if ./tdx/system-report.sh | grep -q "MK_TME_ENABLED bit: 1"; then
-        log "System report shows TDX enabled"
+        log_success "System report shows TDX enabled"
     else
-        log "ERROR: System report indicates TDX not properly enabled"
+        log_error "ERROR: System report indicates TDX not properly enabled"
         exit 1
     fi
 
-    log "Checking MSR 0x503..."
+    log_info "Checking MSR 0x503..."
     if [ "$(sudo rdmsr 0x503)" = "0" ]; then
-        log "MSR 0x503 check passed"
+        log_success "MSR 0x503 check passed"
     else
-        log "ERROR: MSR 0x503 check failed"
+        log_error "ERROR: MSR 0x503 check failed"
         exit 1
     fi
 
-    log "TDX setup completed successfully"
+    log_success "TDX setup completed successfully"
 }
 
 # Function to setup Sapphire node
 setup_sapphire_node() {
-    log "Setting up Sapphire client node..."
+    log_info "Setting up Sapphire client node..."
 
     # Create directories
-    log "Creating node directories..."
+    log_info "Creating node directories..."
     sudo mkdir -m700 -p /node/{etc,bin,runtimes,data,apps} >> "$LOG_FILE" 2>&1
 
     # Download genesis file
-    log "Downloading genesis.json..."
+    log_info "Downloading genesis.json..."
     sudo curl -L https://github.com/oasisprotocol/testnet-artifacts/releases/download/2023-10-12/genesis.json -o /node/etc/genesis.json >> "$LOG_FILE" 2>&1
 
     # Download and extract Oasis core
-    log "Downloading and extracting Oasis core..."
+    log_info "Downloading and extracting Oasis core..."
     sudo curl -L https://github.com/oasisprotocol/oasis-core/releases/download/v25.2/oasis_core_25.2_linux_amd64.tar.gz | sudo tar -xz --strip-components=1 -C /node/bin >> "$LOG_FILE" 2>&1
 
     # Update PATH
-    log "Updating PATH..."
+    log_info "Updating PATH..."
     echo 'export PATH=$PATH:/node/bin' >> ~/.bashrc
     source ~/.bashrc
 
     # Create oasis user
-    log "Creating oasis user..."
+    log_info "Creating oasis user..."
     sudo adduser --system oasis --shell /usr/sbin/nologin >> "$LOG_FILE" 2>&1
 
     # Add permissions
-    log "Adding permissions..."
+    log_info "Adding permissions..."
     sudo adduser oasis kvm >> "$LOG_FILE" 2>&1
     sudo adduser oasis sgx >> "$LOG_FILE" 2>&1
 
     # Set ulimit
-    log "Setting ulimit..."
+    log_info "Setting ulimit..."
     ulimit -n 102400
 
     # Configure AppArmor
-    log "Configuring AppArmor..."
+    log_info "Configuring AppArmor..."
     sudo tee /etc/apparmor.d/bwrap << 'EOF' > /dev/null
 abi <abi/4.0>,
 include <tunables/global>
@@ -216,7 +264,7 @@ EOF
     sudo systemctl reload apparmor.service >> "$LOG_FILE" 2>&1
 
     # Create systemd service
-    log "Creating Oasis node systemd service..."
+    log_info "Creating Oasis node systemd service..."
     sudo tee /etc/systemd/system/oasis-node.service << 'EOF' > /dev/null
 [Unit]
 Description=Oasis Node
@@ -236,29 +284,29 @@ WantedBy=multi-user.target
 EOF
 
     # Get IP address
-    log "Getting IP address..."
+    log_info "Getting IP address..."
     export IP_ADDRESS=$(ip -4 addr show bond0.2 | grep inet | awk '{print $2}' | cut -d'/' -f1)
     if [ -z "$IP_ADDRESS" ]; then
-        log "ERROR: Failed to get IP address"
+        log_error "ERROR: Failed to get IP address"
         exit 1
     fi
 
     # Set block height and hash
-    log "Setting block height and hash..."
+    log_info "Setting block height and hash..."
     BLOCK_INFO=$(curl -s "https://testnet.nexus.oasis.io/v1/consensus/blocks?limit=1")
     export BLOCK_HEIGHT=$(echo "$BLOCK_INFO" | grep -o '"height":[0-9]*' | cut -d':' -f2)
     export BLOCK_HASH=$(echo "$BLOCK_INFO" | grep -o '"hash":"[^"]*"' | cut -d'"' -f4)
 
     if [ -z "$BLOCK_HEIGHT" ] || [ -z "$BLOCK_HASH" ]; then
-        log "ERROR: Failed to fetch block height and hash from API"
+        log_error "ERROR: Failed to fetch block height and hash from API"
         exit 1
     fi
 
-    log "Retrieved block height: $BLOCK_HEIGHT"
-    log "Retrieved block hash: $BLOCK_HASH"
+    log_info "Retrieved block height: $BLOCK_HEIGHT"
+    log_info "Retrieved block hash: $BLOCK_HASH"
 
     # Create config.yml
-    log "Creating config.yml..."
+    log_info "Creating config.yml..."
     sudo tee /node/etc/config.yml << EOF > /dev/null
 mode: client
 common:
@@ -310,12 +358,12 @@ runtime:
                   dst_port: 3000
 EOF
 
-    log "Sapphire node setup completed successfully"
+    log_info "Sapphire node setup completed successfully"
 }
 
 # Function to build realityspiral ORC
 build_realityspiral() {
-    log "Building realityspiral ORC file..."
+    log_info "Building realityspiral ORC file..."
     cd /node/apps
     git clone https://github.com/Sifchain/realityspiral.git >> "$LOG_FILE" 2>&1
     cd realityspiral
@@ -323,57 +371,57 @@ build_realityspiral() {
     mv realityspiral.default.orc /node/apps/ >> "$LOG_FILE" 2>&1
     cd ..
     rm -rf realityspiral >> "$LOG_FILE" 2>&1
-    log "Realityspiral ORC build completed successfully"
+    log_info "Realityspiral ORC build completed successfully"
 }
 
 # Function to setup and verify service
 setup_service() {
-    log "Setting up and verifying service..."
+    log_info "Setting up and verifying service..."
 
     # Set ownership
-    log "Setting directory ownership..."
+    log_info "Setting directory ownership..."
     sudo chown -R oasis /node >> "$LOG_FILE" 2>&1
 
     # Start node temporarily to ensure it works
-    log "Starting Oasis node temporarily..."
+    log_info "Starting Oasis node temporarily..."
     sudo -u oasis /node/bin/oasis-node --config /node/etc/config.yml >> "$LOG_FILE" 2>&1 &
     NODE_PID=$!
     sleep 10
     if ! ps -p $NODE_PID > /dev/null; then
-        log "ERROR: Oasis node failed to start"
+        log_error "ERROR: Oasis node failed to start"
         exit 1
     fi
     kill $NODE_PID
 
     # Enable and start service
-    log "Enabling and starting Oasis node service..."
+    log_info "Enabling and starting Oasis node service..."
     sudo systemctl enable oasis-node.service >> "$LOG_FILE" 2>&1
     sudo systemctl start oasis-node.service >> "$LOG_FILE" 2>&1
 
     # Check service status
-    log "Checking Oasis node service status..."
+    log_info "Checking Oasis node service status..."
     if sudo systemctl status oasis-node.service | grep -q "active (running)"; then
-        log "Oasis node service is running"
+        log_success "Oasis node service is running"
     else
-        log "ERROR: Oasis node service failed to start"
+        log_error "ERROR: Oasis node service failed to start"
         exit 1
     fi
 
     # Install CLI
-    log "Installing Oasis CLI..."
+    log_info "Installing Oasis CLI..."
     sudo curl -L https://github.com/oasisprotocol/cli/releases/download/v0.13.0/oasis_cli_0.13.0_linux_amd64.tar.gz | sudo tar -xz --strip-components=1 -C /node/bin >> "$LOG_FILE" 2>&1
 
     # Check node status
-    log "Checking node status..."
+    log_info "Checking node status..."
     sudo -u oasis /node/bin/oasis network add-local localhost unix:internal.sock --config /node/etc/cli.yml >> "$LOG_FILE" 2>&1
     if sudo -u oasis /node/bin/oasis net status --network localhost --config /node/etc/cli.yml | grep -q "syncing"; then
-        log "Node is syncing successfully"
+        log_success "Node is syncing successfully"
     else
-        log "ERROR: Node status check failed"
+        log_error "ERROR: Node status check failed"
         exit 1
     fi
 
-    log "Service setup and verification completed successfully"
+    log_success "Service setup and verification completed successfully"
 }
 
 # Function to display usage
@@ -419,13 +467,13 @@ fi
 # Run the specified step or all steps
 case $STEP in
     "")
-        log "Running all steps..."
+        log_info "Running all steps..."
         check_prerequisites
         setup_tdx
         setup_sapphire_node
         build_realityspiral
         setup_service
-        log "All steps completed successfully!"
+        log_success "All steps completed successfully!"
         ;;
     "prerequisites")
         check_prerequisites
@@ -443,7 +491,7 @@ case $STEP in
         setup_service
         ;;
     *)
-        log "ERROR: Unknown step: $STEP"
+        log_error "ERROR: Unknown step: $STEP"
         show_usage
         ;;
 esac
