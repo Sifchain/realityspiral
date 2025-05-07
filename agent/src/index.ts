@@ -31,6 +31,7 @@ import { normalizeCharacter } from "@elizaos/plugin-di";
 import { CoinbaseClientInterface } from "@realityspiral/client-coinbase";
 import { DirectClient } from "@realityspiral/client-direct";
 import { GitHubClientInterface } from "@realityspiral/client-github";
+import { OasisClientInterface } from "@realityspiral/client-oasis";
 import { accumulatedFinancePlugin } from "@realityspiral/plugin-accumulated-finance";
 import { bitProtocolPlugin } from "@realityspiral/plugin-bitprotocol";
 import {
@@ -162,6 +163,7 @@ export enum Clients {
 	COINBASE = "coinbase",
 	GITHUB = "github",
 	TELEGRAM = "telegram",
+	OASIS = "oasis",
 }
 
 export const CharacterSchema = BaseCharacterSchema.extend({
@@ -505,6 +507,15 @@ export async function initializeClients(
 		const telegramClient = await TelegramClientInterface.start(runtime);
 		if (telegramClient) clients.telegram = telegramClient;
 	}
+
+	if (
+		clientTypes.includes(Clients.OASIS) &&
+		getSecret(character, "OASIS_CLIENT_DISABLED") !== "true"
+	) {
+		const oasisClient = await OasisClientInterface.start(runtime);
+		if (oasisClient) clients.oasis = oasisClient;
+	}
+
 	elizaLogger.log("client keys", Object.keys(clients));
 
 	function determineClientType(client: Client): string {

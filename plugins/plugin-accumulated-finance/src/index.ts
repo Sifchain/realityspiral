@@ -6,7 +6,7 @@ import {
 	getStakedBalanceAction,
 	getStakingStrategiesAction,
 	mintAction,
-	redeemAction,
+	// redeemAction,
 	stakeAction,
 	unstakeAction,
 	unwrapRoseAction,
@@ -29,7 +29,7 @@ export const accumulatedFinancePlugin: Plugin = {
 		unwrapRoseAction,
 		mintAction,
 		approveAction,
-		redeemAction,
+		// redeemAction,
 	],
 	providers: [], // No providers defined yet
 };
@@ -37,6 +37,4 @@ export const accumulatedFinancePlugin: Plugin = {
 // Re-export types and constants for external use if needed
 export * from "./types";
 export * from "./constants";
-
-// Re-export ContractHelper from plugin-coinbase for convenience, if still desired
-// export { ContractHelper } from "@realityspiral/plugin-coinbase"; // Optional
+export * from "./plugins/accumulated";

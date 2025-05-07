@@ -11,4 +11,8 @@ export const roflPlugin: Plugin = {
 	providers: [getRoflKeyProvider],
 };
 
+export * from "./actions/getAgentRoflKey";
+export * from "./actions/getRoflKey";
+export * from "./providers/getRoflKey";
+
 export default roflPlugin;

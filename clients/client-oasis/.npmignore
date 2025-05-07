@@ -1,0 +1,8 @@
+node_modules/
+.turbo/
+src/
+__tests__/
+tsconfig.json
+tsup.config.ts
+*.tsbuildinfo
+*.log 

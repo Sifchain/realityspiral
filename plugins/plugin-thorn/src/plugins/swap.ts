@@ -78,8 +78,6 @@ export const swapProvider: Provider = {
 			// Initialize network configuration
 			const network =
 				runtime.getSetting("OASIS_NETWORK") || OASIS_NETWORKS.MAINNET;
-			const _apiUrl =
-				runtime.getSetting("THORN_API_URL") || THORN_DEFAULT_API_URL;
 
 			// Create ContractHelper using our utility function
 			const contractHelper = createContractHelper(runtime);

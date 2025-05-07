@@ -1,0 +1,40 @@
+{
+	"name": "@realityspiral/client-oasis",
+	"version": "0.1.0",
+	"type": "module",
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		"./package.json": "./package.json",
+		".": {
+			"import": {
+				"@realityspiral/source": "./src/index.ts",
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			}
+		}
+	},
+	"files": ["dist"],
+	"dependencies": {
+		"@elizaos/core": "^0.1.9",
+		"@oasisprotocol/client": "latest",
+		"@realityspiral/plugin-accumulated-finance": "workspace:*",
+		"@realityspiral/plugin-bitprotocol": "workspace:*",
+		"@realityspiral/plugin-neby": "workspace:*",
+		"@realityspiral/plugin-rofl": "workspace:*",
+		"@realityspiral/plugin-thorn": "workspace:*"
+	},
+	"devDependencies": {
+		"tsup": "8.3.5",
+		"@types/node": "^20.0.0",
+		"typescript": "^5.0.0",
+		"vitest": "^1.0.0"
+	},
+	"scripts": {
+		"build": "tsup --format esm --dts",
+		"dev": "tsup --format esm --dts --watch",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	}
+}
