@@ -96,11 +96,9 @@ setup_tdx() {
     check_command git
     check_command curl
     check_command tar
-    check_command rsync
     check_command apt
     check_command systemctl
     check_command dmesg
-    check_command rdmsr
 
     # Update package lists
     log "Updating package lists..."
@@ -109,6 +107,9 @@ setup_tdx() {
     # Install dependencies
     log "Installing dependencies..."
     sudo apt install -y bubblewrap apparmor msr-tools >> "$LOG_FILE" 2>&1
+
+    # Check for installed tools
+    check_command rdmsr
 
     # Check if reboot is needed
     check_reboot_needed
