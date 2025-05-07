@@ -59,7 +59,7 @@ const getUserAddressString = async (
 ): Promise<string> => {
 	try {
 		// Get wallet address from runtime settings or signer
-		const walletAddress = runtime.getSetting("WALLET_ADDRESS") as string;
+		const walletAddress = runtime.getSetting("WALLET_PUBLIC_KEY") as string;
 		if (walletAddress) {
 			elizaLogger.info("Retrieved wallet address from runtime settings", {
 				walletAddress,
