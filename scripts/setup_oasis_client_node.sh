@@ -230,6 +230,10 @@ setup_sapphire_node() {
     log_info "Downloading and extracting Oasis core..."
     sudo curl -L https://github.com/oasisprotocol/oasis-core/releases/download/v25.2/oasis_core_25.2_linux_amd64.tar.gz | sudo tar -xz --strip-components=1 -C /node/bin >> "$LOG_FILE" 2>&1
 
+    # Install CLI
+    log_info "Installing Oasis CLI..."
+    sudo curl -L https://github.com/oasisprotocol/cli/releases/download/v0.13.0/oasis_cli_0.13.0_linux_amd64.tar.gz | sudo tar -xz --strip-components=1 -C /node/bin >> "$LOG_FILE" 2>&1
+
     # Update PATH
     log_info "Updating PATH..."
     echo 'export PATH=$PATH:/node/bin' >> ~/.bashrc
@@ -324,8 +328,10 @@ consensus:
     enabled: true
   light_client:
     trust:
-      height: ${BLOCK_HEIGHT}
-      hash: "${BLOCK_HASH}"
+      # height: ${BLOCK_HEIGHT}
+      # hash: "${BLOCK_HASH}"
+      height: 26400000
+      hash: "b9e8cc54a911d8a2e268699400d664873efde19ac380098511fb5e38d904a428"
 p2p:
     seeds:
       # List of seed nodes to connect to.
@@ -364,13 +370,13 @@ EOF
 # Function to build realityspiral ORC
 build_realityspiral() {
     log_info "Building realityspiral ORC file..."
-    cd /node/apps
+    cd /tmp
     git clone https://github.com/Sifchain/realityspiral.git >> "$LOG_FILE" 2>&1
     cd realityspiral
-    oasis rofl build >> "$LOG_FILE" 2>&1
-    mv realityspiral.default.orc /node/apps/ >> "$LOG_FILE" 2>&1
-    cd ..
-    rm -rf realityspiral >> "$LOG_FILE" 2>&1
+    sudo /node/bin/oasis rofl build >> "$LOG_FILE" 2>&1
+    sudo mv realityspiral.default.orc /node/apps/ >> "$LOG_FILE" 2>&1
+    sudo rm -rf /tmp/realityspiral >> "$LOG_FILE" 2>&1
+    cd
     log_info "Realityspiral ORC build completed successfully"
 }
 
@@ -407,13 +413,11 @@ setup_service() {
         exit 1
     fi
 
-    # Install CLI
-    log_info "Installing Oasis CLI..."
-    sudo curl -L https://github.com/oasisprotocol/cli/releases/download/v0.13.0/oasis_cli_0.13.0_linux_amd64.tar.gz | sudo tar -xz --strip-components=1 -C /node/bin >> "$LOG_FILE" 2>&1
-
     # Check node status
     log_info "Checking node status..."
+    cd /node/data
     sudo -u oasis /node/bin/oasis network add-local localhost unix:internal.sock --config /node/etc/cli.yml >> "$LOG_FILE" 2>&1
+    cd -
     if sudo -u oasis /node/bin/oasis net status --network localhost --config /node/etc/cli.yml | grep -q "syncing"; then
         log_success "Node is syncing successfully"
     else
