@@ -8,7 +8,6 @@ import {
 	type UUID,
 	elizaLogger,
 } from "@elizaos/core";
-import * as oasis from "@oasisprotocol/client";
 import {
 	approveAction,
 	claimRewardsAction,
@@ -43,10 +42,6 @@ import {
 	getSwapQuoteAction,
 } from "@realityspiral/plugin-thorn";
 
-// Placeholder types - replace with actual types
-type RoflWallet = { address: string; secret: string };
-type ActionResult = { success: boolean; data?: any; error?: any };
-
 export class OasisClient extends EventEmitter {
 	runtime: IAgentRuntime;
 	character: Character;
@@ -78,6 +73,9 @@ export class OasisClient extends EventEmitter {
 			nebyAddLiquidityAction,
 			nebyGetPoolInfoAction,
 			nebyGetPoolLiquidityAction,
+			nebyMonitorPricesAction,
+			nebyRemoveLiquidityAction,
+			nebySwapAction,
 			executeSwapAction,
 			getSwapQuoteAction,
 			getAgentRoflKeyAction,
@@ -117,91 +115,6 @@ export class OasisClient extends EventEmitter {
 		elizaLogger.info(
 			`OasisClient stopping for agent ${this.runtime.agentId}...`,
 		);
-	}
-
-	/**
-	 * Creates a ROFL wallet and executes actions on other plugins.
-	 * This might be triggered by an action, event, or called internally.
-	 */
-	async executeWorkflow(
-		userId?: string /* Or other relevant identifiers */,
-	): Promise<{ [key: string]: ActionResult }> {
-		if (this.stopped) {
-			elizaLogger.warn("executeWorkflow called after client stopped.");
-			return {};
-		}
-
-		elizaLogger.info("Executing Oasis workflow...", { userId });
-
-		// --- TODO: Replace Mocks with Actual Plugin Logic & Config ---
-		const roflOptions = this.runtime.getSetting("ROFL_PLUGIN_OPTIONS") || {};
-		const accFinOptions =
-			this.runtime.getSetting("ACC_FIN_PLUGIN_OPTIONS") || {};
-		const bitpOptions = this.runtime.getSetting("BITP_PLUGIN_OPTIONS") || {};
-		const nebyOptions = this.runtime.getSetting("NEBY_PLUGIN_OPTIONS") || {};
-		const thornOptions = this.runtime.getSetting("THORN_PLUGIN_OPTIONS") || {};
-
-		elizaLogger.info("Creating ROFL wallet...");
-		let wallet: RoflWallet;
-		try {
-			// wallet = await roflPlugin.createWallet(roflOptions);
-			wallet = { address: "mock_address", secret: "mock_secret" }; // Mock wallet
-			elizaLogger.info(`Wallet created: ${wallet.address}`);
-		} catch (error: any) {
-			elizaLogger.error("ROFL wallet creation failed:", error);
-			// Decide how to handle wallet creation failure - maybe throw or return error
-			return { rofl: { success: false, error: error.message } };
-		}
-
-		const results: { [key: string]: ActionResult } = {};
-
-		// Helper function to execute plugin actions
-		const executeAction = async (
-			pluginName: string,
-			actionFn: () => Promise<any>, // Replace 'any' with specific result type if known
-		) => {
-			try {
-				elizaLogger.info(`Executing ${pluginName} action...`);
-				const resultData = await actionFn();
-				results[pluginName] = { success: true, data: resultData };
-				elizaLogger.info(`${pluginName} action complete.`);
-			} catch (error: any) {
-				elizaLogger.error(`${pluginName} action failed:`, error);
-				results[pluginName] = { success: false, error: error.message };
-			}
-		};
-
-		await executeAction(
-			"accumulatedFinance",
-			async () =>
-				// await accFinPlugin.someAction(wallet, accFinOptions)
-				({ mockData: "mock_acc_fin_result" }), // Mock action
-		);
-
-		await executeAction(
-			"bitProtocol",
-			async () =>
-				// await bitpPlugin.someAction(wallet, bitpOptions)
-				({ mockData: "mock_bitp_result" }), // Mock action
-		);
-
-		await executeAction(
-			"neby",
-			async () =>
-				// await nebyPlugin.someAction(wallet, nebyOptions)
-				({ mockData: "mock_neby_result" }), // Mock action
-		);
-
-		await executeAction(
-			"thorn",
-			async () =>
-				// await thornPlugin.someAction(wallet, thornOptions)
-				({ mockData: "mock_thorn_result" }), // Mock action
-		);
-		// --- End TODO ---
-
-		elizaLogger.info("Oasis workflow finished.");
-		return results;
 	}
 }
 
