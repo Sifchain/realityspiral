@@ -137,6 +137,7 @@ export const OasisClientInterface: Client = {
 					`OasisClient instance not found on runtime for agent ${runtime.agentId} during stop.`,
 				);
 			}
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (e: any) {
 			elizaLogger.error(
 				`OasisClient stop error for agent ${runtime.agentId}:`,
