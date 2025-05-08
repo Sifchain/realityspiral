@@ -6,6 +6,9 @@
 # Exit on error
 set -e
 
+# Get current user
+CURRENT_USER=$(logname)
+
 # Log file (default to /dev/stdout if not provided)
 LOG_FILE="${LOG_FILE:-/dev/stdout}"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
@@ -178,7 +181,11 @@ setup_tdx() {
         sudo reboot
     fi
 
-    # Verify TDX and SGX
+    log_success "TDX setup completed successfully"
+}
+
+# Function to verify TDX setup
+verify_tdx() {
     log_info "Verifying TDX..."
     if sudo dmesg | grep -i tdx | grep -q "module initialized"; then
         log_success "TDX module initialized successfully"
@@ -211,7 +218,7 @@ setup_tdx() {
         exit 1
     fi
 
-    log_success "TDX setup completed successfully"
+    log_success "TDX verification completed successfully"
 }
 
 # Function to setup Sapphire node
@@ -221,32 +228,29 @@ setup_sapphire_node() {
     # Create directories
     log_info "Creating node directories..."
     sudo mkdir -m700 -p /node/{etc,bin,runtimes,data,apps} >> "$LOG_FILE" 2>&1
+    sudo chown -R ${CURRENT_USER}:nogroup /node >> "$LOG_FILE" 2>&1
 
     # Download genesis file
     log_info "Downloading genesis.json..."
-    sudo curl -L https://github.com/oasisprotocol/testnet-artifacts/releases/download/2023-10-12/genesis.json -o /node/etc/genesis.json >> "$LOG_FILE" 2>&1
+    curl -L https://github.com/oasisprotocol/testnet-artifacts/releases/download/2023-10-12/genesis.json -o /node/etc/genesis.json >> "$LOG_FILE" 2>&1
 
     # Download and extract Oasis core
     log_info "Downloading and extracting Oasis core..."
-    sudo curl -L https://github.com/oasisprotocol/oasis-core/releases/download/v25.2/oasis_core_25.2_linux_amd64.tar.gz | sudo tar -xz --strip-components=1 -C /node/bin >> "$LOG_FILE" 2>&1
+    curl -L https://github.com/oasisprotocol/oasis-core/releases/download/v25.2/oasis_core_25.2_linux_amd64.tar.gz | tar -xz --strip-components=1 -C /node/bin >> "$LOG_FILE" 2>&1
 
     # Install CLI
     log_info "Installing Oasis CLI..."
-    sudo curl -L https://github.com/oasisprotocol/cli/releases/download/v0.13.0/oasis_cli_0.13.0_linux_amd64.tar.gz | sudo tar -xz --strip-components=1 -C /node/bin >> "$LOG_FILE" 2>&1
+    curl -L https://github.com/oasisprotocol/cli/releases/download/v0.13.0/oasis_cli_0.13.0_linux_amd64.tar.gz | tar -xz --strip-components=1 -C /node/bin >> "$LOG_FILE" 2>&1
 
     # Update PATH
     log_info "Updating PATH..."
     echo 'export PATH=$PATH:/node/bin' >> ~/.bashrc
     source ~/.bashrc
 
-    # Create oasis user
-    log_info "Creating oasis user..."
-    sudo adduser --system oasis --shell /usr/sbin/nologin >> "$LOG_FILE" 2>&1
-
     # Add permissions
     log_info "Adding permissions..."
-    sudo adduser oasis kvm >> "$LOG_FILE" 2>&1
-    sudo adduser oasis sgx >> "$LOG_FILE" 2>&1
+    sudo adduser ${CURRENT_USER} kvm >> "$LOG_FILE" 2>&1
+    sudo adduser ${CURRENT_USER} sgx >> "$LOG_FILE" 2>&1
 
     # Set ulimit
     log_info "Setting ulimit..."
@@ -269,14 +273,14 @@ EOF
 
     # Create systemd service
     log_info "Creating Oasis node systemd service..."
-    sudo tee /etc/systemd/system/oasis-node.service << 'EOF' > /dev/null
+    sudo tee /etc/systemd/system/oasis-node.service << EOF > /dev/null
 [Unit]
 Description=Oasis Node
 After=network.target
 
 [Service]
 Type=simple
-User=oasis
+User=${CURRENT_USER}
 WorkingDirectory=/node/data
 ExecStart=/node/bin/oasis-node --config /node/etc/config.yml
 Restart=on-failure
@@ -311,7 +315,7 @@ EOF
 
     # Create config.yml
     log_info "Creating config.yml..."
-    sudo tee /node/etc/config.yml << EOF > /dev/null
+    tee /node/etc/config.yml << EOF > /dev/null
 mode: client
 common:
     data_dir: /node/data
@@ -373,9 +377,9 @@ build_realityspiral() {
     cd /tmp
     git clone https://github.com/Sifchain/realityspiral.git >> "$LOG_FILE" 2>&1
     cd realityspiral
-    sudo /node/bin/oasis rofl build >> "$LOG_FILE" 2>&1
-    sudo mv realityspiral.default.orc /node/apps/ >> "$LOG_FILE" 2>&1
-    sudo rm -rf /tmp/realityspiral >> "$LOG_FILE" 2>&1
+    oasis rofl build >> "$LOG_FILE" 2>&1
+    mv realityspiral.default.orc /node/apps/ >> "$LOG_FILE" 2>&1
+    rm -rf /tmp/realityspiral >> "$LOG_FILE" 2>&1
     cd
     log_info "Realityspiral ORC build completed successfully"
 }
@@ -386,11 +390,11 @@ setup_service() {
 
     # Set ownership
     log_info "Setting directory ownership..."
-    sudo chown -R oasis /node >> "$LOG_FILE" 2>&1
+    sudo chown -R ${CURRENT_USER}:nogroup /node >> "$LOG_FILE" 2>&1
 
     # Start node temporarily to ensure it works
     log_info "Starting Oasis node temporarily..."
-    sudo -u oasis /node/bin/oasis-node --config /node/etc/config.yml >> "$LOG_FILE" 2>&1 &
+    oasis-node --config /node/etc/config.yml >> "$LOG_FILE" 2>&1 &
     NODE_PID=$!
     sleep 10
     if ! ps -p $NODE_PID > /dev/null; then
@@ -413,27 +417,21 @@ setup_service() {
         exit 1
     fi
 
-    # Display manual steps for network setup
-    log_info "======================================================"
-    log_info "MANUAL NETWORK SETUP STEPS"
-    log_info "======================================================"
-    log_info "Please run the following commands manually:"
-    log_info ""
-    log_info "1. Switch to root user:"
-    log_info "   sudo -s"
-    log_info ""
-    log_info "2. Navigate to node data directory:"
-    log_info "   cd /node/data"
-    log_info ""
-    log_info "3. Add local network:"
-    log_info "   oasis network add-local localhost unix:internal.sock --config /node/etc/cli.yml"
-    log_info ""
-    log_info "4. To check network status, run:"
-    log_info "   oasis net status --network localhost --config /node/etc/cli.yml"
-    log_info ""
-    log_info "======================================================"
+    # Setup network configuration
+    log_info "Setting up network configuration..."
+    cd /node/data
+    oasis network add-local localhost unix:internal.sock --config /node/etc/cli.yml >> "$LOG_FILE" 2>&1
+    
+    # Check network status
+    log_info "Checking network status..."
+    if oasis net status --network localhost --config /node/etc/cli.yml >> "$LOG_FILE" 2>&1; then
+        log_success "Network setup completed successfully"
+    else
+        log_error "ERROR: Network setup failed"
+        exit 1
+    fi
 
-    log_success "Service setup completed. Please follow the manual steps above."
+    log_success "Service and network setup completed successfully"
 }
 
 # Function to display usage
@@ -441,7 +439,7 @@ show_usage() {
     echo "Usage: $0 [OPTION]"
     echo "Options:"
     echo "  -h, --help                 Show this help message"
-    echo "  -s, --step STEP            Run a specific step (prerequisites, tdx, sapphire, realityspiral, service)"
+    echo "  -s, --step STEP            Run a specific step (prerequisites, tdx, verify, sapphire, realityspiral, service)"
     echo "  -l, --log FILE             Specify log file (default: stdout)"
     echo ""
     echo "If no step is specified, all steps will be run in sequence."
@@ -482,6 +480,7 @@ case $STEP in
         log_info "Running all steps..."
         check_prerequisites
         setup_tdx
+        verify_tdx
         setup_sapphire_node
         build_realityspiral
         setup_service
@@ -492,6 +491,9 @@ case $STEP in
         ;;
     "tdx")
         setup_tdx
+        ;;
+    "verify")
+        verify_tdx
         ;;
     "sapphire")
         setup_sapphire_node
