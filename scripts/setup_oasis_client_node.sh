@@ -413,19 +413,27 @@ setup_service() {
         exit 1
     fi
 
-    # Check node status
-    log_info "Checking node status..."
-    cd /node/data
-    sudo -u oasis /node/bin/oasis network add-local localhost unix:internal.sock --config /node/etc/cli.yml >> "$LOG_FILE" 2>&1
-    cd -
-    if sudo -u oasis /node/bin/oasis net status --network localhost --config /node/etc/cli.yml | grep -q "syncing"; then
-        log_success "Node is syncing successfully"
-    else
-        log_error "ERROR: Node status check failed"
-        exit 1
-    fi
+    # Display manual steps for network setup
+    log_info "======================================================"
+    log_info "MANUAL NETWORK SETUP STEPS"
+    log_info "======================================================"
+    log_info "Please run the following commands manually:"
+    log_info ""
+    log_info "1. Switch to root user:"
+    log_info "   sudo -s"
+    log_info ""
+    log_info "2. Navigate to node data directory:"
+    log_info "   cd /node/data"
+    log_info ""
+    log_info "3. Add local network:"
+    log_info "   oasis network add-local localhost unix:internal.sock --config /node/etc/cli.yml"
+    log_info ""
+    log_info "4. To check network status, run:"
+    log_info "   oasis net status --network localhost --config /node/etc/cli.yml"
+    log_info ""
+    log_info "======================================================"
 
-    log_success "Service setup and verification completed successfully"
+    log_success "Service setup completed. Please follow the manual steps above."
 }
 
 # Function to display usage
