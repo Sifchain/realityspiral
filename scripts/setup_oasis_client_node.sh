@@ -225,6 +225,12 @@ verify_tdx() {
 setup_sapphire_node() {
     log_info "Setting up Sapphire client node..."
 
+    # Check for required tools
+    log_info "Checking for required tools..."
+    check_command curl
+    check_command tar
+    check_command systemctl
+
     # Create directories
     log_info "Creating node directories..."
     sudo mkdir -m700 -p /node/{etc,bin,runtimes,data,apps} >> "$LOG_FILE" 2>&1
@@ -246,6 +252,12 @@ setup_sapphire_node() {
     log_info "Updating PATH..."
     echo 'export PATH=$PATH:/node/bin' >> ~/.bashrc
     source ~/.bashrc
+
+    # Check commands are available
+    log_info "Checking for required oasis tools..."
+    check_command oasis
+    check_command oasis-node
+    check-command oasis-core-runtime-loader
 
     # Add permissions
     log_info "Adding permissions..."
@@ -374,19 +386,36 @@ EOF
 # Function to build realityspiral ORC
 build_realityspiral() {
     log_info "Building realityspiral ORC file..."
+
+    # Check commands are available
+    log_info "Checking for required tools..."
+    check_command git
+    check_command oasis
+
     cd /tmp
+
     git clone https://github.com/Sifchain/realityspiral.git >> "$LOG_FILE" 2>&1
+
     cd realityspiral
     oasis rofl build >> "$LOG_FILE" 2>&1
+
     mv realityspiral.default.orc /node/apps/ >> "$LOG_FILE" 2>&1
     rm -rf /tmp/realityspiral >> "$LOG_FILE" 2>&1
+
     cd
+
     log_info "Realityspiral ORC build completed successfully"
 }
 
 # Function to setup and verify service
 setup_service() {
     log_info "Setting up and verifying service..."
+
+    # Check commands are available
+    log_info "Checking for required tools..."
+    check_command systemctl
+    check_command oasis
+    check_command oasis-node
 
     # Set ownership
     log_info "Setting directory ownership..."
@@ -416,6 +445,10 @@ setup_service() {
         log_error "ERROR: Oasis node service failed to start"
         exit 1
     fi
+
+    # Sleep for 10 seconds
+    log_info "Sleeping for 10 seconds..."
+    sleep 10
 
     # Setup network configuration
     log_info "Setting up network configuration..."
