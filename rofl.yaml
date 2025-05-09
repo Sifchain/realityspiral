@@ -84,13 +84,13 @@ deployments:
         value: pGJwa1ggy/3sW1BrjDexi2gTQQD3ksTfrjXkQcwYW7PtyIfIdBJkbmFtZVgitrjbp5DCoFSIWC+zowWPGDJI1PmR0IijMr9Xz9zxdiESHGVub25jZU/Y44Jpm5xwHuKF19G0MMhldmFsdWVYUEUb8QhTyrLwECyqubqKxXZNuObByVzIx8K/l8IsX7jd4p8XRiD77hIp/cPqO2aAlACSG8/wtssthMSaPW3XvoTaiksY8FUBxa5YlEv2pOAn
       - name: WALLET_PUBLIC_KEY
         value: pGJwa1ggc9cGXSDYL02KW0wYBcEyqmKeotCJjyeR30hFqsQc0VRkbmFtZVghG4a2TIXqmwtjdKqLL8rPFAQEXYA492Pz7WB0UEWXnIp4ZW5vbmNlT0SEcKac3FTN75Aa++v53GV2YWx1ZVg6rg1g2q+VQE1DYrgsqCBeXvwJZ4K1MXUo1yLDzUbsu9o84vaxpXzWsFCPjQvVry2WRo7X1vbfEnNohQ==
-      - name: ACCUMULATED_FINANCE_ENABLED
-        value: pGJwa1gg7LbAC3ES0wlKw45CdFwGLJtr+umlYW3EH8KhHzlJXVtkbmFtZVgrvq2/muMAQbkJfN1yWImlkgSeTHp8ptFNuU1QpzzN36k+NfaVT89ktpYVrWVub25jZU8CZc+0zdKBcM4b8C5BoulldmFsdWVVV+YSBxFcbnXrLUMZrxUWUizWzCa9
-      - name: BITPROTOCOL_ENABLED
-        value: pGJwa1ggdySmB/Bu50gPgaCLzjLqRjNcmzsIthHgEaJ2YmR81QBkbmFtZVgjCNkGu0ZoHgmvHaBNMlzhYgZxoIM+fWtlPiWOiSuOyZD9dMVlbm9uY2VPHxD7+Up9cGEb3ZDghlYyZXZhbHVlVeYoOOoCN9JQUlAYRIaCsyiymSROmg==
-      - name: NEBY_ENABLED
-        value: pGJwa1ggl8Iy4WcLlwCfQZtG/d/jjKCtj0vGHTKn+kvHw/Crr05kbmFtZVgcgQhIjubV3GciCAC2cnXl+GpOdkiSCKR609Q2gmVub25jZU8Rxhx9tuHXNU/ff86RPtZldmFsdWVVElB3s/D8vNRD4ZzKKMPorHkO0u8I
-      - name: THORN_ENABLED
-        value: pGJwa1ggyKXyzWb0Hyg+MjNhaK7HN6clSmx7Uq0PFx7gARyowFpkbmFtZVgdpQu8CKXcivNvMi2FIU5npmyJPF835DJHLjJoks1lbm9uY2VPW7OBvuCrYBiMPT8Q/nZvZXZhbHVlVSKGjk7btVKNYQ1VVe/SAf3XSnOAQw==
       - name: ROFL_PLUGIN_ENABLED
         value: pGJwa1ggGOoHOrgP/LcPfVAkMcuuUPWpAVMTZLltVE8UQFWQWwxkbmFtZVgjn6poCRS8ig0UOWJc8ER/aRZPf1pMGd59d20fmDh2YwspEcBlbm9uY2VPQmNnP6T9tWdEyb4227ciZXZhbHVlVTSBGmVzH+IrkANfV5WaifE89v7zRA==
+      - name: THORN_ENABLED
+        value: pGJwa1ggd0EVIUofOUXn6uZUA3G2R3EFussX0aZ+M/z3f0RVDDVkbmFtZVgdnexbmgaLoRZ3a5MSlqS83AlE4IXAkGfMfVue6dNlbm9uY2VPBwHCpKFkHAvbdlU0QKQbZXZhbHVlVIwylHz/Cr8oCPRt5pHEYDUfcxsv
+      - name: ACCUMULATED_FINANCE_ENABLED
+        value: pGJwa1ggWzjTYFnCYt7wSdLzTaY0Ff5wYfwsYqCkhugPKG7UK2lkbmFtZVgrInWbdI5somG2d+tlMF/rvpu4HUBXi40WNQD0RFdO09bQ1o13vg0eBlgWxmVub25jZU+hagEQr1DC2Q89Mdyo+rRldmFsdWVU06gQJEXVItxbdsxEsCYR16CBr7A=
+      - name: BITPROTOCOL_ENABLED
+        value: pGJwa1ggBPJy7Lgfze3tOJ986+gUyxgMlAZkUz1Fcdz3hXdGHw5kbmFtZVgj4es/SJ9oCUrBM+mENLy5nMX3smVwjdBD2hur3ogf8WXPSzFlbm9uY2VPNra9zH7XEgmDculvHK+lZXZhbHVlVEnFgtpqg/o7qPuGTGCd9e3H1KKz
+      - name: NEBY_ENABLED
+        value: pGJwa1ggDpN+E03wTcF16Q2R0vL+hmnAW5MkUQDGtP2d6k/fxwxkbmFtZVgctnd6RQIQ6iuuftc+y+Pqrc6ZW3uiyyXh0TbwfGVub25jZU/Nt4Jil4LZ9D9E8Rtn4ZtldmFsdWVUxoGJ4BUBEYOqOYeGb93TNanmIoE=
