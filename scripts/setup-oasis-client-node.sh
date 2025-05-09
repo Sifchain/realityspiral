@@ -165,6 +165,25 @@ setup_tdx() {
     # Check if reboot is needed
     check_reboot_needed
 
+    # Install Docker
+    log_info "Installing Docker..."
+    sudo apt-get install -y ca-certificates curl >> "$LOG_FILE" 2>&1
+    sudo install -m 0755 -d /etc/apt/keyrings >> "$LOG_FILE" 2>&1
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc >> "$LOG_FILE" 2>&1
+    sudo chmod a+r /etc/apt/keyrings/docker.asc >> "$LOG_FILE" 2>&1
+
+    # Add Docker repository
+    log_info "Adding Docker repository..."
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update >> "$LOG_FILE" 2>&1
+
+    # Install Docker packages
+    log_info "Installing Docker packages..."
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin >> "$LOG_FILE" 2>&1
+
     # Clone TDX repository
     log_info "Cloning TDX repository..."
     git clone -b main https://github.com/canonical/tdx.git >> "$LOG_FILE" 2>&1
@@ -173,7 +192,25 @@ setup_tdx() {
     log_info "Setting up TDX host..."
     cd tdx
     sudo ./setup-tdx-host.sh >> "$LOG_FILE" 2>&1
-    cd ..
+    cd
+
+    # Setup QGS service
+    log_info "Setting up QGS service..."
+    cd tdx/attestation
+    sudo ./setup-attestation-host.sh >> "$LOG_FILE" 2>&1
+    cd
+
+    # Start AESMD container
+    log_info "Starting AESMD container..."
+    docker run \
+      --pull always \
+      --detach \
+      --restart always \
+      --device /dev/sgx_enclave \
+      --device /dev/sgx_provision \
+      --volume /var/run/aesmd:/var/run/aesmd \
+      --name aesmd \
+      ghcr.io/oasisprotocol/aesmd-dcap:master >> "$LOG_FILE" 2>&1
 
     # Check if reboot is required after TDX setup
     if [ -f "/var/run/reboot-required" ]; then
@@ -303,14 +340,6 @@ LimitNOFILE=1024000
 WantedBy=multi-user.target
 EOF
 
-    # Get IP address
-    log_info "Getting IP address..."
-    export IP_ADDRESS=$(ip -4 addr show bond0.2 | grep inet | awk '{print $2}' | cut -d'/' -f1)
-    if [ -z "$IP_ADDRESS" ]; then
-        log_error "ERROR: Failed to get IP address"
-        exit 1
-    fi
-
     # Set block height and hash
     log_info "Setting block height and hash..."
     BLOCK_INFO=$(curl -s "https://testnet.nexus.oasis.io/v1/consensus/blocks?limit=1")
@@ -370,11 +399,11 @@ runtime:
           - id: rofl.rofl1qpkplp3uq5yage4kunt0ylmulett0arzwcdjvc8u # realityspiral
             networking:
               incoming:
-                - ip: ${IP_ADDRESS}
+                - ip: 0.0.0.0
                   protocol: tcp
                   src_port: 5173
                   dst_port: 5173
-                - ip: ${IP_ADDRESS}
+                - ip: 0.0.0.0
                   protocol: tcp
                   src_port: 3000
                   dst_port: 3000
