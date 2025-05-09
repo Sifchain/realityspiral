@@ -202,7 +202,7 @@ setup_tdx() {
 
     # Start AESMD container
     log_info "Starting AESMD container..."
-    docker run \
+    sudo docker run \
       --pull always \
       --detach \
       --restart always \
@@ -211,6 +211,10 @@ setup_tdx() {
       --volume /var/run/aesmd:/var/run/aesmd \
       --name aesmd \
       ghcr.io/oasisprotocol/aesmd-dcap:master >> "$LOG_FILE" 2>&1
+
+    # Update SGX PCCS URL configuration
+    log_info "Updating SGX PCCS URL configuration..."
+    sudo sed -i 's|"pccs_url": "https://localhost:8081/sgx/certification/v4/"|"pccs_url": "https://api.trustedservices.intel.com/sgx/certification/v4/"|' /etc/sgx_default_qcnl.conf >> "$LOG_FILE" 2>&1
 
     # Check if reboot is required after TDX setup
     if [ -f "/var/run/reboot-required" ]; then
@@ -289,12 +293,14 @@ setup_sapphire_node() {
     log_info "Updating PATH..."
     echo 'export PATH=$PATH:/node/bin' >> ~/.bashrc
     source ~/.bashrc
+    # also add to current session
+    export PATH=$PATH:/node/bin
 
     # Check commands are available
     log_info "Checking for required oasis tools..."
     check_command oasis
     check_command oasis-node
-    check-command oasis-core-runtime-loader
+    check_command oasis-core-runtime-loader
 
     # Add permissions
     log_info "Adding permissions..."
@@ -421,7 +427,7 @@ build_realityspiral() {
     check_command git
     check_command oasis
 
-    cd /tmp
+    cd
 
     git clone https://github.com/Sifchain/realityspiral.git >> "$LOG_FILE" 2>&1
 
@@ -429,7 +435,6 @@ build_realityspiral() {
     oasis rofl build >> "$LOG_FILE" 2>&1
 
     mv realityspiral.default.orc /node/apps/ >> "$LOG_FILE" 2>&1
-    rm -rf /tmp/realityspiral >> "$LOG_FILE" 2>&1
 
     cd
 
@@ -482,16 +487,22 @@ setup_service() {
     # Setup network configuration
     log_info "Setting up network configuration..."
     cd /node/data
-    oasis network add-local localhost unix:internal.sock --config /node/etc/cli.yml >> "$LOG_FILE" 2>&1
+    oasis network add-local localhost unix:internal.sock >> "$LOG_FILE" 2>&1
     
     # Check network status
     log_info "Checking network status..."
-    if oasis net status --network localhost --config /node/etc/cli.yml >> "$LOG_FILE" 2>&1; then
+    if oasis net status --network localhost >> "$LOG_FILE" 2>&1; then
         log_success "Network setup completed successfully"
     else
         log_error "ERROR: Network setup failed"
         exit 1
     fi
+
+    # Get node address
+    log_info "Retrieving node address..."
+    NODE_ADDRESS=$(oasis-node identity show-address -a unix:internal.sock)
+    log_info "Your node address is: $NODE_ADDRESS"
+    log_info "Please visit https://faucet.testnet.oasis.io and fund this address on the Sapphire chain to cover gas fees."
 
     log_success "Service and network setup completed successfully"
 }
