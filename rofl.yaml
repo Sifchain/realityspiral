@@ -31,8 +31,8 @@ deployments:
           min_tcb_evaluation_data_number: 18
           tdx: {}
       enclaves:
-        - c49pbTGPU+dqHj++hQaYqUgBdw0+MXJ97qs1ez1hUvMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
-        - 9cYzmEQlfHN0h4LHLWDkZ00j7YEOf6lSHyJq/cWZkigAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - qY3NqWPmHNy/bgdEw1n+rEt5TfA978TrA1tq0jjxEZwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - n1wgLip/cu4XExwpKzC+CtoLnYlbW/BaTbdIn4tVYU8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
       endorsements:
         - any: {}
       fees: endorsing_node
@@ -76,8 +76,6 @@ deployments:
         value: pGJwa1gg1rJLIGM27ox4lr5rbAVlJy8ycXDDxGRtW7TNLsEbPnJkbmFtZVgeyY7+qt3Eynj/T3YdDgh06L4myQJa6Lp0y8MSgqmNZW5vbmNlT1pzFtfJ66yYrdw1Ir/W0WV2YWx1ZVi0ih2P4HhUdnkrFqgDe6FSwOaAbE+5zYS7E5fJ/A/Nf+DbN/O8iHXfDnoFk/y3lkD1BG+WDcWO+l/kkkuPPumVCQA8Ei64QjSPRFsPKeGoHfh9MI+eAvKQ4gvp9X3gDK44+e7zWPaojQb0nt3a6jhoRy55tdnw2RX5mX0ybMYBw+se1a74qW2LFqpweQASZdcV5PZPRFTMpEWvT3IVXej1Awl7+TXvwTw908eV6oHwUBZoxqU4
       - name: UI_SERVER_URL
         value: pGJwa1ggiy2WZVFv05dQA+D/ziRSFXci6+NuASbDnoE9WhV7BmZkbmFtZVgdSM+XlzEPBSXGUGYCqhiDz7BYRNcDuBoZ0w0r+y5lbm9uY2VPs+Db03TF4uKtemosqo3VZXZhbHVlWDnq9eXjKC3VRk/lrjhYNd+p0KYeikgjhi6uY+2xQvS6gvu35AZTz1PzRG4kg+6T+SfUqXkJZ1hzjV4=
-      - name: ROFL_PLUGIN_ENABLED
-        value: pGJwa1ggkx2/Dj3W0igNyy/xc73AJznuYV1gbPUcXI+QRvAsBgFkbmFtZVgjOQZ27Kwow89Yeg5kILZtVG+rsQgNxOQ3MJ09Zdu5SJaNYnBlbm9uY2VPSKyAwp6Haig7Pk5V+JyPZXZhbHVlVKSAwApqupdmrcE0LiXbYZ4qNwN0
       - name: COINBASE_API_KEY
         value: pGJwa1ggBgT/1qPHggUqyB8TOkymphL12j6drH51xEuI9j+q8DJkbmFtZVggp29MQJBtPIDYjqkiAqyYEq3ObfPRWMIAN/35rtIzix1lbm9uY2VPCp2cZV3hDCYIjeC9OeLAZXZhbHVlWG/Rbe7ua5xQuo6XKyj61207L5sJDnx2G29kyGMB0BiPx32FEvkU5J27C5wdnEjxd/5w04uxTFF0NzvZwnifWWzgnY/5M1TexXe7z2ZPVRHcLKWmUznvq3vRDSEw01iZUjHHRQenK5+98TXiMvrZRwg=
       - name: COINBASE_PRIVATE_KEY
@@ -94,3 +92,5 @@ deployments:
         value: pGJwa1ggl8Iy4WcLlwCfQZtG/d/jjKCtj0vGHTKn+kvHw/Crr05kbmFtZVgcgQhIjubV3GciCAC2cnXl+GpOdkiSCKR609Q2gmVub25jZU8Rxhx9tuHXNU/ff86RPtZldmFsdWVVElB3s/D8vNRD4ZzKKMPorHkO0u8I
       - name: THORN_ENABLED
         value: pGJwa1ggyKXyzWb0Hyg+MjNhaK7HN6clSmx7Uq0PFx7gARyowFpkbmFtZVgdpQu8CKXcivNvMi2FIU5npmyJPF835DJHLjJoks1lbm9uY2VPW7OBvuCrYBiMPT8Q/nZvZXZhbHVlVSKGjk7btVKNYQ1VVe/SAf3XSnOAQw==
+      - name: ROFL_PLUGIN_ENABLED
+        value: pGJwa1ggGOoHOrgP/LcPfVAkMcuuUPWpAVMTZLltVE8UQFWQWwxkbmFtZVgjn6poCRS8ig0UOWJc8ER/aRZPf1pMGd59d20fmDh2YwspEcBlbm9uY2VPQmNnP6T9tWdEyb4227ciZXZhbHVlVTSBGmVzH+IrkANfV5WaifE89v7zRA==
