@@ -94,19 +94,19 @@ check_prerequisites() {
     # Check if server is already deployed
     read -p "$(prompt "Have you already deployed a Phoenix server? (yes/no): ")" server_deployed
     if [[ ! "$server_deployed" =~ ^[Yy][Ee][Ss]$ ]]; then
-        log_info "Please follow these steps to deploy a Phoenix server:"
-        log_info ""
-        log_info "1. Go to PhoenixNAP API Playground:"
-        log_info "   https://developers.phoenixnap.com/docs/bmc/1/routes/servers/post"
-        log_info ""
-        log_info "2. Click on Authorize and use your API credentials:"
-        log_info "   - If you don't have API credentials, generate them from your Phoenix account"
-        log_info "   - Go to Account -> API Credentials"
-        log_info ""
-        log_info "3. Use the 'POST /servers' endpoint"
-        log_info ""
-        log_info "4. Use this payload:"
-        log_info '{
+        echo "Please follow these steps to deploy a Phoenix server:"
+        echo ""
+        echo "1. Go to PhoenixNAP API Playground:"
+        echo "   https://developers.phoenixnap.com/docs/bmc/1/routes/servers/post"
+        echo ""
+        echo "2. Click on Authorize and use your API credentials:"
+        echo "   - If you don't have API credentials, generate them from your Phoenix account"
+        echo "   - Go to Account -> API Credentials"
+        echo ""
+        echo "3. Use the 'POST /servers' endpoint"
+        echo ""
+        echo "4. Use this payload:"
+        echo '{
   "hostname": "oasis-node-1",
   "os": "ubuntu/noble",
   "type": "s4.x6.c6.large",
@@ -114,14 +114,14 @@ check_prerequisites() {
   "pricingModel": "HOURLY",
   "installDefaultSshKeys": true
 }'
-        log_info ""
-        log_info "5. Click Execute"
-        log_info ""
-        log_info "6. The response will include your server's IP address"
-        log_info ""
-        log_info "7. Use that IP address to connect to the server and run this script"
-        log_info ""
-        log_info "Please deploy the server and run this script again."
+        echo ""
+        echo "5. Click Execute"
+        echo ""
+        echo "6. The response will include your server's IP address"
+        echo ""
+        echo "7. Use that IP address to connect to the server and run this script"
+        echo ""
+        echo "Please deploy the server and run this script again."
         exit 1
     fi
 
@@ -283,7 +283,7 @@ setup_sapphire_node() {
 
     # Download and extract Oasis core
     log_info "Downloading and extracting Oasis core..."
-    curl -L https://github.com/oasisprotocol/oasis-core/releases/download/v25.2/oasis_core_25.2_linux_amd64.tar.gz | tar -xz --strip-components=1 -C /node/bin >> "$LOG_FILE" 2>&1
+    curl -L https://github.com/oasisprotocol/oasis-core/releases/download/v25.3/oasis_core_25.3_linux_amd64.tar.gz | tar -xz --strip-components=1 -C /node/bin >> "$LOG_FILE" 2>&1
 
     # Install CLI
     log_info "Installing Oasis CLI..."
@@ -507,12 +507,39 @@ setup_service() {
     log_success "Service and network setup completed successfully"
 }
 
+# Function to display useful commands
+commands() {
+    echo "======================================================"
+    echo "USEFUL COMMANDS"
+    echo "======================================================"
+    echo "Here are some useful commands for managing your Oasis node:"
+    echo ""
+    echo "1. Check Oasis node status:"
+    echo "   oasis net status --network localhost"
+    echo ""
+    echo "2. Restart Oasis node:"
+    echo "   sudo systemctl restart oasis-node"
+    echo ""
+    echo "3. View Oasis node logs:"
+    echo "   sudo journalctl -fu oasis-node"
+    echo ""
+    echo "4. View ROFL app logs:"
+    echo "   sudo journalctl -fu oasis-node | egrep 'runtime/host|rofl'"
+    echo ""
+    echo "5. View QGSD service logs:"
+    echo "   sudo journalctl -fu qgsd"
+    echo ""
+    echo "6. View AESMD service logs:"
+    echo "   sudo docker logs -f aesmd"
+    echo "======================================================"
+}
+
 # Function to display usage
 show_usage() {
     echo "Usage: $0 [OPTION]"
     echo "Options:"
     echo "  -h, --help                 Show this help message"
-    echo "  -s, --step STEP            Run a specific step (prerequisites, tdx, verify, sapphire, realityspiral, service)"
+    echo "  -s, --step STEP            Run a specific step (prerequisites, tdx, verify, sapphire, realityspiral, service, commands)"
     echo "  -l, --log FILE             Specify log file (default: stdout)"
     echo ""
     echo "If no step is specified, all steps will be run in sequence."
@@ -557,6 +584,7 @@ case $STEP in
         setup_sapphire_node
         build_realityspiral
         setup_service
+        commands
         log_success "All steps completed successfully!"
         ;;
     "prerequisites")
@@ -576,6 +604,9 @@ case $STEP in
         ;;
     "service")
         setup_service
+        ;;
+    "commands")
+        commands
         ;;
     *)
         log_error "ERROR: Unknown step: $STEP"
