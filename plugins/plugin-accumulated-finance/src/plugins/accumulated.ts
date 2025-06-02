@@ -832,17 +832,17 @@ const createActionContext = (state: State | undefined, template: string) => {
 export const stakeAction: Action = {
 	name: "ACCUMULATED_FINANCE_STAKE",
 	description: "Stake ROSE tokens on Accumulated Finance",
-	similes: ["STAKE_ON_ACCUMULATED", "DEPOSIT_ROSE_ACCUMULATED"],
+	similes: ["ACCUMULATED_FINANCE_STAKE", "ACCUMULATED_FINANCE_DEPOSIT"],
 	examples: [
 		[
 			{
 				user: "{{user}}",
-				content: { text: "I want to stake 10 ROSE on Accumulated Finance" },
+				content: { text: "Accumulated Finance Stake 10 ROSE" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Staked 10 ROSE. Tx: 0x...",
+					text: "Accumulated Finance Staked 10 ROSE. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_STAKE",
 				},
 			},
@@ -850,12 +850,12 @@ export const stakeAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "Stake 5.5 ROSE to earn rewards" },
+				content: { text: "Accumulated Finance Stake 5.5 ROSE to earn rewards" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Staked 5.5 ROSE. Tx: 0x...",
+					text: "Accumulated Finance Staked 5.5 ROSE. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_STAKE",
 				},
 			},
@@ -863,12 +863,12 @@ export const stakeAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "Deposit 0.05 ROSE to Accumulated Finance" },
+				content: { text: "Accumulated Finance Deposit 0.05 ROSE" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Staked 0.05 ROSE. Tx: 0x...",
+					text: "Accumulated Finance Staked 0.05 ROSE. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_STAKE",
 				},
 			},
@@ -934,17 +934,17 @@ export const stakeAction: Action = {
 export const unstakeAction: Action = {
 	name: "ACCUMULATED_FINANCE_UNSTAKE",
 	description: "Unstake ROSE tokens from Accumulated Finance",
-	similes: ["UNSTAKE_FROM_ACCUMULATED", "WITHDRAW_ROSE_ACCUMULATED"],
+	similes: ["ACCUMULATED_FINANCE_UNSTAKE", "ACCUMULATED_FINANCE_WITHDRAW"],
 	examples: [
 		[
 			{
 				user: "{{user}}",
-				content: { text: "I want to unstake 10 ROSE from Accumulated Finance" },
+				content: { text: "Accumulated Finance Unstake 10 ROSE" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Unstake initiated for 10 ROSE. Tx: 0x...",
+					text: "Accumulated Finance Unstake initiated for 10 ROSE. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_UNSTAKE",
 				},
 			},
@@ -952,12 +952,12 @@ export const unstakeAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "Withdraw 5 ROSE from my stake" },
+				content: { text: "Accumulated Finance Withdraw 5 ROSE from my stake" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Unstake initiated for 5 ROSE. Tx: 0x...",
+					text: "Accumulated Finance Unstake initiated for 5 ROSE. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_UNSTAKE",
 				},
 			},
@@ -965,12 +965,12 @@ export const unstakeAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "Remove 2.5 ROSE from Accumulated Finance staking" },
+				content: { text: "Accumulated Finance Remove 2.5 ROSE from staking" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Unstake initiated for 2.5 ROSE. Tx: 0x...",
+					text: "Accumulated Finance Unstake initiated for 2.5 ROSE. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_UNSTAKE",
 				},
 			},
@@ -1027,19 +1027,19 @@ export const unstakeAction: Action = {
 export const getRewardsAction: Action = {
 	name: "ACCUMULATED_FINANCE_GET_REWARDS",
 	description: "Get accumulated staking rewards from Accumulated Finance",
-	similes: ["CHECK_ACCUMULATED_REWARDS"],
+	similes: ["ACCUMULATED_FINANCE_CHECK_REWARDS"],
 	examples: [
 		[
 			{
 				user: "{{user}}",
 				content: {
-					text: "How much reward have I earned on Accumulated Finance?",
+					text: "Accumulated Finance How much reward have I earned?",
 				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Pending rewards: 0.25 ROSE",
+					text: "Accumulated Finance Pending rewards: 0.25 ROSE",
 					action: "ACCUMULATED_FINANCE_GET_REWARDS",
 				},
 			},
@@ -1047,12 +1047,12 @@ export const getRewardsAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "Check my staking rewards" },
+				content: { text: "Accumulated Finance Check my staking rewards" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Pending rewards: 1.5 ROSE",
+					text: "Accumulated Finance Pending rewards: 1.5 ROSE",
 					action: "ACCUMULATED_FINANCE_GET_REWARDS",
 				},
 			},
@@ -1060,12 +1060,12 @@ export const getRewardsAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "What are my current accumulated rewards?" },
+				content: { text: "Accumulated Finance What are my current rewards?" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Pending rewards: 0.05 ROSE",
+					text: "Accumulated Finance Pending rewards: 0.05 ROSE",
 					action: "ACCUMULATED_FINANCE_GET_REWARDS",
 				},
 			},
@@ -1118,17 +1118,20 @@ export const getRewardsAction: Action = {
 export const claimRewardsAction: Action = {
 	name: "ACCUMULATED_FINANCE_CLAIM_REWARDS",
 	description: "Claim staking rewards from Accumulated Finance (syncs rewards)",
-	similes: ["CLAIM_ACCUMULATED_REWARDS", "SYNC_ACCUMULATED_REWARDS"],
+	similes: [
+		"ACCUMULATED_FINANCE_CLAIM_REWARDS",
+		"ACCUMULATED_FINANCE_SYNC_REWARDS",
+	],
 	examples: [
 		[
 			{
 				user: "{{user}}",
-				content: { text: "Claim my staking rewards from Accumulated Finance" },
+				content: { text: "Accumulated Finance Claim my staking rewards" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Successfully claimed rewards (synced). Tx: 0x...",
+					text: "Accumulated Finance Successfully claimed rewards (synced). Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_CLAIM_REWARDS",
 				},
 			},
@@ -1136,12 +1139,12 @@ export const claimRewardsAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "Sync my Accumulated Finance rewards" },
+				content: { text: "Accumulated Finance Sync my rewards" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Successfully claimed rewards (synced). Tx: 0x...",
+					text: "Accumulated Finance Successfully claimed rewards (synced). Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_CLAIM_REWARDS",
 				},
 			},
@@ -1149,12 +1152,14 @@ export const claimRewardsAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "I'd like to claim my staking yield" },
+				content: {
+					text: "Accumulated Finance I'd like to claim my staking yield",
+				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Successfully claimed rewards (synced). Tx: 0x...",
+					text: "Accumulated Finance Successfully claimed rewards (synced). Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_CLAIM_REWARDS",
 				},
 			},
@@ -1208,19 +1213,19 @@ export const claimRewardsAction: Action = {
 export const getStakingStrategiesAction: Action = {
 	name: "ACCUMULATED_FINANCE_GET_STRATEGIES",
 	description: "Get available staking strategies for Accumulated Finance",
-	similes: ["LIST_ACCUMULATED_STRATEGIES"],
+	similes: ["ACCUMULATED_FINANCE_LIST_STRATEGIES"],
 	examples: [
 		[
 			{
 				user: "{{user}}",
 				content: {
-					text: "What staking strategies are available on Accumulated Finance?",
+					text: "Accumulated Finance What staking strategies are available?",
 				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Available strategy: Accumulated Finance wstROSE Vault",
+					text: "Accumulated Finance Available strategy: wstROSE Vault",
 					action: "ACCUMULATED_FINANCE_GET_STRATEGIES",
 				},
 			},
@@ -1228,12 +1233,14 @@ export const getStakingStrategiesAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "Show me the staking options for ROSE" },
+				content: {
+					text: "Accumulated Finance Show me the staking options for ROSE",
+				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Available strategy: Accumulated Finance wstROSE Vault",
+					text: "Accumulated Finance Available strategy: wstROSE Vault",
 					action: "ACCUMULATED_FINANCE_GET_STRATEGIES",
 				},
 			},
@@ -1241,12 +1248,12 @@ export const getStakingStrategiesAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "List Accumulated Finance strategies" },
+				content: { text: "Accumulated Finance List strategies" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Available strategy: Accumulated Finance wstROSE Vault",
+					text: "Accumulated Finance Available strategy: wstROSE Vault",
 					action: "ACCUMULATED_FINANCE_GET_STRATEGIES",
 				},
 			},
@@ -1300,17 +1307,17 @@ export const getStakingStrategiesAction: Action = {
 export const getStakedBalanceAction: Action = {
 	name: "ACCUMULATED_FINANCE_GET_STAKED_BALANCE",
 	description: "Get the staked ROSE balance from Accumulated Finance",
-	similes: ["CHECK_ACCUMULATED_BALANCE"],
+	similes: ["ACCUMULATED_FINANCE_CHECK_BALANCE"],
 	examples: [
 		[
 			{
 				user: "{{user}}",
-				content: { text: "What's my staked balance on Accumulated Finance?" },
+				content: { text: "Accumulated Finance What's my staked balance?" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Your staked balance is 25.5 ROSE",
+					text: "Accumulated Finance Your staked balance is 25.5 ROSE",
 					action: "ACCUMULATED_FINANCE_GET_STAKED_BALANCE",
 				},
 			},
@@ -1318,12 +1325,14 @@ export const getStakedBalanceAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "How much ROSE do I have staked?" },
+				content: {
+					text: "Accumulated Finance How much ROSE do I have staked?",
+				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Your staked balance is 10 ROSE",
+					text: "Accumulated Finance Your staked balance is 10 ROSE",
 					action: "ACCUMULATED_FINANCE_GET_STAKED_BALANCE",
 				},
 			},
@@ -1331,12 +1340,12 @@ export const getStakedBalanceAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "Check my staked ROSE balance" },
+				content: { text: "Accumulated Finance Check my staked ROSE balance" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Your staked balance is 5.25 ROSE",
+					text: "Accumulated Finance Your staked balance is 5.25 ROSE",
 					action: "ACCUMULATED_FINANCE_GET_STAKED_BALANCE",
 				},
 			},
@@ -1388,17 +1397,17 @@ export const getStakedBalanceAction: Action = {
 export const wrapRoseAction: Action = {
 	name: "ACCUMULATED_FINANCE_WRAP_ROSE",
 	description: "Wrap native ROSE into wstROSE (equivalent to staking)",
-	similes: ["WRAP_ROSE_ACCUMULATED"],
+	similes: ["ACCUMULATED_FINANCE_WRAP_ROSE"],
 	examples: [
 		[
 			{
 				user: "{{user}}",
-				content: { text: "Wrap 10 ROSE to wstROSE" },
+				content: { text: "Accumulated Finance Wrap 10 ROSE to wstROSE" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Wrap ROSE initiated. Tx: 0x...",
+					text: "Accumulated Finance Wrap ROSE initiated. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_WRAP_ROSE",
 				},
 			},
@@ -1406,12 +1415,14 @@ export const wrapRoseAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "Convert 5 ROSE to wrapped tokens" },
+				content: {
+					text: "Accumulated Finance Convert 5 ROSE to wrapped tokens",
+				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Wrap ROSE initiated. Tx: 0x...",
+					text: "Accumulated Finance Wrap ROSE initiated. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_WRAP_ROSE",
 				},
 			},
@@ -1419,12 +1430,12 @@ export const wrapRoseAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "I want to wrap 0.05 ROSE" },
+				content: { text: "Accumulated Finance I want to wrap 0.05 ROSE" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Wrap ROSE initiated. Tx: 0x...",
+					text: "Accumulated Finance Wrap ROSE initiated. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_WRAP_ROSE",
 				},
 			},
@@ -1478,17 +1489,17 @@ export const wrapRoseAction: Action = {
 export const unwrapRoseAction: Action = {
 	name: "ACCUMULATED_FINANCE_UNWRAP_ROSE",
 	description: "Unwrap wstROSE into native ROSE (equivalent to unstaking)",
-	similes: ["UNWRAP_ROSE_ACCUMULATED", "UNSTAKE_ROSE"],
+	similes: ["ACCUMULATED_FINANCE_UNWRAP_ROSE"],
 	examples: [
 		[
 			{
 				user: "{{user}}",
-				content: { text: "Unwrap 10 wstROSE to ROSE" },
+				content: { text: "Accumulated Finance Unwrap 10 wstROSE to ROSE" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Unwrap wstROSE initiated. Tx: 0x...",
+					text: "Accumulated Finance Unwrap wstROSE initiated. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_UNWRAP_ROSE",
 				},
 			},
@@ -1496,12 +1507,12 @@ export const unwrapRoseAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "Convert 5 wstROSE back to ROSE" },
+				content: { text: "Accumulated Finance Convert 5 wstROSE back to ROSE" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Unwrap wstROSE initiated. Tx: 0x...",
+					text: "Accumulated Finance Unwrap wstROSE initiated. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_UNWRAP_ROSE",
 				},
 			},
@@ -1509,12 +1520,12 @@ export const unwrapRoseAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "I want to unwrap 0.05 wstROSE" },
+				content: { text: "Accumulated Finance I want to unwrap 0.05 wstROSE" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Unwrap wstROSE initiated. Tx: 0x...",
+					text: "Accumulated Finance Unwrap wstROSE initiated. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_UNWRAP_ROSE",
 				},
 			},
@@ -1568,14 +1579,17 @@ export const unwrapRoseAction: Action = {
 export const mintAction: Action = {
 	name: "ACCUMULATED_FINANCE_MINT",
 	description: "Mint wstROSE by depositing underlying ROSE tokens",
-	similes: ["MINT_STROSE_ACCUMULATED", "DEPOSIT_ROSE_FOR_WSTROSE"],
+	similes: ["ACCUMULATED_FINANCE_MINT", "ACCUMULATED_FINANCE_DEPOSIT"],
 	examples: [
 		[
-			{ user: "{{user}}", content: { text: "Mint 10 ROSE worth of wstROSE" } },
+			{
+				user: "{{user}}",
+				content: { text: "Accumulated Finance Mint 10 ROSE worth of wstROSE" },
+			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Minted wstROSE by depositing 10 ROSE. Tx: 0x...",
+					text: "Accumulated Finance Minted wstROSE by depositing 10 ROSE. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_MINT",
 				},
 			},
@@ -1584,13 +1598,13 @@ export const mintAction: Action = {
 			{
 				user: "{{user}}",
 				content: {
-					text: "Deposit 5.5 ROSE into the wstROSE vault via mint action",
+					text: "Accumulated Finance Deposit 5.5 ROSE into the wstROSE vault via mint action",
 				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Minted wstROSE by depositing 5.5 ROSE. Tx: 0x...",
+					text: "Accumulated Finance Minted wstROSE by depositing 5.5 ROSE. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_MINT",
 				},
 			},
@@ -1598,12 +1612,14 @@ export const mintAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "Use the mint action to deposit 0.05 ROSE" },
+				content: {
+					text: "Accumulated Finance Use the mint action to deposit 0.05 ROSE",
+				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Minted wstROSE by depositing 0.05 ROSE. Tx: 0x...",
+					text: "Accumulated Finance Minted wstROSE by depositing 0.05 ROSE. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_MINT",
 				},
 			},
@@ -1700,19 +1716,19 @@ export const mintAction: Action = {
 export const approveAction: Action = {
 	name: "ACCUMULATED_FINANCE_APPROVE",
 	description: "Approve token spending for the Accumulated Finance contract",
-	similes: ["APPROVE_TOKEN_SPENDING", "ALLOW_TOKEN_SPENDING"],
+	similes: ["ACCUMULATED_FINANCE_APPROVE", "ACCUMULATED_FINANCE_ALLOW"],
 	examples: [
 		[
 			{
 				user: "{{user}}",
 				content: {
-					text: "I need to approve the wstROSE vault to spend 100 of my ROSE tokens.",
+					text: "Accumulated Finance I need to approve the wstROSE vault to spend 100 of my ROSE tokens.",
 				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Approved 100 ROSE for wstROSE vault. Tx: 0x...",
+					text: "Accumulated Finance Approved 100 ROSE for wstROSE vault. Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_APPROVE",
 				},
 			},
@@ -1720,12 +1736,14 @@ export const approveAction: Action = {
 		[
 			{
 				user: "{{user}}",
-				content: { text: "Allow the vault (0x...) to spend 50.5 ROSE (0x...)" },
+				content: {
+					text: "Accumulated Finance Allow the vault (0x...) to spend 50.5 ROSE (0x...)",
+				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Approved 50.5 ROSE for spender (0x...). Tx: 0x...",
+					text: "Accumulated Finance Approved 50.5 ROSE for spender (0x...). Tx: 0x...",
 					action: "ACCUMULATED_FINANCE_APPROVE",
 				},
 			},
