@@ -127,15 +127,15 @@ export const swapProvider: Provider = {
  * Action for executing a privacy-preserving token swap
  */
 export const executeSwapAction: Action = {
-	name: "EXECUTE_SWAP",
+	name: "THORN_EXECUTE_SWAP",
 	similes: [
-		"MAKE_SWAP",
-		"PERFORM_SWAP",
-		"EXECUTE_EXCHANGE",
-		"SWAP_TOKENS",
-		"CONVERT_STABLECOINS",
-		"EXCHANGE_TOKENS",
-		"PRIVATE_SWAP",
+		"THORN_MAKE_SWAP",
+		"THORN_PERFORM_SWAP",
+		"THORN_EXECUTE_EXCHANGE",
+		"THORN_SWAP_TOKENS",
+		"THORN_CONVERT_STABLECOINS",
+		"THORN_EXCHANGE_TOKENS",
+		"THORN_PRIVATE_SWAP",
 		"THORN_SWAP",
 	],
 	description: "Execute a privacy-preserving token swap using Thorn Protocol",
@@ -327,13 +327,13 @@ export const executeSwapAction: Action = {
 			{
 				user: "{{user1}}",
 				content: {
-					text: "Swap 100 ROSE to stROSE",
+					text: "Thorn Swap 100 ROSE to stROSE",
 				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Successfully executed swap from USDT to DAI. Transaction hash: 0xabcd1234...",
+					text: "Successfully executed Thorn swap from USDT to DAI. Transaction hash: 0xabcd1234...",
 				},
 			},
 		],
@@ -341,13 +341,13 @@ export const executeSwapAction: Action = {
 			{
 				user: "{{user2}}",
 				content: {
-					text: "Execute a swap from USDC to USDT with 0.03% slippage",
+					text: "Execute a Thorn swap from USDC to USDT with 0.03% slippage",
 				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Successfully executed swap from USDC to USDT. Transaction hash: 0xefgh5678...",
+					text: "Successfully executed Thorn swap from USDC to USDT. Transaction hash: 0xefgh5678...",
 				},
 			},
 		],
@@ -358,17 +358,17 @@ export const executeSwapAction: Action = {
  * Action for getting a swap quote without executing the swap
  */
 export const getSwapQuoteAction: Action = {
-	name: "GET_SWAP_QUOTE",
+	name: "THORN_GET_SWAP_QUOTE",
 	similes: [
-		"QUOTE_SWAP",
-		"ESTIMATE_SWAP",
-		"CALCULATE_SWAP",
-		"PREVIEW_SWAP",
-		"CHECK_SWAP_RATE",
+		"THORN_QUOTE_SWAP",
+		"THORN_ESTIMATE_SWAP",
+		"THORN_CALCULATE_SWAP",
+		"THORN_PREVIEW_SWAP",
+		"THORN_CHECK_SWAP_RATE",
 	],
 	description: "Get a quote for a token swap without executing it",
 	validate: async (runtime: IAgentRuntime, _message: Memory) => {
-		elizaLogger.info("Validating runtime for GET_SWAP_QUOTE...");
+		elizaLogger.info("Validating runtime for THORN_GET_SWAP_QUOTE...");
 		return !!(
 			runtime.getSetting("THORN_API_URL") && runtime.getSetting("OASIS_NETWORK")
 		);
@@ -381,7 +381,7 @@ export const getSwapQuoteAction: Action = {
 		_options: any,
 		callback?: HandlerCallback,
 	) => {
-		elizaLogger.debug("Starting GET_SWAP_QUOTE handler...");
+		elizaLogger.debug("Starting THORN_GET_SWAP_QUOTE handler...");
 
 		try {
 			// Compose context and extract swap parameters
@@ -498,7 +498,7 @@ export const getSwapQuoteAction: Action = {
 			}
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (error: any) {
-			elizaLogger.error("Error in GET_SWAP_QUOTE handler:", error);
+			elizaLogger.error("Error in THORN_GET_SWAP_QUOTE handler:", error);
 			callback?.(
 				{
 					text: `An error occurred while getting the swap quote: ${error.message}`,
@@ -512,13 +512,13 @@ export const getSwapQuoteAction: Action = {
 			{
 				user: "{{user1}}",
 				content: {
-					text: "Get a quote for swapping 100 USDT to DAI",
+					text: "Get a quote for swapping 100 USDT to DAI using Thorn",
 				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: `Swap Quote for 100 USDT to DAI:
+					text: `Thorn Swap Quote for 100 USDT to DAI:
 - Expected Output: 99.7 DAI
 - Minimum Output (with 0.5% slippage): 99.2 DAI
 - Exchange Rate: 1 USDT = 0.997000 DAI`,

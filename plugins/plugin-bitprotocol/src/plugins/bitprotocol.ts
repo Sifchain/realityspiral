@@ -377,43 +377,45 @@ const handleSwap: Action["handler"] = async (
 };
 
 export const swapAction: Action = {
-	name: "SWAP", // Changed to uppercase convention if preferred
+	name: "BITPROTOCOL_SWAP", // Changed to uppercase convention if preferred
 	description:
 		"Swaps one token for another using the BitProtocol DEX (UniswapV2 fork).",
 	handler: handleSwap,
 	// inputSchema: SwapInputSchema, // Removed as generateObject handles validation
 	similes: [
 		// Added similes from previous version
-		"swap tokens",
-		"exchange assets",
-		"trade BitUSD",
-		"stablecoin swap",
+		"BITPROTOCOL_SWAP_TOKENS",
+		"BITPROTOCOL_EXCHANGE_ASSETS",
+		"BITPROTOCOL_TRADE_BITUSD",
+		"BITPROTOCOL_STABLECOIN_SWAP",
 	],
 	examples: [
 		// Added examples from previous version
 		[
 			{
 				user: "{{user1}}",
-				content: { text: "Swap 0.01 ROSE for BitUSD" },
+				content: { text: "BitProtocol Swap 0.01 ROSE for BitUSD" },
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Initiating swap for 0.01 ROSE to BitUSD...",
-					action: "SWAP",
+					text: "Initiating BitProtocol swap for 0.01 ROSE to BitUSD...",
+					action: "BITPROTOCOL_SWAP",
 				},
 			},
 		],
 		[
 			{
 				user: "{{user1}}",
-				content: { text: "trade 0.5 BitUSD for wstROSE with 0.5% slippage" },
+				content: {
+					text: "BitProtocol trade 0.5 BitUSD for wstROSE with 0.5% slippage",
+				},
 			},
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Okay, swapping 0.5 BitUSD for wstROSE with 0.5% slippage limit.",
-					action: "SWAP",
+					text: "Okay, BitProtocol swapping 0.5 BitUSD for wstROSE with 0.5% slippage limit.",
+					action: "BITPROTOCOL_SWAP",
 				},
 			},
 		],
@@ -517,11 +519,11 @@ export const monitorPriceStabilityAction: Action = {
 	description: "Monitors BitProtocol stablecoin price and stability status.",
 	handler: handleMonitorPriceStability,
 	similes: [
-		"check price",
-		"monitor stability",
-		"check peg",
-		"check bitusd",
-		"monitor bitprotocol",
+		"BITPROTOCOL_CHECK_PRICE",
+		"BITPROTOCOL_MONITOR_STABILITY",
+		"BITPROTOCOL_CHECK_PEG",
+		"BITPROTOCOL_CHECK_BITUSD",
+		"BITPROTOCOL_MONITOR_BITPROTOCOL",
 	],
 	examples: [
 		[
@@ -533,7 +535,7 @@ export const monitorPriceStabilityAction: Action = {
 				user: "{{agentName}}",
 				content: {
 					text: "Let me check the BitUSD price stability for you...",
-					action: "BITPROTOCOL_MONITOR_PRICE",
+					action: "BITPROTOCOL_CHECK_PRICE",
 				},
 			},
 		],
@@ -878,16 +880,16 @@ const handleGetOptimalPath: Action["handler"] = async (
 };
 
 export const getOptimalPathAction: Action = {
-	name: "GET_OPTIMAL_PATH",
+	name: "BITPROTOCOL_GET_OPTIMAL_PATH",
 	description:
 		"Calculates the optimal swap path and estimates output between tokens on BitProtocol using the public router.", // Updated description
 	handler: handleGetOptimalPath,
 	// inputSchema: GetOptimalSwapPathInputSchema, // Removed
 	similes: [
-		"find best path",
-		"calculate swap route",
-		"get exchange path",
-		"estimate swap output",
+		"BITPROTOCOL_FIND_BEST_PATH",
+		"BITPROTOCOL_CALCULATE_SWAP_ROUTE",
+		"BITPROTOCOL_GET_EXCHANGE_PATH",
+		"BITPROTOCOL_ESTIMATE_SWAP_OUTPUT",
 	], // Added simile
 	examples: [
 		[
@@ -899,7 +901,7 @@ export const getOptimalPathAction: Action = {
 				user: "{{agentName}}",
 				content: {
 					text: "Let me calculate the optimal path for swapping 0.01 ROSE to BitUSD...",
-					action: "GET_OPTIMAL_PATH",
+					action: "BITPROTOCOL_GET_OPTIMAL_PATH",
 				},
 			},
 		],

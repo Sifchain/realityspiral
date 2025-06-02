@@ -335,19 +335,19 @@ export const nebyPlugin = (
 // --- Action Definitions --- (defined within the plugin scope)
 
 export const swapAction: Action = {
-	name: "nebySwap",
+	name: "NEBY_SWAP",
 	description: "Swap tokens on Neby DEX.",
 	validate: async () => true,
-	similes: ["swap tokens", "exchange coins", "trade crypto"],
+	similes: ["NEBY_SWAP_TOKENS", "NEBY_EXCHANGE_COINS", "NEBY_TRADE_CRYPTO"],
 	examples: [
 		[
 			{
 				user: "{{user1}}",
 				content: {
-					text: "Swap 100 ROSE for USDC on Neby using my default slippage",
+					text: "Neby Swap 100 ROSE for USDC on Neby using my default slippage",
 					actions: [
 						{
-							name: "nebySwap",
+							name: "NEBY_SWAP",
 							options: {
 								fromToken: "0x...ROSE_ADDRESS...",
 								toToken: "0x...USDC_ADDRESS...",
@@ -360,7 +360,7 @@ export const swapAction: Action = {
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Swap executed successfully! Transaction hash: 0x...tx_hash... Swapped 100 ROSE for ~95 USDC.",
+					text: "Neby Swap executed successfully! Transaction hash: 0x...tx_hash... Swapped 100 ROSE for ~95 USDC.",
 					result: {
 						transactionHash: "0x...tx_hash...",
 						fromToken: "0x...ROSE_ADDRESS...",
@@ -380,7 +380,7 @@ export const swapAction: Action = {
 		_options: unknown,
 		callback?: HandlerCallback,
 	) => {
-		elizaLogger.debug("Starting nebySwap action handler...");
+		elizaLogger.debug("Starting NEBY_SWAP action handler...");
 		try {
 			if (!state) {
 				throw new Error("Action handler called without state.");
@@ -416,7 +416,7 @@ export const swapAction: Action = {
 			};
 			if (callback) callback(response, []);
 		} catch (error) {
-			elizaLogger.error("Error in nebySwap handler:", error);
+			elizaLogger.error("Error in NEBY_SWAP handler:", error);
 			if (callback)
 				callback(
 					{
@@ -429,19 +429,23 @@ export const swapAction: Action = {
 };
 
 export const addLiquidityAction: Action = {
-	name: "nebyAddLiquidity",
+	name: "NEBY_ADD_LIQUIDITY",
 	description: "Add liquidity to a Neby DEX pool.",
 	validate: async () => true,
-	similes: ["provide liquidity", "stake LP tokens", "add to pool"],
+	similes: [
+		"NEBY_PROVIDE_LIQUIDITY",
+		"NEBY_STAKE_LP_TOKENS",
+		"NEBY_ADD_TO_POOL",
+	],
 	examples: [
 		[
 			{
 				user: "{{user1}}",
 				content: {
-					text: "Add 50 ROSE and 45 USDC liquidity to the ROSE/USDC pool on Neby",
+					text: "Neby Add 50 ROSE and 45 USDC liquidity to the ROSE/USDC pool on Neby",
 					actions: [
 						{
-							name: "nebyAddLiquidity",
+							name: "NEBY_ADD_LIQUIDITY",
 							options: {
 								tokenA: "0x...ROSE_ADDRESS...",
 								tokenB: "0x...USDC_ADDRESS...",
@@ -455,7 +459,7 @@ export const addLiquidityAction: Action = {
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Liquidity added successfully! Transaction hash: 0x...tx_hash... Received LP NFT/position details.",
+					text: "Neby Liquidity added successfully! Transaction hash: 0x...tx_hash... Received LP NFT/position details.",
 					result: {
 						transactionHash: "0x...tx_hash...",
 						tokenA: "0x...ROSE_ADDRESS...",
@@ -476,7 +480,7 @@ export const addLiquidityAction: Action = {
 		_options: unknown,
 		callback?: HandlerCallback,
 	) => {
-		elizaLogger.debug("Starting nebyAddLiquidity action handler...");
+		elizaLogger.debug("Starting NEBY_ADD_LIQUIDITY action handler...");
 		try {
 			if (!state) {
 				throw new Error("Action handler called without state.");
@@ -521,7 +525,7 @@ export const addLiquidityAction: Action = {
 			};
 			if (callback) callback(response, []);
 		} catch (error) {
-			elizaLogger.error("Error in nebyAddLiquidity handler:", error);
+			elizaLogger.error("Error in NEBY_ADD_LIQUIDITY handler:", error);
 			if (callback)
 				callback(
 					{
@@ -534,19 +538,23 @@ export const addLiquidityAction: Action = {
 };
 
 export const removeLiquidityAction: Action = {
-	name: "nebyRemoveLiquidity",
+	name: "NEBY_REMOVE_LIQUIDITY",
 	description: "Remove liquidity from a Neby DEX pool.",
 	validate: async () => true,
-	similes: ["withdraw liquidity", "unstake LP tokens", "remove from pool"],
+	similes: [
+		"NEBY_WITHDRAW_LIQUIDITY",
+		"NEBY_UNSTAKE_LP_TOKENS",
+		"NEBY_REMOVE_FROM_POOL",
+	],
 	examples: [
 		[
 			{
 				user: "{{user1}}",
 				content: {
-					text: "Remove my liquidity (ID/amount: 1234567890123456789) from the ROSE/USDC pool",
+					text: "Neby Remove my liquidity (ID/amount: 1234567890123456789) from the ROSE/USDC pool",
 					actions: [
 						{
-							name: "nebyRemoveLiquidity",
+							name: "NEBY_REMOVE_LIQUIDITY",
 							options: {
 								tokenA: "0x...ROSE_ADDRESS...",
 								tokenB: "0x...USDC_ADDRESS...",
@@ -559,7 +567,7 @@ export const removeLiquidityAction: Action = {
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Liquidity removed successfully! Transaction hash: 0x...tx_hash... Received ~48 ROSE and ~43 USDC.",
+					text: "Neby Liquidity removed successfully! Transaction hash: 0x...tx_hash... Received ~48 ROSE and ~43 USDC.",
 					result: {
 						transactionHash: "0x...tx_hash...",
 						tokenA: "0x...ROSE_ADDRESS...",
@@ -580,7 +588,7 @@ export const removeLiquidityAction: Action = {
 		_options: unknown,
 		callback?: HandlerCallback,
 	) => {
-		elizaLogger.debug("Starting nebyRemoveLiquidity action handler...");
+		elizaLogger.debug("Starting NEBY_REMOVE_LIQUIDITY action handler...");
 		try {
 			if (!state) {
 				throw new Error("Action handler called without state.");
@@ -619,7 +627,7 @@ export const removeLiquidityAction: Action = {
 			};
 			if (callback) callback(response, []);
 		} catch (error) {
-			elizaLogger.error("Error in nebyRemoveLiquidity handler:", error);
+			elizaLogger.error("Error in NEBY_REMOVE_LIQUIDITY handler:", error);
 			if (callback)
 				callback(
 					{
@@ -632,19 +640,19 @@ export const removeLiquidityAction: Action = {
 };
 
 export const monitorPricesAction: Action = {
-	name: "nebyMonitorPrices",
+	name: "NEBY_MONITOR_PRICES",
 	description: "Monitor token prices on Neby DEX.",
 	validate: async () => true,
-	similes: ["check prices", "get token rates", "watch market"],
+	similes: ["NEBY_CHECK_PRICES", "NEBY_GET_TOKEN_RATES", "NEBY_WATCH_MARKET"],
 	examples: [
 		[
 			{
 				user: "{{user1}}",
 				content: {
-					text: "What are the current prices for ROSE/USDC and wETH/ROSE on Neby?",
+					text: "Neby What are the current prices for ROSE/USDC and wETH/ROSE on Neby?",
 					actions: [
 						{
-							name: "nebyMonitorPrices",
+							name: "NEBY_MONITOR_PRICES",
 							options: {
 								tokenPairs: [
 									["0x...ROSE_ADDRESS...", "0x...USDC_ADDRESS..."],
@@ -658,7 +666,7 @@ export const monitorPricesAction: Action = {
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Current prices:\n- ROSE/USDC (0.3% fee pool): 0.95 USDC per ROSE\n- wETH/ROSE (0.3% fee pool): 3500 ROSE per wETH",
+					text: "Neby Current prices:\n- ROSE/USDC (0.3% fee pool): 0.95 USDC per ROSE\n- wETH/ROSE (0.3% fee pool): 3500 ROSE per wETH",
 					result: [
 						{
 							tokenA: "0x...ROSE_ADDRESS...",
@@ -686,7 +694,7 @@ export const monitorPricesAction: Action = {
 		_options: unknown,
 		callback?: HandlerCallback,
 	) => {
-		elizaLogger.debug("Starting nebyMonitorPrices action handler...");
+		elizaLogger.debug("Starting NEBY_MONITOR_PRICES action handler...");
 		try {
 			if (!state) {
 				throw new Error("Action handler called without state.");
@@ -746,7 +754,7 @@ export const monitorPricesAction: Action = {
 			};
 			if (callback) callback(response, []);
 		} catch (error) {
-			elizaLogger.error("Error in nebyMonitorPrices handler:", error);
+			elizaLogger.error("Error in NEBY_MONITOR_PRICES handler:", error);
 			if (callback)
 				callback(
 					{
@@ -759,19 +767,19 @@ export const monitorPricesAction: Action = {
 };
 
 export const getPoolLiquidityAction: Action = {
-	name: "nebyGetPoolLiquidity",
+	name: "NEBY_GET_POOL_LIQUIDITY",
 	description: "Get liquidity of a Neby DEX pool.",
 	validate: async () => true,
-	similes: ["check pool size", "get pool value", "pool TVL"],
+	similes: ["NEBY_CHECK_POOL_SIZE", "NEBY_GET_POOL_VALUE", "NEBY_POOL_TVL"],
 	examples: [
 		[
 			{
 				user: "{{user1}}",
 				content: {
-					text: "How much liquidity is in the ROSE/USDC 0.3% pool?",
+					text: "Neby How much liquidity is in the ROSE/USDC 0.3% pool?",
 					actions: [
 						{
-							name: "nebyGetPoolLiquidity",
+							name: "NEBY_GET_POOL_LIQUIDITY",
 							options: {
 								tokenA: "0x...ROSE_ADDRESS...",
 								tokenB: "0x...USDC_ADDRESS...",
@@ -784,7 +792,7 @@ export const getPoolLiquidityAction: Action = {
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "The current liquidity in the ROSE/USDC 0.3% pool is approximately 1,500,000 (represented as a raw liquidity value).",
+					text: "Neby The current liquidity in the ROSE/USDC 0.3% pool is approximately 1,500,000 (represented as a raw liquidity value).",
 					result: "1500000000000000000000000",
 				},
 			},
@@ -797,7 +805,7 @@ export const getPoolLiquidityAction: Action = {
 		_options: unknown,
 		callback?: HandlerCallback,
 	) => {
-		elizaLogger.debug("Starting nebyGetPoolLiquidity action handler...");
+		elizaLogger.debug("Starting NEBY_GET_POOL_LIQUIDITY action handler...");
 		try {
 			if (!state) {
 				throw new Error("Action handler called without state.");
@@ -836,7 +844,7 @@ export const getPoolLiquidityAction: Action = {
 			};
 			if (callback) callback(response, []);
 		} catch (error) {
-			elizaLogger.error("Error in nebyGetPoolLiquidity handler:", error);
+			elizaLogger.error("Error in NEBY_GET_POOL_LIQUIDITY handler:", error);
 			if (callback)
 				callback(
 					{
@@ -849,19 +857,19 @@ export const getPoolLiquidityAction: Action = {
 };
 
 export const getPoolInfoAction: Action = {
-	name: "nebyGetPoolInfo",
+	name: "NEBY_GET_POOL_INFO",
 	description: "Get detailed information about a Neby DEX pool.",
 	validate: async () => true,
-	similes: ["pool details", "get pool stats", "inspect pool"],
+	similes: ["NEBY_POOL_DETAILS", "NEBY_GET_POOL_STATS", "NEBY_INSPECT_POOL"],
 	examples: [
 		[
 			{
 				user: "{{user1}}",
 				content: {
-					text: "Get the details for the ROSE/USDC 0.3% fee pool on Neby.",
+					text: "Neby Get the details for the ROSE/USDC 0.3% fee pool on Neby.",
 					actions: [
 						{
-							name: "nebyGetPoolInfo",
+							name: "NEBY_GET_POOL_INFO",
 							options: {
 								tokenA: "0x...ROSE_ADDRESS...",
 								tokenB: "0x...USDC_ADDRESS...",
@@ -874,7 +882,7 @@ export const getPoolInfoAction: Action = {
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Pool Details (ROSE/USDC 0.3%):\n- Current Price (Tick): ...\n- Liquidity: ...\n- Fees Generated (24h): ...\n- Volume (24h): ...",
+					text: "Neby Pool Details (ROSE/USDC 0.3%):\n- Current Price (Tick): ...\n- Liquidity: ...\n- Fees Generated (24h): ...\n- Volume (24h): ...",
 					result: {
 						poolAddress: "0x...pool_address...",
 						token0: "0x...USDC_ADDRESS...",
@@ -894,7 +902,7 @@ export const getPoolInfoAction: Action = {
 		_options: unknown,
 		callback?: HandlerCallback,
 	) => {
-		elizaLogger.debug("Starting nebyGetPoolInfo action handler...");
+		elizaLogger.debug("Starting NEBY_GET_POOL_INFO action handler...");
 		try {
 			if (!state) {
 				throw new Error("Action handler called without state.");
@@ -937,7 +945,7 @@ export const getPoolInfoAction: Action = {
 			};
 			if (callback) callback(response, []);
 		} catch (error) {
-			elizaLogger.error("Error in nebyGetPoolInfo handler:", error);
+			elizaLogger.error("Error in NEBY_GET_POOL_INFO handler:", error);
 			if (callback)
 				callback(
 					{
