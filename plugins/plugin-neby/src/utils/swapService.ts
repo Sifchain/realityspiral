@@ -49,6 +49,8 @@ export class SwapService {
 				[fromToken, fee, toToken],
 			);
 
+			elizaLogger.info("Path", { path });
+
 			// Use readContract from ethersHelper
 			const result = await readContract<string>({
 				runtime: this.runtime,
