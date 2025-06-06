@@ -1,8 +1,8 @@
-import { V3RouteWithValidQuote } from '../../entities/route-with-valid-quote';
-import { BuildOnChainGasModelFactoryType, IGasModel } from '../gas-model';
+import type { V3RouteWithValidQuote } from "../../entities/route-with-valid-quote";
+import type { BuildOnChainGasModelFactoryType, IGasModel } from "../gas-model";
 
-import { BaseProvider } from '@ethersproject/providers';
-import { TickBasedHeuristicGasModelFactory } from '../tick-based-heuristic-gas-model';
+import type { BaseProvider } from "@ethersproject/providers";
+import { TickBasedHeuristicGasModelFactory } from "../tick-based-heuristic-gas-model";
 
 /**
  * Computes a gas estimate for a V3 swap using heuristics.
@@ -23,31 +23,31 @@ import { TickBasedHeuristicGasModelFactory } from '../tick-based-heuristic-gas-m
  * @class V3HeuristicGasModelFactory
  */
 export class V3HeuristicGasModelFactory extends TickBasedHeuristicGasModelFactory<V3RouteWithValidQuote> {
-  constructor(provider: BaseProvider) {
-    super(provider);
-  }
+	constructor(provider: BaseProvider) {
+		super(provider);
+	}
 
-  public override async buildGasModel({
-    chainId,
-    gasPriceWei,
-    pools,
-    amountToken,
-    quoteToken,
-    v2poolProvider,
-    l2GasDataProvider,
-    providerConfig,
-  }: BuildOnChainGasModelFactoryType): Promise<
-    IGasModel<V3RouteWithValidQuote>
-  > {
-    return await super.buildGasModelInternal({
-      chainId,
-      gasPriceWei,
-      pools,
-      amountToken,
-      quoteToken,
-      v2poolProvider,
-      l2GasDataProvider,
-      providerConfig,
-    });
-  }
+	public override async buildGasModel({
+		chainId,
+		gasPriceWei,
+		pools,
+		amountToken,
+		quoteToken,
+		v2poolProvider,
+		l2GasDataProvider,
+		providerConfig,
+	}: BuildOnChainGasModelFactoryType): Promise<
+		IGasModel<V3RouteWithValidQuote>
+	> {
+		return await super.buildGasModelInternal({
+			chainId,
+			gasPriceWei,
+			pools,
+			amountToken,
+			quoteToken,
+			v2poolProvider,
+			l2GasDataProvider,
+			providerConfig,
+		});
+	}
 }

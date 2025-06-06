@@ -21,11 +21,11 @@ import {
 	MixedRouteWithValidQuote,
 	type SwapOptions,
 	type SwapRoute,
-	usdGasTokensByChain,
 	V2RouteWithValidQuote,
 	V3RouteWithValidQuote,
+	usdGasTokensByChain,
 } from "../routers";
-import { log, WRAPPED_NATIVE_CURRENCY } from "../util";
+import { WRAPPED_NATIVE_CURRENCY, log } from "../util";
 
 import { buildTrade } from "./methodParameters";
 

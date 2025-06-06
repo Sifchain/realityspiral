@@ -17,8 +17,8 @@ import _ from "lodash";
 import NodeCache from "node-cache";
 
 import {
-	CachedRoutes,
 	CacheMode,
+	CachedRoutes,
 	CachingGasStationProvider,
 	CachingTokenProviderWithFallback,
 	CachingV2PoolProvider,
@@ -89,7 +89,7 @@ import {
 	buildSwapMethodParameters,
 	buildTrade,
 } from "../../util/methodParameters";
-import { metric, MetricLoggerUnit } from "../../util/metric";
+import { MetricLoggerUnit, metric } from "../../util/metric";
 import { UNSUPPORTED_TOKENS } from "../../util/unsupported-tokens";
 import {
 	type IRouter,
@@ -120,9 +120,9 @@ import {
 import { calculateRatioAmountIn } from "./functions/calculate-ratio-amount-in";
 import {
 	type CandidatePoolsBySelectionCriteria,
-	getV3CandidatePools,
 	type PoolId,
 	type V3CandidatePools,
+	getV3CandidatePools,
 } from "./functions/get-candidate-pools";
 import type {
 	IGasModel,

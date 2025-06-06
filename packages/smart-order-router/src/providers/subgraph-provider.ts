@@ -2,7 +2,7 @@ import { Protocol } from "@uniswap/router-sdk";
 import type { ChainId, Currency, Token } from "@uniswap/sdk-core";
 import retry from "async-retry";
 import Timeout from "await-timeout";
-import { gql, GraphQLClient } from "graphql-request";
+import { GraphQLClient, gql } from "graphql-request";
 import _ from "lodash";
 
 import type { SubgraphPool } from "../routers/alpha-router/functions/get-candidate-pools";

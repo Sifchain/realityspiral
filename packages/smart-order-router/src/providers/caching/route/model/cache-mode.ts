@@ -10,7 +10,7 @@
  * @enum {string}
  */
 export enum CacheMode {
-  Livemode = 'livemode',
-  Darkmode = 'darkmode',
-  Tapcompare = 'tapcompare',
+	Livemode = "livemode",
+	Darkmode = "darkmode",
+	Tapcompare = "tapcompare",
 }

@@ -1,1 +1,1 @@
-export * from './route-with-valid-quote';
+export * from "./route-with-valid-quote";

@@ -28,12 +28,12 @@
   };
 }); */
 
-describe.skip('uniswap multicall provider', () => {
-  test('placeholder', async () => {
-    return;
-  });
+describe.skip("uniswap multicall provider", () => {
+	test("placeholder", async () => {
+		return;
+	});
 
-  /*
+	/*
   let uniswapMulticallProvider: UniswapMulticallProvider;
   const erc20Interface = IERC20Metadata__factory.createInterface();
 

@@ -1,18 +1,16 @@
 {
-    "name": "@neby/chains",
-    "version": "0.1.0",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
-    "type": "module",
-    "files": [
-        "dist"
-    ],
-    "scripts": {
-        "build": "tsup --format esm --dts"
-    },
-    "dependencies": {},
-    "devDependencies": {
-        "tsup": "8.3.5",
-        "typescript": "5.7.3"
-    }
+	"name": "@neby/chains",
+	"version": "0.1.0",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"type": "module",
+	"files": ["dist"],
+	"scripts": {
+		"build": "tsup --format esm --dts"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"tsup": "8.3.5",
+		"typescript": "5.7.3"
+	}
 }

@@ -1,23 +1,23 @@
-import { BigNumber } from '@ethersproject/bignumber';
-import { JsonRpcProvider } from '@ethersproject/providers';
-import _ from 'lodash';
+import { BigNumber } from "@ethersproject/bignumber";
+import type { JsonRpcProvider } from "@ethersproject/providers";
+import _ from "lodash";
 
-import { log } from '../util/log';
+import { log } from "../util/log";
 
-import { GasPrice, IGasPriceProvider } from './gas-price-provider';
+import { type GasPrice, IGasPriceProvider } from "./gas-price-provider";
 
 export type RawFeeHistoryResponse = {
-  baseFeePerGas: string[];
-  gasUsedRatio: number[];
-  oldestBlock: string;
-  reward: string[];
+	baseFeePerGas: string[];
+	gasUsedRatio: number[];
+	oldestBlock: string;
+	reward: string[];
 };
 
 export type FeeHistoryResponse = {
-  baseFeePerGas: BigNumber[];
-  gasUsedRatio: number[];
-  oldestBlock: BigNumber;
-  reward: BigNumber[];
+	baseFeePerGas: BigNumber[];
+	gasUsedRatio: number[];
+	oldestBlock: BigNumber;
+	reward: BigNumber[];
 };
 
 // We get the Xth percentile of priority fees for transactions successfully included in previous blocks.
@@ -35,73 +35,75 @@ const DEFAULT_BLOCKS_TO_LOOK_BACK = 4;
  * @class EIP1559GasPriceProvider
  */
 export class EIP1559GasPriceProvider extends IGasPriceProvider {
-  constructor(
-    protected provider: JsonRpcProvider,
-    private priorityFeePercentile: number = DEFAULT_PRIORITY_FEE_PERCENTILE,
-    private blocksToConsider: number = DEFAULT_BLOCKS_TO_LOOK_BACK
-  ) {
-    super();
-  }
+	constructor(
+		protected provider: JsonRpcProvider,
+		private priorityFeePercentile: number = DEFAULT_PRIORITY_FEE_PERCENTILE,
+		private blocksToConsider: number = DEFAULT_BLOCKS_TO_LOOK_BACK,
+	) {
+		super();
+	}
 
-  public override async getGasPrice(
-    _latestBlockNumber: number,
-    requestBlockNumber?: number
-  ): Promise<GasPrice> {
-    const feeHistoryRaw = (await this.provider.send('eth_feeHistory', [
-      /**
-       * @fix Use BigNumber.from(this.blocksToConsider).toHexString() after hardhat adds support
-       * @see https://github.com/NomicFoundation/hardhat/issues/1585 .___.
-       */
-      BigNumber.from(this.blocksToConsider).toHexString().replace('0x0', '0x'),
-      // If the block number is not specified, we have to send hardcoded 'latest' to infura RPC
-      // because Infura node pool is eventually consistent and may not have the latest block from our block number.
-      // See https://uniswapteam.slack.com/archives/C023A7JDTJP/p1702485038251449?thread_ts=1702471203.519869&cid=C023A7JDTJP
-      requestBlockNumber
-        ? BigNumber.from(requestBlockNumber).toHexString().replace('0x0', '0x')
-        : 'latest',
-      [this.priorityFeePercentile],
-    ])) as RawFeeHistoryResponse;
+	public override async getGasPrice(
+		_latestBlockNumber: number,
+		requestBlockNumber?: number,
+	): Promise<GasPrice> {
+		const feeHistoryRaw = (await this.provider.send("eth_feeHistory", [
+			/**
+			 * @fix Use BigNumber.from(this.blocksToConsider).toHexString() after hardhat adds support
+			 * @see https://github.com/NomicFoundation/hardhat/issues/1585 .___.
+			 */
+			BigNumber.from(this.blocksToConsider)
+				.toHexString()
+				.replace("0x0", "0x"),
+			// If the block number is not specified, we have to send hardcoded 'latest' to infura RPC
+			// because Infura node pool is eventually consistent and may not have the latest block from our block number.
+			// See https://uniswapteam.slack.com/archives/C023A7JDTJP/p1702485038251449?thread_ts=1702471203.519869&cid=C023A7JDTJP
+			requestBlockNumber
+				? BigNumber.from(requestBlockNumber).toHexString().replace("0x0", "0x")
+				: "latest",
+			[this.priorityFeePercentile],
+		])) as RawFeeHistoryResponse;
 
-    const feeHistory: FeeHistoryResponse = {
-      baseFeePerGas: _.map(feeHistoryRaw.baseFeePerGas, (b) =>
-        BigNumber.from(b)
-      ),
-      gasUsedRatio: feeHistoryRaw.gasUsedRatio,
-      oldestBlock: BigNumber.from(feeHistoryRaw.oldestBlock),
-      reward: _.map(feeHistoryRaw.reward, (b) => BigNumber.from(b[0])),
-    };
+		const feeHistory: FeeHistoryResponse = {
+			baseFeePerGas: _.map(feeHistoryRaw.baseFeePerGas, (b) =>
+				BigNumber.from(b),
+			),
+			gasUsedRatio: feeHistoryRaw.gasUsedRatio,
+			oldestBlock: BigNumber.from(feeHistoryRaw.oldestBlock),
+			reward: _.map(feeHistoryRaw.reward, (b) => BigNumber.from(b[0])),
+		};
 
-    const nextBlockBaseFeePerGas =
-      feeHistory.baseFeePerGas[feeHistory.baseFeePerGas.length - 1]!;
+		const nextBlockBaseFeePerGas =
+			feeHistory.baseFeePerGas[feeHistory.baseFeePerGas.length - 1]!;
 
-    const averagePriorityFeePerGas = _.reduce(
-      feeHistory.reward,
-      (sum: BigNumber, cur: BigNumber) => sum.add(cur),
-      BigNumber.from(0)
-    ).div(feeHistory.reward.length);
+		const averagePriorityFeePerGas = _.reduce(
+			feeHistory.reward,
+			(sum: BigNumber, cur: BigNumber) => sum.add(cur),
+			BigNumber.from(0),
+		).div(feeHistory.reward.length);
 
-    log.info(
-      {
-        feeHistory,
-        feeHistoryReadable: {
-          baseFeePerGas: _.map(feeHistory.baseFeePerGas, (f) => f.toString()),
-          oldestBlock: feeHistory.oldestBlock.toString(),
-          reward: _.map(feeHistory.reward, (r) => r.toString()),
-        },
-        nextBlockBaseFeePerGas: nextBlockBaseFeePerGas.toString(),
-        averagePriorityFeePerGas: averagePriorityFeePerGas.toString(),
-      },
-      'Got fee history from provider and computed gas estimate'
-    );
+		log.info(
+			{
+				feeHistory,
+				feeHistoryReadable: {
+					baseFeePerGas: _.map(feeHistory.baseFeePerGas, (f) => f.toString()),
+					oldestBlock: feeHistory.oldestBlock.toString(),
+					reward: _.map(feeHistory.reward, (r) => r.toString()),
+				},
+				nextBlockBaseFeePerGas: nextBlockBaseFeePerGas.toString(),
+				averagePriorityFeePerGas: averagePriorityFeePerGas.toString(),
+			},
+			"Got fee history from provider and computed gas estimate",
+		);
 
-    const gasPriceWei = nextBlockBaseFeePerGas.add(averagePriorityFeePerGas);
+		const gasPriceWei = nextBlockBaseFeePerGas.add(averagePriorityFeePerGas);
 
-    const blockNumber = feeHistory.oldestBlock.add(this.blocksToConsider);
+		const blockNumber = feeHistory.oldestBlock.add(this.blocksToConsider);
 
-    log.info(
-      `Estimated gas price in wei: ${gasPriceWei} as of block ${blockNumber.toString()}`
-    );
+		log.info(
+			`Estimated gas price in wei: ${gasPriceWei} as of block ${blockNumber.toString()}`,
+		);
 
-    return { gasPriceWei: gasPriceWei };
-  }
+		return { gasPriceWei: gasPriceWei };
+	}
 }

@@ -1,13 +1,13 @@
 import { CHAIN_TO_ADDRESSES_MAP, ChainId, Token } from "@uniswap/sdk-core";
 import { FACTORY_ADDRESS } from "@uniswap/v3-sdk";
 
-import { NETWORKS_WITH_SAME_UNISWAP_ADDRESSES } from "./chains";
 import {
 	EthereumMainnet,
 	OasisSapphireMainnet,
 	OasisSapphireTestnet,
 	Sepolia,
 } from "@neby/chains";
+import { NETWORKS_WITH_SAME_UNISWAP_ADDRESSES } from "./chains";
 
 export const V3_CORE_FACTORY_ADDRESSES: AddressMap = {
 	...constructSameAddressMap(FACTORY_ADDRESS),

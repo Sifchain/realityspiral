@@ -1,7 +1,7 @@
 import { ChainId, type Token } from "@uniswap/sdk-core";
 import retry from "async-retry";
 import Timeout from "await-timeout";
-import { gql, GraphQLClient } from "graphql-request";
+import { GraphQLClient, gql } from "graphql-request";
 import _ from "lodash";
 
 import { log } from "../../util/log";

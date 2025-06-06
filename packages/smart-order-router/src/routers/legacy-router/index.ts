@@ -1,1 +1,1 @@
-export * from './legacy-router';
+export * from "./legacy-router";

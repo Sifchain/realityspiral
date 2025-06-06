@@ -1,11 +1,11 @@
-import type { SupportedChainsType } from "./chains";
-import { ChainId, SUPPORTED_CHAINS } from "./chains";
 import {
 	// EthereumMainnet,
 	OasisSapphireMainnet,
 	OasisSapphireTestnet,
 	Sepolia,
 } from "@neby/chains";
+import type { SupportedChainsType } from "./chains";
+import { ChainId, SUPPORTED_CHAINS } from "./chains";
 
 type AddressMap = { [chainId: number]: string };
 
