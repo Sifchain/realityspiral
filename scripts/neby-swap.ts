@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
-import RouterABI from "./neby-abis/Router02.json";
 import ERC20ABI from "./neby-abis/ERC20.json";
+import RouterABI from "./neby-abis/Router02.json";
 
 // Private key for the wallet
 const WALLET_PRIVATE_KEY = process.env.PRIVATE_KEY;
@@ -148,6 +148,7 @@ async function swapTokens() {
 
 	// Log the events from the transaction
 	console.log("\nTransaction Events:");
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	receipt.logs.forEach((log: any, index: number) => {
 		console.log(`Event ${index + 1}:`);
 		console.log(`  Address: ${log.address}`);
