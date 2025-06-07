@@ -6,7 +6,7 @@ import {
 	getStakedBalanceAction,
 	getStakingStrategiesAction,
 	mintAction,
-	// redeemAction,
+	redeemAction,
 	stakeAction,
 	unstakeAction,
 	unwrapRoseAction,
@@ -29,7 +29,7 @@ export const accumulatedFinancePlugin: Plugin = {
 		unwrapRoseAction,
 		mintAction,
 		approveAction,
-		// redeemAction,
+		redeemAction,
 	],
 	providers: [], // No providers defined yet
 };

@@ -18,11 +18,11 @@ export const SAPPHIRE_MAINNET = {
 	},
 	// Common token addresses
 	TOKENS: {
-		ROSE: "0xed57966f1566de1a90042d07403021ea52ad4724", // Native ROSE token
+		ROSE: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // Native ROSE token
 		wROSE: "0x8Bc2B030b299964eEfb5e1e0b36991352E56D2D3", // Celer-bridged wROSE
-		USDC: "0x3cabbe76ea8b4e7a2c0a69812cbe671800379ec8", // USDC stablecoin on Sapphire
+		wstROSE: "0x3cAbbe76Ea8B4e7a2c0a69812CBe671800379eC8", // wstROSE
+		USDC: "0x97eec1c29f745dC7c267F90292AA663d997a601D", // USDC stablecoin on Sapphire
 		WETH: "0xB6dc6C8b71e88642cEAD3be1025565A9eE74d1C6", // Wrapped ETH on Sapphire (Celer-bridged)
-		WBTC: "0xB65548d5A38F4652C26a4B0d5B0Af19E59F37B53", // Wrapped BTC on Sapphire
 	},
 };
 
@@ -37,7 +37,7 @@ export const SAPPHIRE_TESTNET = {
 		QUOTER: "0x9B3dC97dFCB50F1a1C68B9561279e9B2C7fdE941", // Testnet quoter
 		NFT_POSITION_MANAGER: "0x1570235B38E62E35248A4C5D50751C29196F95AB", // Testnet position manager
 		TICK_LENS: "0x0F7769F08CCe5054369182f57E70795d18931A0F", // Testnet tick lens
-		SWAP_ROUTER_02: "0x14bD5C4dA62B36dC4Db587B1571DB7C7419E94A5", // Testnet router
+		SWAP_ROUTER_02: "0x5dbFD9d19c81021b6dbCb8766d853C7bB761a957", // Testnet router
 		HARVESTER: "0xd37FFa87A7b0e2b2678287A7B1B47f76E56D7e37", // Testnet harvester
 		LIQUIDITY_POSITION_STAKER: "0x6E5842a5A25f36c95a7C1246C052F4912378FF26", // Testnet position staker
 		NEBY_STAKER: "0x9C0ccEC208a619312f4CeB5f4B578c3bE4724A33", // Testnet staker
@@ -45,10 +45,9 @@ export const SAPPHIRE_TESTNET = {
 		PERMIT2: "0x93dDB2453b6F4925D772301BB3D0da63CB8D41FE", // Testnet permit2
 	},
 	TOKENS: {
-		ROSE: "0xed57966f1566de1a90042d07403021ea52ad4724", // Testnet native ROSE
-		USDC: "0x7fE291B37C72bf8a5cA1E1DD023C6a46D7C456B5", // Testnet USDC - CORRECTED CHECKSUM V2
-		WETH: "0xD26114cd6EE289AccF82350c8d8487fedB8A0C07", // Testnet WETH
-		WBTC: "0x8ddB5Df11d7d3e52c8Fb4CDF15Ecd1c814fC2A95", // Testnet WBTC
+		ROSE: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // Native ROSE token
+		wROSE: "0x84DA87ffd41Abe5c95C8943f2259C986371DFE16", // Testnet wrapped ROSE
+		USDC: "0x3b00685d919C515A7BC2A6909a85e877cD217Cd1", // Testnet USDC - CORRECTED CHECKSUM V2
 	},
 };
 
@@ -127,54 +126,311 @@ export const ABIS = {
 	// ERC20 token standard ABI
 	ERC20: [
 		{
-			constant: true,
-			inputs: [{ name: "_owner", type: "address" }],
-			name: "balanceOf",
-			outputs: [{ name: "balance", type: "uint256" }],
-			type: "function",
-		},
-		{
-			constant: false,
 			inputs: [
-				{ name: "_to", type: "address" },
-				{ name: "_value", type: "uint256" },
+				{
+					internalType: "address",
+					name: "spender",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "allowance",
+					type: "uint256",
+				},
+				{
+					internalType: "uint256",
+					name: "needed",
+					type: "uint256",
+				},
 			],
-			name: "transfer",
-			outputs: [{ name: "", type: "bool" }],
-			type: "function",
+			name: "ERC20InsufficientAllowance",
+			type: "error",
 		},
 		{
-			constant: false,
 			inputs: [
-				{ name: "_spender", type: "address" },
-				{ name: "_value", type: "uint256" },
+				{
+					internalType: "address",
+					name: "sender",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "balance",
+					type: "uint256",
+				},
+				{
+					internalType: "uint256",
+					name: "needed",
+					type: "uint256",
+				},
 			],
-			name: "approve",
-			outputs: [{ name: "", type: "bool" }],
-			type: "function",
+			name: "ERC20InsufficientBalance",
+			type: "error",
 		},
 		{
-			constant: true,
-			inputs: [],
-			name: "decimals",
-			outputs: [{ name: "", type: "uint8" }],
-			type: "function",
-		},
-		{
-			constant: true,
-			inputs: [],
-			name: "totalSupply",
-			outputs: [{ name: "", type: "uint256" }],
-			type: "function",
-		},
-		{
-			constant: true,
 			inputs: [
-				{ name: "_owner", type: "address" },
-				{ name: "_spender", type: "address" },
+				{
+					internalType: "address",
+					name: "approver",
+					type: "address",
+				},
+			],
+			name: "ERC20InvalidApprover",
+			type: "error",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "receiver",
+					type: "address",
+				},
+			],
+			name: "ERC20InvalidReceiver",
+			type: "error",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "sender",
+					type: "address",
+				},
+			],
+			name: "ERC20InvalidSender",
+			type: "error",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "spender",
+					type: "address",
+				},
+			],
+			name: "ERC20InvalidSpender",
+			type: "error",
+		},
+		{
+			anonymous: false,
+			inputs: [
+				{
+					indexed: true,
+					internalType: "address",
+					name: "owner",
+					type: "address",
+				},
+				{
+					indexed: true,
+					internalType: "address",
+					name: "spender",
+					type: "address",
+				},
+				{
+					indexed: false,
+					internalType: "uint256",
+					name: "value",
+					type: "uint256",
+				},
+			],
+			name: "Approval",
+			type: "event",
+		},
+		{
+			anonymous: false,
+			inputs: [
+				{
+					indexed: true,
+					internalType: "address",
+					name: "from",
+					type: "address",
+				},
+				{
+					indexed: true,
+					internalType: "address",
+					name: "to",
+					type: "address",
+				},
+				{
+					indexed: false,
+					internalType: "uint256",
+					name: "value",
+					type: "uint256",
+				},
+			],
+			name: "Transfer",
+			type: "event",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "owner",
+					type: "address",
+				},
+				{
+					internalType: "address",
+					name: "spender",
+					type: "address",
+				},
 			],
 			name: "allowance",
-			outputs: [{ name: "", type: "uint256" }],
+			outputs: [
+				{
+					internalType: "uint256",
+					name: "",
+					type: "uint256",
+				},
+			],
+			stateMutability: "view",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "spender",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "value",
+					type: "uint256",
+				},
+			],
+			name: "approve",
+			outputs: [
+				{
+					internalType: "bool",
+					name: "",
+					type: "bool",
+				},
+			],
+			stateMutability: "nonpayable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "account",
+					type: "address",
+				},
+			],
+			name: "balanceOf",
+			outputs: [
+				{
+					internalType: "uint256",
+					name: "",
+					type: "uint256",
+				},
+			],
+			stateMutability: "view",
+			type: "function",
+		},
+		{
+			inputs: [],
+			name: "decimals",
+			outputs: [
+				{
+					internalType: "uint8",
+					name: "",
+					type: "uint8",
+				},
+			],
+			stateMutability: "view",
+			type: "function",
+		},
+		{
+			inputs: [],
+			name: "name",
+			outputs: [
+				{
+					internalType: "string",
+					name: "",
+					type: "string",
+				},
+			],
+			stateMutability: "view",
+			type: "function",
+		},
+		{
+			inputs: [],
+			name: "symbol",
+			outputs: [
+				{
+					internalType: "string",
+					name: "",
+					type: "string",
+				},
+			],
+			stateMutability: "view",
+			type: "function",
+		},
+		{
+			inputs: [],
+			name: "totalSupply",
+			outputs: [
+				{
+					internalType: "uint256",
+					name: "",
+					type: "uint256",
+				},
+			],
+			stateMutability: "view",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "to",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "value",
+					type: "uint256",
+				},
+			],
+			name: "transfer",
+			outputs: [
+				{
+					internalType: "bool",
+					name: "",
+					type: "bool",
+				},
+			],
+			stateMutability: "nonpayable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "from",
+					type: "address",
+				},
+				{
+					internalType: "address",
+					name: "to",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "value",
+					type: "uint256",
+				},
+			],
+			name: "transferFrom",
+			outputs: [
+				{
+					internalType: "bool",
+					name: "",
+					type: "bool",
+				},
+			],
+			stateMutability: "nonpayable",
 			type: "function",
 		},
 	],
@@ -183,29 +439,267 @@ export const ABIS = {
 	QUOTER: [
 		{
 			inputs: [
-				{ internalType: "address", name: "tokenIn", type: "address" },
-				{ internalType: "address", name: "tokenOut", type: "address" },
-				{ internalType: "uint24", name: "fee", type: "uint24" },
-				{ internalType: "uint256", name: "amountIn", type: "uint256" },
-				{ internalType: "uint160", name: "sqrtPriceLimitX96", type: "uint160" },
+				{
+					internalType: "address",
+					name: "_factory",
+					type: "address",
+				},
+				{
+					internalType: "address",
+					name: "_WETH9",
+					type: "address",
+				},
 			],
-			name: "quoteExactInputSingle",
+			stateMutability: "nonpayable",
+			type: "constructor",
+		},
+		{
+			inputs: [],
+			name: "WETH9",
 			outputs: [
-				{ internalType: "uint256", name: "amountOut", type: "uint256" },
+				{
+					internalType: "address",
+					name: "",
+					type: "address",
+				},
+			],
+			stateMutability: "view",
+			type: "function",
+		},
+		{
+			inputs: [],
+			name: "factory",
+			outputs: [
+				{
+					internalType: "address",
+					name: "",
+					type: "address",
+				},
+			],
+			stateMutability: "view",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "bytes",
+					name: "path",
+					type: "bytes",
+				},
+				{
+					internalType: "uint256",
+					name: "amountIn",
+					type: "uint256",
+				},
+			],
+			name: "quoteExactInput",
+			outputs: [
+				{
+					internalType: "uint256",
+					name: "amountOut",
+					type: "uint256",
+				},
+				{
+					internalType: "uint160[]",
+					name: "sqrtPriceX96AfterList",
+					type: "uint160[]",
+				},
+				{
+					internalType: "uint32[]",
+					name: "initializedTicksCrossedList",
+					type: "uint32[]",
+				},
+				{
+					internalType: "uint256",
+					name: "gasEstimate",
+					type: "uint256",
+				},
 			],
 			stateMutability: "nonpayable",
 			type: "function",
 		},
 		{
 			inputs: [
-				{ internalType: "bytes", name: "path", type: "bytes" },
-				{ internalType: "uint256", name: "amountIn", type: "uint256" },
+				{
+					components: [
+						{
+							internalType: "address",
+							name: "tokenIn",
+							type: "address",
+						},
+						{
+							internalType: "address",
+							name: "tokenOut",
+							type: "address",
+						},
+						{
+							internalType: "uint256",
+							name: "amountIn",
+							type: "uint256",
+						},
+						{
+							internalType: "uint24",
+							name: "fee",
+							type: "uint24",
+						},
+						{
+							internalType: "uint160",
+							name: "sqrtPriceLimitX96",
+							type: "uint160",
+						},
+					],
+					internalType: "struct IQuoterV2.QuoteExactInputSingleParams",
+					name: "params",
+					type: "tuple",
+				},
 			],
-			name: "quoteExactInput",
+			name: "quoteExactInputSingle",
 			outputs: [
-				{ internalType: "uint256", name: "amountOut", type: "uint256" },
+				{
+					internalType: "uint256",
+					name: "amountOut",
+					type: "uint256",
+				},
+				{
+					internalType: "uint160",
+					name: "sqrtPriceX96After",
+					type: "uint160",
+				},
+				{
+					internalType: "uint32",
+					name: "initializedTicksCrossed",
+					type: "uint32",
+				},
+				{
+					internalType: "uint256",
+					name: "gasEstimate",
+					type: "uint256",
+				},
 			],
 			stateMutability: "nonpayable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "bytes",
+					name: "path",
+					type: "bytes",
+				},
+				{
+					internalType: "uint256",
+					name: "amountOut",
+					type: "uint256",
+				},
+			],
+			name: "quoteExactOutput",
+			outputs: [
+				{
+					internalType: "uint256",
+					name: "amountIn",
+					type: "uint256",
+				},
+				{
+					internalType: "uint160[]",
+					name: "sqrtPriceX96AfterList",
+					type: "uint160[]",
+				},
+				{
+					internalType: "uint32[]",
+					name: "initializedTicksCrossedList",
+					type: "uint32[]",
+				},
+				{
+					internalType: "uint256",
+					name: "gasEstimate",
+					type: "uint256",
+				},
+			],
+			stateMutability: "nonpayable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					components: [
+						{
+							internalType: "address",
+							name: "tokenIn",
+							type: "address",
+						},
+						{
+							internalType: "address",
+							name: "tokenOut",
+							type: "address",
+						},
+						{
+							internalType: "uint256",
+							name: "amount",
+							type: "uint256",
+						},
+						{
+							internalType: "uint24",
+							name: "fee",
+							type: "uint24",
+						},
+						{
+							internalType: "uint160",
+							name: "sqrtPriceLimitX96",
+							type: "uint160",
+						},
+					],
+					internalType: "struct IQuoterV2.QuoteExactOutputSingleParams",
+					name: "params",
+					type: "tuple",
+				},
+			],
+			name: "quoteExactOutputSingle",
+			outputs: [
+				{
+					internalType: "uint256",
+					name: "amountIn",
+					type: "uint256",
+				},
+				{
+					internalType: "uint160",
+					name: "sqrtPriceX96After",
+					type: "uint160",
+				},
+				{
+					internalType: "uint32",
+					name: "initializedTicksCrossed",
+					type: "uint32",
+				},
+				{
+					internalType: "uint256",
+					name: "gasEstimate",
+					type: "uint256",
+				},
+			],
+			stateMutability: "nonpayable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "int256",
+					name: "amount0Delta",
+					type: "int256",
+				},
+				{
+					internalType: "int256",
+					name: "amount1Delta",
+					type: "int256",
+				},
+				{
+					internalType: "bytes",
+					name: "path",
+					type: "bytes",
+				},
+			],
+			name: "uniswapV3SwapCallback",
+			outputs: [],
+			stateMutability: "view",
 			type: "function",
 		},
 	],
@@ -215,12 +709,234 @@ export const ABIS = {
 		{
 			inputs: [
 				{
+					internalType: "address",
+					name: "_factoryV2",
+					type: "address",
+				},
+				{
+					internalType: "address",
+					name: "factoryV3",
+					type: "address",
+				},
+				{
+					internalType: "address",
+					name: "_positionManager",
+					type: "address",
+				},
+				{
+					internalType: "address",
+					name: "_WETH9",
+					type: "address",
+				},
+			],
+			stateMutability: "nonpayable",
+			type: "constructor",
+		},
+		{
+			inputs: [],
+			name: "WETH9",
+			outputs: [
+				{
+					internalType: "address",
+					name: "",
+					type: "address",
+				},
+			],
+			stateMutability: "view",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "token",
+					type: "address",
+				},
+			],
+			name: "approveMax",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "token",
+					type: "address",
+				},
+			],
+			name: "approveMaxMinusOne",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "token",
+					type: "address",
+				},
+			],
+			name: "approveZeroThenMax",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "token",
+					type: "address",
+				},
+			],
+			name: "approveZeroThenMaxMinusOne",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "bytes",
+					name: "data",
+					type: "bytes",
+				},
+			],
+			name: "callPositionManager",
+			outputs: [
+				{
+					internalType: "bytes",
+					name: "result",
+					type: "bytes",
+				},
+			],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "bytes[]",
+					name: "paths",
+					type: "bytes[]",
+				},
+				{
+					internalType: "uint128[]",
+					name: "amounts",
+					type: "uint128[]",
+				},
+				{
+					internalType: "uint24",
+					name: "maximumTickDivergence",
+					type: "uint24",
+				},
+				{
+					internalType: "uint32",
+					name: "secondsAgo",
+					type: "uint32",
+				},
+			],
+			name: "checkOracleSlippage",
+			outputs: [],
+			stateMutability: "view",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "bytes",
+					name: "path",
+					type: "bytes",
+				},
+				{
+					internalType: "uint24",
+					name: "maximumTickDivergence",
+					type: "uint24",
+				},
+				{
+					internalType: "uint32",
+					name: "secondsAgo",
+					type: "uint32",
+				},
+			],
+			name: "checkOracleSlippage",
+			outputs: [],
+			stateMutability: "view",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
 					components: [
-						{ internalType: "address", name: "tokenIn", type: "address" },
-						{ internalType: "address", name: "tokenOut", type: "address" },
-						{ internalType: "uint24", name: "fee", type: "uint24" },
-						{ internalType: "address", name: "recipient", type: "address" },
-						{ internalType: "uint256", name: "amountIn", type: "uint256" },
+						{
+							internalType: "bytes",
+							name: "path",
+							type: "bytes",
+						},
+						{
+							internalType: "address",
+							name: "recipient",
+							type: "address",
+						},
+						{
+							internalType: "uint256",
+							name: "amountIn",
+							type: "uint256",
+						},
+						{
+							internalType: "uint256",
+							name: "amountOutMinimum",
+							type: "uint256",
+						},
+					],
+					internalType: "struct IV3SwapRouter.ExactInputParams",
+					name: "params",
+					type: "tuple",
+				},
+			],
+			name: "exactInput",
+			outputs: [
+				{
+					internalType: "uint256",
+					name: "amountOut",
+					type: "uint256",
+				},
+			],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					components: [
+						{
+							internalType: "address",
+							name: "tokenIn",
+							type: "address",
+						},
+						{
+							internalType: "address",
+							name: "tokenOut",
+							type: "address",
+						},
+						{
+							internalType: "uint24",
+							name: "fee",
+							type: "uint24",
+						},
+						{
+							internalType: "address",
+							name: "recipient",
+							type: "address",
+						},
+						{
+							internalType: "uint256",
+							name: "amountIn",
+							type: "uint256",
+						},
 						{
 							internalType: "uint256",
 							name: "amountOutMinimum",
@@ -232,14 +948,18 @@ export const ABIS = {
 							type: "uint160",
 						},
 					],
-					internalType: "struct ISwapRouter.ExactInputSingleParams",
+					internalType: "struct IV3SwapRouter.ExactInputSingleParams",
 					name: "params",
 					type: "tuple",
 				},
 			],
 			name: "exactInputSingle",
 			outputs: [
-				{ internalType: "uint256", name: "amountOut", type: "uint256" },
+				{
+					internalType: "uint256",
+					name: "amountOut",
+					type: "uint256",
+				},
 			],
 			stateMutability: "payable",
 			type: "function",
@@ -248,26 +968,804 @@ export const ABIS = {
 			inputs: [
 				{
 					components: [
-						{ internalType: "bytes", name: "path", type: "bytes" },
-						{ internalType: "address", name: "recipient", type: "address" },
-						{ internalType: "uint256", name: "amountIn", type: "uint256" },
+						{
+							internalType: "bytes",
+							name: "path",
+							type: "bytes",
+						},
+						{
+							internalType: "address",
+							name: "recipient",
+							type: "address",
+						},
 						{
 							internalType: "uint256",
-							name: "amountOutMinimum",
+							name: "amountOut",
+							type: "uint256",
+						},
+						{
+							internalType: "uint256",
+							name: "amountInMaximum",
 							type: "uint256",
 						},
 					],
-					internalType: "struct ISwapRouter.ExactInputParams",
+					internalType: "struct IV3SwapRouter.ExactOutputParams",
 					name: "params",
 					type: "tuple",
 				},
 			],
-			name: "exactInput",
+			name: "exactOutput",
 			outputs: [
-				{ internalType: "uint256", name: "amountOut", type: "uint256" },
+				{
+					internalType: "uint256",
+					name: "amountIn",
+					type: "uint256",
+				},
 			],
 			stateMutability: "payable",
 			type: "function",
+		},
+		{
+			inputs: [
+				{
+					components: [
+						{
+							internalType: "address",
+							name: "tokenIn",
+							type: "address",
+						},
+						{
+							internalType: "address",
+							name: "tokenOut",
+							type: "address",
+						},
+						{
+							internalType: "uint24",
+							name: "fee",
+							type: "uint24",
+						},
+						{
+							internalType: "address",
+							name: "recipient",
+							type: "address",
+						},
+						{
+							internalType: "uint256",
+							name: "amountOut",
+							type: "uint256",
+						},
+						{
+							internalType: "uint256",
+							name: "amountInMaximum",
+							type: "uint256",
+						},
+						{
+							internalType: "uint160",
+							name: "sqrtPriceLimitX96",
+							type: "uint160",
+						},
+					],
+					internalType: "struct IV3SwapRouter.ExactOutputSingleParams",
+					name: "params",
+					type: "tuple",
+				},
+			],
+			name: "exactOutputSingle",
+			outputs: [
+				{
+					internalType: "uint256",
+					name: "amountIn",
+					type: "uint256",
+				},
+			],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [],
+			name: "factory",
+			outputs: [
+				{
+					internalType: "address",
+					name: "",
+					type: "address",
+				},
+			],
+			stateMutability: "view",
+			type: "function",
+		},
+		{
+			inputs: [],
+			name: "factoryV2",
+			outputs: [
+				{
+					internalType: "address",
+					name: "",
+					type: "address",
+				},
+			],
+			stateMutability: "view",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "token",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "amount",
+					type: "uint256",
+				},
+			],
+			name: "getApprovalType",
+			outputs: [
+				{
+					internalType: "enum IApproveAndCall.ApprovalType",
+					name: "",
+					type: "uint8",
+				},
+			],
+			stateMutability: "nonpayable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					components: [
+						{
+							internalType: "address",
+							name: "token0",
+							type: "address",
+						},
+						{
+							internalType: "address",
+							name: "token1",
+							type: "address",
+						},
+						{
+							internalType: "uint256",
+							name: "tokenId",
+							type: "uint256",
+						},
+						{
+							internalType: "uint256",
+							name: "amount0Min",
+							type: "uint256",
+						},
+						{
+							internalType: "uint256",
+							name: "amount1Min",
+							type: "uint256",
+						},
+					],
+					internalType: "struct IApproveAndCall.IncreaseLiquidityParams",
+					name: "params",
+					type: "tuple",
+				},
+			],
+			name: "increaseLiquidity",
+			outputs: [
+				{
+					internalType: "bytes",
+					name: "result",
+					type: "bytes",
+				},
+			],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					components: [
+						{
+							internalType: "address",
+							name: "token0",
+							type: "address",
+						},
+						{
+							internalType: "address",
+							name: "token1",
+							type: "address",
+						},
+						{
+							internalType: "uint24",
+							name: "fee",
+							type: "uint24",
+						},
+						{
+							internalType: "int24",
+							name: "tickLower",
+							type: "int24",
+						},
+						{
+							internalType: "int24",
+							name: "tickUpper",
+							type: "int24",
+						},
+						{
+							internalType: "uint256",
+							name: "amount0Min",
+							type: "uint256",
+						},
+						{
+							internalType: "uint256",
+							name: "amount1Min",
+							type: "uint256",
+						},
+						{
+							internalType: "address",
+							name: "recipient",
+							type: "address",
+						},
+					],
+					internalType: "struct IApproveAndCall.MintParams",
+					name: "params",
+					type: "tuple",
+				},
+			],
+			name: "mint",
+			outputs: [
+				{
+					internalType: "bytes",
+					name: "result",
+					type: "bytes",
+				},
+			],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "bytes32",
+					name: "previousBlockhash",
+					type: "bytes32",
+				},
+				{
+					internalType: "bytes[]",
+					name: "data",
+					type: "bytes[]",
+				},
+			],
+			name: "multicall",
+			outputs: [
+				{
+					internalType: "bytes[]",
+					name: "",
+					type: "bytes[]",
+				},
+			],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "uint256",
+					name: "deadline",
+					type: "uint256",
+				},
+				{
+					internalType: "bytes[]",
+					name: "data",
+					type: "bytes[]",
+				},
+			],
+			name: "multicall",
+			outputs: [
+				{
+					internalType: "bytes[]",
+					name: "",
+					type: "bytes[]",
+				},
+			],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "bytes[]",
+					name: "data",
+					type: "bytes[]",
+				},
+			],
+			name: "multicall",
+			outputs: [
+				{
+					internalType: "bytes[]",
+					name: "results",
+					type: "bytes[]",
+				},
+			],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [],
+			name: "positionManager",
+			outputs: [
+				{
+					internalType: "address",
+					name: "",
+					type: "address",
+				},
+			],
+			stateMutability: "view",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "token",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "value",
+					type: "uint256",
+				},
+			],
+			name: "pull",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [],
+			name: "refundETH",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "token",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "value",
+					type: "uint256",
+				},
+				{
+					internalType: "uint256",
+					name: "deadline",
+					type: "uint256",
+				},
+				{
+					internalType: "uint8",
+					name: "v",
+					type: "uint8",
+				},
+				{
+					internalType: "bytes32",
+					name: "r",
+					type: "bytes32",
+				},
+				{
+					internalType: "bytes32",
+					name: "s",
+					type: "bytes32",
+				},
+			],
+			name: "selfPermit",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "token",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "nonce",
+					type: "uint256",
+				},
+				{
+					internalType: "uint256",
+					name: "expiry",
+					type: "uint256",
+				},
+				{
+					internalType: "uint8",
+					name: "v",
+					type: "uint8",
+				},
+				{
+					internalType: "bytes32",
+					name: "r",
+					type: "bytes32",
+				},
+				{
+					internalType: "bytes32",
+					name: "s",
+					type: "bytes32",
+				},
+			],
+			name: "selfPermitAllowed",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "token",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "nonce",
+					type: "uint256",
+				},
+				{
+					internalType: "uint256",
+					name: "expiry",
+					type: "uint256",
+				},
+				{
+					internalType: "uint8",
+					name: "v",
+					type: "uint8",
+				},
+				{
+					internalType: "bytes32",
+					name: "r",
+					type: "bytes32",
+				},
+				{
+					internalType: "bytes32",
+					name: "s",
+					type: "bytes32",
+				},
+			],
+			name: "selfPermitAllowedIfNecessary",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "token",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "value",
+					type: "uint256",
+				},
+				{
+					internalType: "uint256",
+					name: "deadline",
+					type: "uint256",
+				},
+				{
+					internalType: "uint8",
+					name: "v",
+					type: "uint8",
+				},
+				{
+					internalType: "bytes32",
+					name: "r",
+					type: "bytes32",
+				},
+				{
+					internalType: "bytes32",
+					name: "s",
+					type: "bytes32",
+				},
+			],
+			name: "selfPermitIfNecessary",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "uint256",
+					name: "amountIn",
+					type: "uint256",
+				},
+				{
+					internalType: "uint256",
+					name: "amountOutMin",
+					type: "uint256",
+				},
+				{
+					internalType: "address[]",
+					name: "path",
+					type: "address[]",
+				},
+				{
+					internalType: "address",
+					name: "to",
+					type: "address",
+				},
+			],
+			name: "swapExactTokensForTokens",
+			outputs: [
+				{
+					internalType: "uint256",
+					name: "amountOut",
+					type: "uint256",
+				},
+			],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "uint256",
+					name: "amountOut",
+					type: "uint256",
+				},
+				{
+					internalType: "uint256",
+					name: "amountInMax",
+					type: "uint256",
+				},
+				{
+					internalType: "address[]",
+					name: "path",
+					type: "address[]",
+				},
+				{
+					internalType: "address",
+					name: "to",
+					type: "address",
+				},
+			],
+			name: "swapTokensForExactTokens",
+			outputs: [
+				{
+					internalType: "uint256",
+					name: "amountIn",
+					type: "uint256",
+				},
+			],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "token",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "amountMinimum",
+					type: "uint256",
+				},
+				{
+					internalType: "address",
+					name: "recipient",
+					type: "address",
+				},
+			],
+			name: "sweepToken",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "token",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "amountMinimum",
+					type: "uint256",
+				},
+			],
+			name: "sweepToken",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "token",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "amountMinimum",
+					type: "uint256",
+				},
+				{
+					internalType: "uint256",
+					name: "feeBips",
+					type: "uint256",
+				},
+				{
+					internalType: "address",
+					name: "feeRecipient",
+					type: "address",
+				},
+			],
+			name: "sweepTokenWithFee",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "address",
+					name: "token",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "amountMinimum",
+					type: "uint256",
+				},
+				{
+					internalType: "address",
+					name: "recipient",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "feeBips",
+					type: "uint256",
+				},
+				{
+					internalType: "address",
+					name: "feeRecipient",
+					type: "address",
+				},
+			],
+			name: "sweepTokenWithFee",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "int256",
+					name: "amount0Delta",
+					type: "int256",
+				},
+				{
+					internalType: "int256",
+					name: "amount1Delta",
+					type: "int256",
+				},
+				{
+					internalType: "bytes",
+					name: "_data",
+					type: "bytes",
+				},
+			],
+			name: "uniswapV3SwapCallback",
+			outputs: [],
+			stateMutability: "nonpayable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "uint256",
+					name: "amountMinimum",
+					type: "uint256",
+				},
+				{
+					internalType: "address",
+					name: "recipient",
+					type: "address",
+				},
+			],
+			name: "unwrapWETH9",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "uint256",
+					name: "amountMinimum",
+					type: "uint256",
+				},
+			],
+			name: "unwrapWETH9",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "uint256",
+					name: "amountMinimum",
+					type: "uint256",
+				},
+				{
+					internalType: "address",
+					name: "recipient",
+					type: "address",
+				},
+				{
+					internalType: "uint256",
+					name: "feeBips",
+					type: "uint256",
+				},
+				{
+					internalType: "address",
+					name: "feeRecipient",
+					type: "address",
+				},
+			],
+			name: "unwrapWETH9WithFee",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "uint256",
+					name: "amountMinimum",
+					type: "uint256",
+				},
+				{
+					internalType: "uint256",
+					name: "feeBips",
+					type: "uint256",
+				},
+				{
+					internalType: "address",
+					name: "feeRecipient",
+					type: "address",
+				},
+			],
+			name: "unwrapWETH9WithFee",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			inputs: [
+				{
+					internalType: "uint256",
+					name: "value",
+					type: "uint256",
+				},
+			],
+			name: "wrapETH",
+			outputs: [],
+			stateMutability: "payable",
+			type: "function",
+		},
+		{
+			stateMutability: "payable",
+			type: "receive",
 		},
 	],
 

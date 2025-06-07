@@ -1,10 +1,22 @@
+import { SAPPHIRE_MAINNET } from "./constants";
+
+// Helper function to format token list
+const formatTokenList = (tokens: Record<string, string>): string => {
+	return Object.entries(tokens)
+		.map(([symbol, address]) => `- ${symbol}: ${address}`)
+		.join("\n");
+};
+
 // Template for extracting swap parameters
 export const swapTemplate = `
 Extract the following details for swapping tokens on Neby DEX:
 - **fromToken** (string): The contract address of the token to swap FROM.
 - **toToken** (string): The contract address of the token to swap TO.
-- **amount** (string): The amount of the 'fromToken' to swap, specified in its smallest unit (e.g., wei for ROSE).
+- **amount** (string): The amount to the 'fromToken' toswap (as string to handle large numbers).
 - **slippage** (number, optional): The maximum allowed slippage percentage (e.g., 0.5 for 0.5%). If not specified, the default will be used.
+
+Available token contract addresses:
+${formatTokenList(SAPPHIRE_MAINNET.TOKENS)}
 
 Provide the details in the following JSON format:
 

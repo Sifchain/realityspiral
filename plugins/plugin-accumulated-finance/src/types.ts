@@ -84,7 +84,7 @@ export type AccumulatedFinancePluginFactory = (
 // Stake Operation Schema
 export const StakeSchema = z.object({
 	amount: z.string().min(1),
-	receiver: z.string().optional(),
+	receiver: z.string().optional().nullable(),
 });
 
 export type StakeContent = z.infer<typeof StakeSchema>;
@@ -96,7 +96,7 @@ export function isStakeContent(input: unknown): input is StakeContent {
 // Unstake Operation Schema
 export const UnstakeSchema = z.object({
 	amount: z.string().min(1),
-	receiver: z.string().optional(),
+	receiver: z.string().optional().nullable(),
 });
 
 export type UnstakeContent = z.infer<typeof UnstakeSchema>;
@@ -141,7 +141,7 @@ export function isUnwrapRoseContent(
 // Mint Schema
 export const MintSchema = z.object({
 	amount: z.string().min(1),
-	receiver: z.string().optional(),
+	receiver: z.string().optional().nullable(),
 });
 
 export type MintContent = z.infer<typeof MintSchema>;
@@ -166,8 +166,8 @@ export function isApproveContent(input: unknown): input is ApproveContent {
 // Redeem Schema
 export const RedeemSchema = z.object({
 	shares: z.string().min(1),
-	receiver: z.string().optional(),
-	owner: z.string().optional(),
+	receiver: z.string().optional().nullable(),
+	owner: z.string().optional().nullable(),
 });
 
 export type RedeemContent = z.infer<typeof RedeemSchema>;

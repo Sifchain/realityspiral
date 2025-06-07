@@ -40,23 +40,31 @@ export class SwapService {
 				amount,
 			});
 
-			// TODO: Add logic to determine the best fee tier instead of defaulting
-			const fee = POOL_FEES.MEDIUM; // Default to medium fee tier
+			// Create exact input single params
+			const params = {
+				tokenIn: fromToken,
+				tokenOut: toToken,
+				amountIn: amount,
+				fee: POOL_FEES.MEDIUM, // Default to medium fee tier
+				sqrtPriceLimitX96: 0,
+			};
 
-			// Encode the path for quoteExactInput: tokenIn, fee, tokenOut
-			const path = ethers.solidityPacked(
-				["address", "uint24", "address"],
-				[fromToken, fee, toToken],
-			);
+			elizaLogger.info("Quote parameters", {
+				params,
+			});
 
 			// Use readContract from ethersHelper
 			const result = await readContract<string>({
 				runtime: this.runtime,
 				networkId: this.networkId,
 				contractAddress: this.quoterAddress,
-				method: "quoteExactInput",
-				args: [path, amount],
+				method: "quoteExactInputSingle",
+				args: [params],
 				abi: ABIS.QUOTER,
+			});
+
+			elizaLogger.info("Quote result", {
+				result,
 			});
 
 			return result;
@@ -131,16 +139,25 @@ export class SwapService {
 				recipient,
 			});
 
+			// Set a deadline for the transaction (current time + 20 minutes)
+			const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
+
 			// Create exact input single params
 			const params = {
 				tokenIn: fromToken,
 				tokenOut: toToken,
 				fee: POOL_FEES.MEDIUM,
 				recipient: recipient,
+				deadline: deadline,
 				amountIn: amount,
 				amountOutMinimum: minAmountOut,
 				sqrtPriceLimitX96: 0, // No price limit
 			};
+
+			elizaLogger.info("Swap parameters", {
+				params,
+				deadline: new Date(deadline * 1000).toISOString(),
+			});
 
 			// Use invokeContract from ethersHelper
 			const invokeResult = await invokeContract({
@@ -150,7 +167,11 @@ export class SwapService {
 				method: "exactInputSingle",
 				args: [params],
 				abi: ABIS.SWAP_ROUTER,
-				// value: "0", // TODO: Set value if swapping *from* native token
+			});
+
+			elizaLogger.info("Swap transaction submitted", {
+				transactionHash: invokeResult.transactionHash,
+				blockNumber: invokeResult.blockNumber,
 			});
 
 			// TODO: How to get amountOut? The invokeContract helper currently only returns
