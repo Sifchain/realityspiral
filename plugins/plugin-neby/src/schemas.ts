@@ -11,12 +11,11 @@ export const SwapActionSchema = z.object({
 		.string()
 		.startsWith("0x")
 		.describe("Contract address of the token to swap TO"),
-	amount: z
-		.string()
-		.describe("Amount of fromToken in smallest unit (e.g., wei)"),
+	amount: z.string().describe("Amount of fromToken to swap"),
 	slippage: z
 		.number()
 		.optional()
+		.default(0.5)
 		.describe("Optional maximum slippage percentage (e.g., 0.5)"),
 });
 
@@ -67,5 +66,6 @@ export const GetPoolDetailsActionSchema = z.object({
 	fee: z
 		.number()
 		.optional()
+		.default(3000)
 		.describe("Optional pool fee tier (e.g., 500, 3000, 10000)"),
 });

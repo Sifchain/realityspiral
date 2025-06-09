@@ -191,30 +191,35 @@ export const nebyPlugin = (
 			const effectiveSlippage = slippage ?? fullConfig.maxSlippage;
 			const userAddress = await getUserAddressString(runtime, networkId);
 
+			const amountIn = ethers.parseUnits(amount, 18); // Token with 18 decimals
+
 			if (fromToken !== networkConfig.TOKENS.ROSE) {
 				await swapService.approveTokenSpending(
 					fromToken,
 					networkConfig.CONTRACTS.SWAP_ROUTER_02,
-					amount,
+					amountIn.toString(),
 				);
 			}
 
 			const expectedOutput = await swapService.getSwapQuote(
 				fromToken,
 				toToken,
-				amount,
+				amountIn.toString(),
 			);
 
-			const expectedOutputBigInt = BigInt(expectedOutput);
+			// get amountOut from quote
+			const amountOut = expectedOutput["0"];
+
+			const amountOutBigInt = BigInt(amountOut);
 			const slippageBasisPoints = BigInt(Math.floor(effectiveSlippage * 100));
 			const minOutputAmountBigInt =
-				(expectedOutputBigInt * (BigInt(10000) - slippageBasisPoints)) /
+				(amountOutBigInt * (BigInt(10000) - slippageBasisPoints)) /
 				BigInt(10000);
 
 			return await swapService.executeSwap(
 				fromToken,
 				toToken,
-				amount,
+				amountIn.toString(),
 				minOutputAmountBigInt.toString(),
 				userAddress,
 			);
@@ -344,14 +349,14 @@ export const swapAction: Action = {
 			{
 				user: "{{user1}}",
 				content: {
-					text: "Neby Swap 100 ROSE for USDC on Neby using my default slippage",
+					text: "Neby Swap 100 wROSE for USDC on Neby using my default slippage",
 					actions: [
 						{
 							name: "NEBY_SWAP",
 							options: {
-								fromToken: "0x...ROSE_ADDRESS...",
+								fromToken: "0x...wROSE_ADDRESS...",
 								toToken: "0x...USDC_ADDRESS...",
-								amount: "100000000000000000000",
+								amount: "100",
 							},
 						},
 					],
@@ -360,13 +365,109 @@ export const swapAction: Action = {
 			{
 				user: "{{agentName}}",
 				content: {
-					text: "Neby Swap executed successfully! Transaction hash: 0x...tx_hash... Swapped 100 ROSE for ~95 USDC.",
+					text: "Neby Swap executed successfully! Transaction hash: 0x...tx_hash... Swapped 100 wROSE for ~95 USDC.",
 					result: {
 						transactionHash: "0x...tx_hash...",
-						fromToken: "0x...ROSE_ADDRESS...",
+						fromToken: "0x...wROSE_ADDRESS...",
 						toToken: "0x...USDC_ADDRESS...",
 						amountIn: "100000000000000000000",
 						amountOut: "95000000",
+						timestamp: 1678886400,
+					},
+				},
+			},
+		],
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Neby Swap 0.5 wROSE for USDC on Neby using my default slippage",
+					actions: [
+						{
+							name: "NEBY_SWAP",
+							options: {
+								fromToken: "0x...wROSE_ADDRESS...",
+								toToken: "0x...USDC_ADDRESS...",
+								amount: "0.5",
+							},
+						},
+					],
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Neby Swap executed successfully! Transaction hash: 0x...tx_hash... Swapped 0.5 wROSE for ~0.475 USDC.",
+					result: {
+						transactionHash: "0x...tx_hash...",
+						fromToken: "0x...wROSE_ADDRESS...",
+						toToken: "0x...USDC_ADDRESS...",
+						amountIn: "500000000000000000",
+						amountOut: "475000",
+						timestamp: 1678886400,
+					},
+				},
+			},
+		],
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Neby Swap 1000 wROSE for USDC on Neby using my default slippage",
+					actions: [
+						{
+							name: "NEBY_SWAP",
+							options: {
+								fromToken: "0x...wROSE_ADDRESS...",
+								toToken: "0x...USDC_ADDRESS...",
+								amount: "1000",
+							},
+						},
+					],
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Neby Swap executed successfully! Transaction hash: 0x...tx_hash... Swapped 1000 wROSE for ~950 USDC.",
+					result: {
+						transactionHash: "0x...tx_hash...",
+						fromToken: "0x...wROSE_ADDRESS...",
+						toToken: "0x...USDC_ADDRESS...",
+						amountIn: "1000000000000000000000",
+						amountOut: "950000000",
+						timestamp: 1678886400,
+					},
+				},
+			},
+		],
+		[
+			{
+				user: "{{user1}}",
+				content: {
+					text: "Neby Swap 0.01 wROSE for USDC on Neby using my default slippage",
+					actions: [
+						{
+							name: "NEBY_SWAP",
+							options: {
+								fromToken: "0x...wROSE_ADDRESS...",
+								toToken: "0x...USDC_ADDRESS...",
+								amount: "0.01",
+							},
+						},
+					],
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Neby Swap executed successfully! Transaction hash: 0x...tx_hash... Swapped 0.01 wROSE for ~0.0095 USDC.",
+					result: {
+						transactionHash: "0x...tx_hash...",
+						fromToken: "0x...wROSE_ADDRESS...",
+						toToken: "0x...USDC_ADDRESS...",
+						amountIn: "10000000000000000",
+						amountOut: "9500",
 						timestamp: 1678886400,
 					},
 				},

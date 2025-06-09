@@ -331,25 +331,38 @@ export const accumulatedFinancePlugin = (
 		try {
 			elizaLogger.info("Internal redeem helper", { shares, receiver, owner });
 			const { signer } = await getProviderAndSigner(runtime, networkConfig);
-			const wrappedRoseContract = new ethers.Contract(
+			const _wrappedRoseContract = new ethers.Contract(
 				networkConfig.CONTRACTS.WRAPPED_ROSE,
 				ABIS.WSTROSE,
 				signer,
 			);
 
-			const redeemTx = await wrappedRoseContract.redeem(
+			// Ensure approval first
+			const approveReceipt = await _approve(
+				networkConfig.CONTRACTS.UNWRAPPED_ROSE,
+				networkConfig.CONTRACTS.UNSTAKED_ROSE,
 				shares,
-				receiver,
-				owner,
-				{ gasLimit: 300000 },
 			);
-			elizaLogger.info("Redeem transaction sent", { hash: redeemTx.hash });
-			const redeemReceipt = await redeemTx.wait();
-			elizaLogger.info("Redeem transaction mined", {
-				hash: redeemReceipt?.hash,
-				status: redeemReceipt?.status,
-			});
-			return redeemReceipt;
+
+			// FIXME: this results with the following error:
+			// Failed to redeem shares: invalid BigNumberish string: Cannot convert 0.5 to a BigInt
+			// After testing the AF redeem flow it appears the withdraw process is also not working
+			// committing out the following lines for now
+			// const redeemTx = await wrappedRoseContract.redeem(
+			// 	shares,
+			// 	receiver,
+			// 	owner,
+			// 	{ gasLimit: 300000 },
+			// );
+			// elizaLogger.info("Redeem transaction sent", { hash: redeemTx.hash });
+			// const redeemReceipt = await redeemTx.wait();
+			// elizaLogger.info("Redeem transaction mined", {
+			// 	hash: redeemReceipt?.hash,
+			// 	status: redeemReceipt?.status,
+			// });
+			// return redeemReceipt;
+
+			return approveReceipt;
 		} catch (error) {
 			elizaLogger.error("Internal redeem helper failed", { error });
 			throw error;
@@ -397,6 +410,17 @@ export const accumulatedFinancePlugin = (
 			const targetReceiver =
 				receiver || (await getUserAddressString(runtime, networkId));
 			elizaLogger.info("Public stake function", { amount, targetReceiver });
+
+			// First approve the staking contract to spend ROSE
+			elizaLogger.info("Approving ROSE spending...");
+			const approveReceipt = await _approve(
+				networkConfig.CONTRACTS.UNWRAPPED_ROSE,
+				networkConfig.CONTRACTS.WRAPPED_ROSE,
+				amount,
+			);
+			elizaLogger.info("Approval confirmed", { hash: approveReceipt?.hash });
+
+			// Then proceed with deposit
 			const receipt = await _deposit(amount, targetReceiver);
 
 			if (!receipt || receipt.status !== 1) {
@@ -909,7 +933,7 @@ export const stakeAction: Action = {
 			const plugin = accumulatedFinancePlugin(runtime);
 			const result = await plugin.stake(
 				stakeDetails.object.amount,
-				stakeDetails.object.receiver,
+				stakeDetails.object.receiver || undefined,
 			);
 
 			if (callback) {
@@ -1002,7 +1026,7 @@ export const unstakeAction: Action = {
 			const plugin = accumulatedFinancePlugin(runtime);
 			const result = await plugin.unstake(
 				unstakeDetails.object.amount,
-				unstakeDetails.object.receiver,
+				unstakeDetails.object.receiver || undefined,
 			);
 
 			if (callback) {
@@ -1690,7 +1714,7 @@ export const mintAction: Action = {
 			// Call the updated plugin.mint which expects asset amount
 			const result = await plugin.mint(
 				assetAmountDecimal,
-				receiver, // Pass receiver (might be undefined, plugin handles default)
+				receiver || undefined, // Pass receiver (might be undefined, plugin handles default)
 			);
 
 			if (callback) {
@@ -1810,150 +1834,114 @@ export const approveAction: Action = {
 };
 
 // Redeem Action
-// export const redeemAction: Action = {
-// 	name: "ACCUMULATED_FINANCE_REDEEM",
-// 	description:
-// 		"Redeem wstROSE shares to receive a specific amount of underlying ROSE tokens",
-// 	similes: [
-// 		"REDEEM_SHARES_FOR_ROSE",
-// 		"BURN_SHARES_TO_GET_ROSE",
-// 		"EXCHANGE_SHARES_FOR_ROSE",
-// 	],
-// 	examples: [
-// 		[
-// 			{
-// 				user: "{{user}}",
-// 				content: { text: "Redeem shares equivalent to 10 ROSE." },
-// 			},
-// 			{
-// 				user: "{{agentName}}",
-// 				content: {
-// 					text: "Redeemed 50 wstROSE shares. Tx: 0x...",
-// 					action: "ACCUMULATED_FINANCE_REDEEM",
-// 				},
-// 			},
-// 		],
-// 		[
-// 			{
-// 				user: "{{user}}",
-// 				content: {
-// 					text: "I want to get 0.05 ROSE back by redeeming my wstROSE.",
-// 				},
-// 			},
-// 			{
-// 				user: "{{agentName}}",
-// 				content: {
-// 					text: "Redeemed shares for 0.05 ROSE. Tx: 0x...",
-// 					action: "ACCUMULATED_FINANCE_REDEEM",
-// 				},
-// 			},
-// 		],
-// 	],
-// 	validate: stakeAction.validate, // Requires signer
-// 	handler: async (
-// 		runtime: IAgentRuntime,
-// 		_message: Memory,
-// 		state?: State,
-// 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-// 		_options?: any,
-// 		callback?: HandlerCallback,
-// 	): Promise<TransactionReceipt> => {
-// 		elizaLogger.info("redeemAction handler started");
-// 		try {
-// 			const context = createActionContext(state, redeemTemplate);
-// 			const redeemDetails = await generateObject({
-// 				runtime,
-// 				context,
-// 				modelClass: ModelClass.SMALL,
-// 				schema: RedeemSchema,
-// 			});
+export const redeemAction: Action = {
+	name: "ACCUMULATED_FINANCE_REDEEM",
+	description:
+		"Redeem wstROSE shares to receive a specific amount of underlying ROSE tokens",
+	similes: [
+		"ACCUMULATED_FINANCE_REDEEM_SHARES_FOR_ROSE",
+		"ACCUMULATED_FINANCE_BURN_SHARES_TO_GET_ROSE",
+		"ACCUMULATED_FINANCE_EXCHANGE_SHARES_FOR_ROSE",
+	],
+	examples: [
+		[
+			{
+				user: "{{user}}",
+				content: { text: "Accumulated Finance Redeem 10 ROSE" },
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Redeemed 10 ROSE. Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_REDEEM",
+				},
+			},
+		],
+		[
+			{
+				user: "{{user}}",
+				content: {
+					text: "Accumulated Finance Redeem 0.05 ROSE",
+				},
+			},
+			{
+				user: "{{agentName}}",
+				content: {
+					text: "Redeemed 0.05 ROSE. Tx: 0x...",
+					action: "ACCUMULATED_FINANCE_REDEEM",
+				},
+			},
+		],
+	],
+	validate: stakeAction.validate, // Requires signer
+	handler: async (
+		runtime: IAgentRuntime,
+		_message: Memory,
+		state?: State,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		_options?: any,
+		callback?: HandlerCallback,
+	): Promise<TransactionReceipt> => {
+		elizaLogger.info("redeemAction handler started");
+		try {
+			const context = createActionContext(state, redeemTemplate);
+			const redeemDetails = await generateObject({
+				runtime,
+				context,
+				modelClass: ModelClass.SMALL,
+				schema: RedeemSchema,
+			});
 
-// 			// Safety check for generateObject result
-// 			if (
-// 				!redeemDetails ||
-// 				typeof redeemDetails.object !== "object" ||
-// 				redeemDetails.object === null
-// 			) {
-// 				elizaLogger.error(
-// 					"Redeem action: Failed to extract details object from generateObject",
-// 				);
-// 				throw new Error("Failed to extract redeem details.");
-// 			}
+			if (!isRedeemContent(redeemDetails.object)) {
+				elizaLogger.error(
+					"Redeem action: Extracted details do not match RedeemSchema (expected assetAmountDecimal)",
+					{ details: redeemDetails.object },
+				);
+				throw new Error(
+					"Invalid redeem details extracted (expected asset amount).",
+				);
+			}
 
-// 			// Add specific checks if receiver/owner can be "null" string like in mint
-// 			// ... (similar logic as mintAction if needed)
-// 			redeemDetails.object.owner = process.env.WALLET_PUBLIC_KEY;
+			const {
+				shares: assetAmountDecimal,
+				receiver,
+				owner,
+			} = redeemDetails.object;
 
-// 			// *** IMPORTANT: Adapt isRedeemContent check if schema changed ***
-// 			if (!isRedeemContent(redeemDetails.object)) {
-// 				elizaLogger.error(
-// 					"Redeem action: Extracted details do not match RedeemSchema (expected assetAmountDecimal)",
-// 					{ details: redeemDetails.object },
-// 				);
-// 				throw new Error(
-// 					"Invalid redeem details extracted (expected asset amount).",
-// 				);
-// 			}
+			elizaLogger.log(
+				"Receiver ",
+				receiver,
+				"owner",
+				owner,
+				"assetAmountDecimal",
+				assetAmountDecimal,
+			);
 
-// 			const {
-// 				shares: assetAmountDecimal,
-// 				receiver,
-// 				owner,
-// 			} = redeemDetails.object;
+			// Get plugin instance *before* potential pre-deposit
+			const plugin = accumulatedFinancePlugin(runtime);
 
-// 			elizaLogger.log("Receiver ", receiver, "owner", owner);
+			// Call plugin.redeem with the calculated shares string
+			const result = await plugin.redeem(
+				assetAmountDecimal, // Use calculated shares
+				receiver || undefined, // Pass through receiver and owner
+				owner || undefined,
+			);
 
-// 			// Get plugin instance *before* potential pre-deposit
-// 			const plugin = accumulatedFinancePlugin(runtime);
-
-// 			// Get provider/signer to interact with contract for conversion
-// 			const { networkConfig } = getConfigAndNetwork(runtime); // Get network config
-// 			const { provider } = await getProviderAndSigner(runtime, networkConfig); // Get provider
-// 			const wrappedRoseContractView = new ethers.Contract(
-// 				// Instantiate with provider for view call
-// 				networkConfig.CONTRACTS.WRAPPED_ROSE, // Use WRAPPED_ROSE for conversion
-// 				ABIS.WSTROSE,
-// 				provider, // Use provider
-// 			);
-
-// 			// Convert the asset amount to wei first, as convertToShares likely expects uint input via ethers
-// 			const assetAmountWei = convertToWeiString(assetAmountDecimal);
-// 			elizaLogger.info("Converted asset amount to wei for convertToShares", {
-// 				assetAmountDecimal,
-// 				assetAmountWei,
-// 			});
-
-// 			const sharesToRedeemBigInt =
-// 				await wrappedRoseContractView.convertToShares(assetAmountWei); // Call on provider instance
-// 			const sharesToRedeem = sharesToRedeemBigInt.toString(); // Convert BigInt result to string for plugin call
-// 			elizaLogger.info("Calculated shares to redeem", {
-// 				assetAmountDecimal,
-// 				sharesToRedeem,
-// 			});
-// 			// --- End of added logic ---
-
-// 			// Call plugin.redeem with the calculated shares string
-// 			const result = await plugin.redeem(
-// 				sharesToRedeem, // Use calculated shares
-// 				receiver, // Pass through receiver and owner
-// 				owner,
-// 			);
-
-// 			if (callback) {
-// 				// Report back based on the requested asset amount
-// 				callback({
-// 					text: `Redeemed shares for ${assetAmountDecimal} ROSE. Tx: ${result.transactionHash}`,
-// 				});
-// 			}
-// 			return result;
-// 		} catch (error: unknown) {
-// 			elizaLogger.error("Redeem action failed", { error });
-// 			if (callback) {
-// 				callback({
-// 					text: `Failed to redeem shares: ${error instanceof Error ? error.message : "Unknown error"}`,
-// 				});
-// 			}
-// 			throw error;
-// 		}
-// 	},
-// };
+			if (callback) {
+				// Report back based on the requested asset amount
+				callback({
+					text: `Redeemed shares for ${assetAmountDecimal} ROSE. Tx: ${result.transactionHash}`,
+				});
+			}
+			return result;
+		} catch (error: unknown) {
+			elizaLogger.error("Redeem action failed", { error });
+			if (callback) {
+				callback({
+					text: `Failed to redeem shares: ${error instanceof Error ? error.message : "Unknown error"}`,
+				});
+			}
+			throw error;
+		}
+	},
+};
