@@ -31,7 +31,7 @@ export class RoflService {
 
 		try {
 			const response = await axios.post<GenerateKeyResponse>(
-				"/rofl/v1/keys/generate",
+				"http://localhost/rofl/v1/keys/generate",
 				payload,
 				{
 					socketPath: this.socketPath,
