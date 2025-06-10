@@ -80,6 +80,59 @@ const balance = await plugin.getStakedBalance();
 console.log(`Staked balance: ${balance} ROSE`);
 ```
 
+## Testing with RealitySpiral Agent UI
+
+This section guides you through testing the Accumulated Finance plugin using the RealitySpiral Agent UI.
+
+### Prerequisites
+
+1. Copy `.env.example` to `.env` and configure the following variables:
+   - Accumulated Finance related variables
+   - `WALLET_PRIVATE` with your wallet private key
+
+### Running the Agent UI
+
+1. Install dependencies and start the development server:
+   ```bash
+   pnpm install
+   pnpm dev
+   ```
+
+2. Wait for the server to start up (usually takes a few seconds)
+
+3. Open the Agent UI in your browser:
+   ```
+   http://localhost:5173/
+   ```
+
+![Agent UI Chat Interface](./docs/assets/agent-ui-chat.png)
+
+### Using the Agent
+
+1. Select the `StaffEngineer` agent by clicking "Chat"
+
+2. Interact with the agent using natural language commands. For example:
+   ```
+   Stake 0.3 ROSE with Accumulated Finance
+   ```
+
+![Prompt Screenshot](./docs/assets/prompt.png)
+
+3. Wait for the agent to process your request and respond with a confirmation message
+
+![Waiting for agent to respond](./docs/assets/waiting-for-agent-to-respond.png)
+
+![Stake Confirmation](./docs/assets/stake-confirmation.png)
+
+4. The confirmation message will include a transaction hash that you can use to:
+   - View transaction details on the [Oasis Explorer](https://explorer.oasis.io/)
+   - Verify your wallet balance changes:
+     - Decreased ROSE balance
+     - Increased stROSE balance
+
+![Transaction Confirmation](./docs/assets/transaction-confirmation.png)
+![Wallet Balance Update](./docs/assets/wallet-balance-update.png)
+
 ## Implementation Details
 
 ### Staking Flow
