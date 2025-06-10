@@ -113,6 +113,51 @@ console.log(`Liquidity: ${poolInfo.liquidity}`);
 console.log(`Current tick: ${poolInfo.tick}`);
 ```
 
+## Testing with RealitySpiral Agent UI
+
+Follow these steps to test the Neby DEX plugin using the RealitySpiral Agent UI:
+
+1. Copy `.env.example` to `.env` and set the relevant NEBY variables as well as the `WALLET_PRIVATE` variable with your wallet private key.
+
+2. Run a local agent using command:
+```bash
+pnpm install
+pnpm dev
+```
+
+3. Wait a few seconds during start up and when completed you can open the Agent UI:
+```
+http://localhost:5173/
+```
+
+![Agent UI Screenshot](./docs/assets/agent-ui.png)
+
+4. Select the `StaffEngineer` agent (Click Chat)
+
+5. Now you can write to the agent the following messages:
+```
+Swap 0.01 wROSE for USDC on Neby using my default slippage
+```
+
+![Prompt Screenshot](./docs/assets/prompt.png)
+
+6. Wait few seconds for the agent to respond and then you should see as a result a confirmation of the successful swap operation
+
+![Waiting for agent to respond](./docs/assets/waiting-for-agent-to-respond.png)
+
+![Swap Confirmation](./docs/assets/swap-confirmation.png)
+
+7. You can copy and paste the transaction hash shown in the confirmation message from the agent in the Oasis explorer:
+```
+https://explorer.oasis.io/
+```
+
+The explorer will show you all the details about the swap transaction. You should also be able to see your wallet balance getting updated:
+- Less wROSE
+- More USDC
+
+![Transaction Details](./docs/assets/transaction-details.png)
+
 ## Implementation Details
 
 ### Swap Flow
