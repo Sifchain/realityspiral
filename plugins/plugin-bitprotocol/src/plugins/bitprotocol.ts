@@ -31,6 +31,7 @@ import {
 	type SwapPath,
 	type SwapResult,
 } from "../types";
+import { getProviderAndSigner } from "../utils";
 
 // --- Internal Configuration Helper --- //
 
@@ -68,6 +69,21 @@ function getConfig(runtime: IAgentRuntime): PluginSettings {
 		privacyEnabled,
 	};
 }
+
+// --- Validate Action --- //
+const validate: Action["validate"] = async (runtime: IAgentRuntime) => {
+	try {
+		const pk =
+			runtime.getSetting("WALLET_PRIVATE_KEY") ||
+			process.env.WALLET_PRIVATE_KEY ||
+			(runtime.getSetting("ROFL_PLUGIN_ENABLED") &&
+				runtime.getSetting("ROFL_KEY_GENERATION_SEED")) ||
+			(process.env.ROFL_PLUGIN_ENABLED && process.env.ROFL_KEY_GENERATION_SEED);
+		return !!pk;
+	} catch {
+		return false;
+	}
+};
 
 // --- Swap Action --- //
 const handleSwap: Action["handler"] = async (
@@ -119,11 +135,7 @@ const handleSwap: Action["handler"] = async (
 
 		// --- Initialize ethers & Signer ---
 		// Use the correct network configuration
-		const provider = new ethers.JsonRpcProvider(config.rpcUrl);
-		if (!process.env.WALLET_PRIVATE_KEY) {
-			throw new Error("WALLET_PRIVATE_KEY must be defined");
-		}
-		const signer = new ethers.Wallet(process.env.WALLET_PRIVATE_KEY, provider);
+		const { provider, signer } = await getProviderAndSigner(runtime, config);
 
 		// Get wallet address properly
 		const userAddress = await signer.getAddress();
@@ -420,10 +432,7 @@ export const swapAction: Action = {
 			},
 		],
 	],
-	validate: async (_options: unknown): Promise<boolean> => {
-		// Basic validation or return true if generateObject handles it
-		return true;
-	},
+	validate,
 };
 
 // --- Monitor Price Stability Action --- //
@@ -540,9 +549,7 @@ export const monitorPriceStabilityAction: Action = {
 			},
 		],
 	],
-	validate: async (_options: unknown): Promise<boolean> => {
-		return true;
-	},
+	validate,
 };
 // --- Get Optimal Swap Path Action --- //
 
@@ -906,7 +913,5 @@ export const getOptimalPathAction: Action = {
 			},
 		],
 	],
-	validate: async (_options: unknown): Promise<boolean> => {
-		return true;
-	},
+	validate,
 };

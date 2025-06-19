@@ -12,5 +12,6 @@ export const roflPlugin: Plugin = {
 
 export * from "./actions/getAgentPublicAddress";
 export * from "./providers/getAgentWalletAddressProvider";
+export * from "./services/rofl";
 
 export default roflPlugin;

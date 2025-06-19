@@ -16,12 +16,15 @@
 			}
 		}
 	},
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"dependencies": {
 		"@elizaos/core": "^0.1.9",
 		"@oasisprotocol/client": "latest",
 		"@realityspiral/plugin-instrumentation": "workspace:*",
 		"@realityspiral/plugin-coinbase": "workspace:*",
+		"@realityspiral/plugin-rofl": "workspace:*",
 		"zod": "3.23.8"
 	},
 	"devDependencies": {
