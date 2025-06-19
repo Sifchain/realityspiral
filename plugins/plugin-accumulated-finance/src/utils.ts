@@ -1,6 +1,6 @@
 import type { IAgentRuntime } from "@elizaos/core";
-import * as ethers from "ethers";
 import { RoflService } from "@realityspiral/plugin-rofl";
+import * as ethers from "ethers";
 import type { SAPPHIRE_MAINNET, SAPPHIRE_TESTNET } from "./constants";
 
 // Helper function to create an ethers provider and signer

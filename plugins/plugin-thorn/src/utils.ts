@@ -1,7 +1,7 @@
 import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
+import { RoflService } from "@realityspiral/plugin-rofl";
 import * as ethers from "ethers";
 import { type OASIS_NETWORKS, OASIS_RPC_URLS } from "./constants";
-import { RoflService } from "@realityspiral/plugin-rofl";
 
 // Helper function to create an ethers provider and signer
 export const getProviderAndSigner = async (

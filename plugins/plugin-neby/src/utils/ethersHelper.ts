@@ -1,8 +1,8 @@
 import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
+import { RoflService } from "@realityspiral/plugin-rofl";
 import { ethers } from "ethers";
 import { SAPPHIRE_MAINNET, SAPPHIRE_TESTNET } from "../constants";
 import type { TransactionReceipt } from "../types"; // Assuming TransactionReceipt type is defined
-import { RoflService } from "@realityspiral/plugin-rofl";
 
 // Helper to handle potential BigInt values in results (recursive)
 // biome-ignore lint/suspicious/noExplicitAny: Needed for generic serialization

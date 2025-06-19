@@ -1,7 +1,7 @@
-import { elizaLogger, type IAgentRuntime } from "@elizaos/core";
+import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
 import type { ContractHelper } from "@realityspiral/plugin-coinbase";
-import { ethers } from "ethers";
 import { RoflService } from "@realityspiral/plugin-rofl";
+import { ethers } from "ethers";
 
 const DEFAULT_DECIMALS = 18;
 const minimalErc20AbiForDecimals = [
