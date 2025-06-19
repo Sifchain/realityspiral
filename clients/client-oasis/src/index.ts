@@ -33,10 +33,7 @@ import {
 	removeLiquidityAction as nebyRemoveLiquidityAction,
 	swapAction as nebySwapAction,
 } from "@realityspiral/plugin-neby";
-import {
-	getAgentRoflKeyAction,
-	getRoflKeyAction,
-} from "@realityspiral/plugin-rofl";
+import { getAgentPublicAddressAction } from "@realityspiral/plugin-rofl";
 import {
 	executeSwapAction,
 	getSwapQuoteAction,
@@ -78,8 +75,7 @@ export class OasisClient extends EventEmitter {
 			nebySwapAction,
 			executeSwapAction,
 			getSwapQuoteAction,
-			getAgentRoflKeyAction,
-			getRoflKeyAction,
+			getAgentPublicAddressAction,
 		];
 
 		this.start();
