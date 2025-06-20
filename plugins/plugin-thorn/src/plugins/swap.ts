@@ -39,6 +39,20 @@ import {
 import { swapTemplate } from "../templates";
 import { SwapSchema, isSwapContent } from "../types";
 
+// --- Validate Action --- //
+const validate: Action["validate"] = async (runtime: IAgentRuntime) => {
+	try {
+		const pk =
+			runtime.getSetting("WALLET_PRIVATE_KEY") ||
+			process.env.WALLET_PRIVATE_KEY ||
+			runtime.getSetting("ROFL_PLUGIN_ENABLED") ||
+			process.env.ROFL_PLUGIN_ENABLED;
+		return !!pk;
+	} catch {
+		return false;
+	}
+};
+
 /**
  * Provider for retrieving swap history and information
  */
@@ -139,13 +153,7 @@ export const executeSwapAction: Action = {
 		"THORN_SWAP",
 	],
 	description: "Execute a privacy-preserving token swap using Thorn Protocol",
-	validate: async (_runtime: IAgentRuntime, _message: Memory) => {
-		elizaLogger.info("Validating runtime for EXECUTE_SWAP...");
-		// return !!(
-		// 	runtime.getSetting("THORN_API_URL") && runtime.getSetting("OASIS_NETWORK")
-		// );
-		return true;
-	},
+	validate,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -367,12 +375,7 @@ export const getSwapQuoteAction: Action = {
 		"THORN_CHECK_SWAP_RATE",
 	],
 	description: "Get a quote for a token swap without executing it",
-	validate: async (runtime: IAgentRuntime, _message: Memory) => {
-		elizaLogger.info("Validating runtime for THORN_GET_SWAP_QUOTE...");
-		return !!(
-			runtime.getSetting("THORN_API_URL") && runtime.getSetting("OASIS_NETWORK")
-		);
-	},
+	validate,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,

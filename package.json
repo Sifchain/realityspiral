@@ -2,7 +2,7 @@
 	"name": "realityspiral",
 	"private": true,
 	"scripts": {
-		"build": "turbo build --filter=@realityspiral/sentry && turbo build",
+		"build": "turbo build",
 		"dev": "turbo --concurrency 100 dev",
 		"start": "turbo start",
 		"clean:start": "if [ -f agent/data/db.sqlite ]; then rm agent/data/db.sqlite; fi && turbo start",

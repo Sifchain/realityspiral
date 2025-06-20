@@ -62,18 +62,9 @@ export class RoflService {
 	}
 
 	async getAgentWallet(agentId: string): Promise<ethers.Wallet> {
-		const seed = process.env.ROFL_KEY_GENERATION_SEED;
-		if (!seed || seed.trim() === "" || seed.trim().length < 10) {
-			throw new Error(
-				"ROFL_KEY_GENERATION_SEED environment variable is not set, is empty, or has fewer than 10 characters",
-			);
-		}
-
 		try {
-			// Generate the key using agentId + seed as key_id
-			const keyId = `${agentId}${seed}`;
 			const response = await this.generateKey({
-				key_id: keyId,
+				key_id: agentId,
 				kind: "secp256k1",
 			});
 

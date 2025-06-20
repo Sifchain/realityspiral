@@ -58,9 +58,8 @@ const validate: Action["validate"] = async (runtime: IAgentRuntime) => {
 		const pk =
 			runtime.getSetting("WALLET_PRIVATE_KEY") ||
 			process.env.WALLET_PRIVATE_KEY ||
-			(runtime.getSetting("ROFL_PLUGIN_ENABLED") &&
-				runtime.getSetting("ROFL_KEY_GENERATION_SEED")) ||
-			(process.env.ROFL_PLUGIN_ENABLED && process.env.ROFL_KEY_GENERATION_SEED);
+			runtime.getSetting("ROFL_PLUGIN_ENABLED") ||
+			process.env.ROFL_PLUGIN_ENABLED;
 		return !!pk;
 	} catch {
 		return false;

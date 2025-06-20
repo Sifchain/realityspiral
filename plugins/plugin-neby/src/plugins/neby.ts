@@ -47,6 +47,20 @@ import { LiquidityService } from "../utils/liquidityService";
 import { PriceService } from "../utils/priceService";
 import { SwapService } from "../utils/swapService";
 
+// --- Validate Action --- //
+const validate: Action["validate"] = async (runtime: IAgentRuntime) => {
+	try {
+		const pk =
+			runtime.getSetting("WALLET_PRIVATE_KEY") ||
+			process.env.WALLET_PRIVATE_KEY ||
+			runtime.getSetting("ROFL_PLUGIN_ENABLED") ||
+			process.env.ROFL_PLUGIN_ENABLED;
+		return !!pk;
+	} catch {
+		return false;
+	}
+};
+
 // Helper function to get user address via ethersHelper
 const getUserAddressString = async (
 	runtime: IAgentRuntime,
@@ -342,7 +356,7 @@ export const nebyPlugin = (
 export const swapAction: Action = {
 	name: "NEBY_SWAP",
 	description: "Swap tokens on Neby DEX.",
-	validate: async () => true,
+	validate,
 	similes: ["NEBY_SWAP_TOKENS", "NEBY_EXCHANGE_COINS", "NEBY_TRADE_CRYPTO"],
 	examples: [
 		[
@@ -532,7 +546,7 @@ export const swapAction: Action = {
 export const addLiquidityAction: Action = {
 	name: "NEBY_ADD_LIQUIDITY",
 	description: "Add liquidity to a Neby DEX pool.",
-	validate: async () => true,
+	validate,
 	similes: [
 		"NEBY_PROVIDE_LIQUIDITY",
 		"NEBY_STAKE_LP_TOKENS",
@@ -641,7 +655,7 @@ export const addLiquidityAction: Action = {
 export const removeLiquidityAction: Action = {
 	name: "NEBY_REMOVE_LIQUIDITY",
 	description: "Remove liquidity from a Neby DEX pool.",
-	validate: async () => true,
+	validate,
 	similes: [
 		"NEBY_WITHDRAW_LIQUIDITY",
 		"NEBY_UNSTAKE_LP_TOKENS",
@@ -743,7 +757,7 @@ export const removeLiquidityAction: Action = {
 export const monitorPricesAction: Action = {
 	name: "NEBY_MONITOR_PRICES",
 	description: "Monitor token prices on Neby DEX.",
-	validate: async () => true,
+	validate,
 	similes: ["NEBY_CHECK_PRICES", "NEBY_GET_TOKEN_RATES", "NEBY_WATCH_MARKET"],
 	examples: [
 		[
@@ -870,7 +884,7 @@ export const monitorPricesAction: Action = {
 export const getPoolLiquidityAction: Action = {
 	name: "NEBY_GET_POOL_LIQUIDITY",
 	description: "Get liquidity of a Neby DEX pool.",
-	validate: async () => true,
+	validate,
 	similes: ["NEBY_CHECK_POOL_SIZE", "NEBY_GET_POOL_VALUE", "NEBY_POOL_TVL"],
 	examples: [
 		[
@@ -960,7 +974,7 @@ export const getPoolLiquidityAction: Action = {
 export const getPoolInfoAction: Action = {
 	name: "NEBY_GET_POOL_INFO",
 	description: "Get detailed information about a Neby DEX pool.",
-	validate: async () => true,
+	validate,
 	similes: ["NEBY_POOL_DETAILS", "NEBY_GET_POOL_STATS", "NEBY_INSPECT_POOL"],
 	examples: [
 		[

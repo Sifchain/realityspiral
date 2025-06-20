@@ -2,6 +2,7 @@ import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
 import type { ContractHelper } from "@realityspiral/plugin-coinbase";
 import { RoflService } from "@realityspiral/plugin-rofl";
 import { ethers } from "ethers";
+import { NETWORK_CONFIG } from "./constants";
 
 const DEFAULT_DECIMALS = 18;
 const minimalErc20AbiForDecimals = [
@@ -135,6 +136,9 @@ export const getProviderAndSigner = async (
 ): Promise<{ provider: ethers.JsonRpcProvider; signer: ethers.Wallet }> => {
 	// Create provider
 	const provider = new ethers.JsonRpcProvider(networkConfig.RPC_URL);
+	// const provider = new ethers.JsonRpcProvider(
+	// 	NETWORK_CONFIG.OASIS_SAPPHIRE.rpcUrl,
+	// );
 
 	// Get private key from environment variables or runtime settings
 	let privateKey =
