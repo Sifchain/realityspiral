@@ -52,6 +52,20 @@ import {
 
 import { getProviderAndSigner } from "../utils";
 
+// --- Validate Action --- //
+const validate: Action["validate"] = async (runtime: IAgentRuntime) => {
+	try {
+		const pk =
+			runtime.getSetting("WALLET_PRIVATE_KEY") ||
+			process.env.WALLET_PRIVATE_KEY ||
+			runtime.getSetting("ROFL_PLUGIN_ENABLED") ||
+			process.env.ROFL_PLUGIN_ENABLED;
+		return !!pk;
+	} catch {
+		return false;
+	}
+};
+
 // Helper function to get user address from runtime
 const getUserAddressString = async (
 	runtime: IAgentRuntime,
@@ -898,16 +912,7 @@ export const stakeAction: Action = {
 			},
 		],
 	],
-	validate: async (runtime: IAgentRuntime) => {
-		try {
-			const pk =
-				runtime.getSetting("WALLET_PRIVATE_KEY") ||
-				process.env.WALLET_PRIVATE_KEY;
-			return !!pk;
-		} catch {
-			return false;
-		}
-	},
+	validate,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -1000,7 +1005,7 @@ export const unstakeAction: Action = {
 			},
 		],
 	],
-	validate: stakeAction.validate, // Same validation as stake
+	validate,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -1095,7 +1100,7 @@ export const getRewardsAction: Action = {
 			},
 		],
 	],
-	validate: stakeAction.validate, // Requires wallet info to read balance
+	validate,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -1189,7 +1194,7 @@ export const claimRewardsAction: Action = {
 			},
 		],
 	],
-	validate: stakeAction.validate, // Requires signer
+	validate,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -1283,7 +1288,7 @@ export const getStakingStrategiesAction: Action = {
 			},
 		],
 	],
-	validate: async () => true, // No specific validation needed
+	validate,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -1375,7 +1380,7 @@ export const getStakedBalanceAction: Action = {
 			},
 		],
 	],
-	validate: stakeAction.validate, // Requires wallet info
+	validate,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -1465,7 +1470,7 @@ export const wrapRoseAction: Action = {
 			},
 		],
 	],
-	validate: stakeAction.validate, // Same as staking
+	validate,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -1555,7 +1560,7 @@ export const unwrapRoseAction: Action = {
 			},
 		],
 	],
-	validate: unstakeAction.validate, // Same as unstaking
+	validate,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -1649,7 +1654,7 @@ export const mintAction: Action = {
 			},
 		],
 	],
-	validate: stakeAction.validate, // Requires signer
+	validate,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -1773,7 +1778,7 @@ export const approveAction: Action = {
 			},
 		],
 	],
-	validate: stakeAction.validate, // Requires signer
+	validate,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,
@@ -1873,7 +1878,7 @@ export const redeemAction: Action = {
 			},
 		],
 	],
-	validate: stakeAction.validate, // Requires signer
+	validate,
 	handler: async (
 		runtime: IAgentRuntime,
 		_message: Memory,

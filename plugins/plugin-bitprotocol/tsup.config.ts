@@ -1,20 +1,55 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-	entry: ["./src/index.ts"],
+	entry: ["src/index.ts"],
+	outDir: "dist",
+	sourcemap: true,
+	clean: true,
 	format: ["esm"],
 	dts: true,
-	clean: true,
+	splitting: false,
+	bundle: true,
 	minify: false,
-	sourcemap: true,
 	external: [
 		"@elizaos/core",
-		"@oasisprotocol/client", // Keep specific dependency
-		"zod", // Keep specific dependency
+		"@oasisprotocol/client",
 		"@realityspiral/plugin-instrumentation",
-		"@realityspiral/plugin-coinbase", // Keep dependency needed for ContractHelper
+		"@realityspiral/plugin-coinbase",
+		"@realityspiral/plugin-rofl",
+		"zod",
+		"ethers",
+		"node:events",
+		"node:fs",
+		"node:path",
+		"node:url",
+		"node:util",
+		"node:crypto",
+		"node:stream",
+		"node:buffer",
+		"node:http",
+		"node:https",
+		"node:querystring",
+		"node:os",
+		"node:child_process",
+		"node:worker_threads",
+		"node:perf_hooks",
+		"node:assert",
+		"node:constants",
+		"node:domain",
+		"node:module",
+		"node:process",
+		"node:punycode",
+		"node:string_decoder",
+		"node:timers",
+		"node:tty",
+		"node:vm",
+		"node:zlib",
 	],
+	platform: "node",
+	target: "node18",
 	esbuildOptions(options) {
-		options.target = ["es2020"];
+		options.bundle = true;
+		options.platform = "node";
+		options.target = "node18";
 	},
 });

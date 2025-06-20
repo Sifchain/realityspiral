@@ -469,6 +469,9 @@ importers:
       '@realityspiral/plugin-instrumentation':
         specifier: workspace:^
         version: link:../plugin-instrumentation
+      '@realityspiral/plugin-rofl':
+        specifier: workspace:^
+        version: link:../plugin-rofl
       ethers:
         specifier: ^6.13.5
         version: 6.13.7(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -503,6 +506,9 @@ importers:
       '@realityspiral/plugin-instrumentation':
         specifier: workspace:*
         version: link:../plugin-instrumentation
+      '@realityspiral/plugin-rofl':
+        specifier: workspace:*
+        version: link:../plugin-rofl
       zod:
         specifier: 3.23.8
         version: 3.23.8
@@ -739,6 +745,9 @@ importers:
       '@realityspiral/plugin-instrumentation':
         specifier: workspace:^
         version: link:../plugin-instrumentation
+      '@realityspiral/plugin-rofl':
+        specifier: workspace:^
+        version: link:../plugin-rofl
       ethers:
         specifier: ^6.0.0
         version: 6.13.7(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -859,6 +868,9 @@ importers:
       '@realityspiral/plugin-instrumentation':
         specifier: workspace:*
         version: link:../plugin-instrumentation
+      '@realityspiral/plugin-rofl':
+        specifier: workspace:*
+        version: link:../plugin-rofl
       csv-parse:
         specifier: 5.6.0
         version: 5.6.0

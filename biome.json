@@ -79,7 +79,8 @@
 			"**/node_modules/**",
 			"**/coverage/**",
 			"**/*.json",
-			"**/advanced-sdk-ts/**"
+			"**/advanced-sdk-ts/**",
+			"**/tsup.config.bundled_*.mjs"
 		]
 	},
 	"formatter": {

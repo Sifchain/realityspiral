@@ -9,7 +9,7 @@ import { Instrumentation } from "./instrumentation";
 export const composeContext = ({
 	state,
 	template,
-	templatingEngine,
+	templatingEngine = "handlebars",
 }: {
 	state: State;
 	template: TemplateType;

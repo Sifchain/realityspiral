@@ -1,5 +1,8 @@
-import { elizaLogger } from "@elizaos/core";
+import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
 import type { ContractHelper } from "@realityspiral/plugin-coinbase";
+import { RoflService } from "@realityspiral/plugin-rofl";
+import { ethers } from "ethers";
+import { NETWORK_CONFIG } from "./constants";
 
 const DEFAULT_DECIMALS = 18;
 const minimalErc20AbiForDecimals = [
@@ -124,3 +127,47 @@ export async function formatTokenAmount(
 		return amount.toString();
 	}
 }
+
+// Helper function to create an ethers provider and signer
+export const getProviderAndSigner = async (
+	runtime: IAgentRuntime,
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	networkConfig: any,
+): Promise<{ provider: ethers.JsonRpcProvider; signer: ethers.Wallet }> => {
+	// Create provider
+	const provider = new ethers.JsonRpcProvider(networkConfig.RPC_URL);
+	// const provider = new ethers.JsonRpcProvider(
+	// 	NETWORK_CONFIG.OASIS_SAPPHIRE.rpcUrl,
+	// );
+
+	// Get private key from environment variables or runtime settings
+	let privateKey =
+		(runtime.getSetting("WALLET_PRIVATE_KEY") as string) ||
+		process.env.WALLET_PRIVATE_KEY;
+
+	// If no private key is set, use ROFL service to generate one based on agent ID
+	if (!privateKey) {
+		const roflService = new RoflService();
+		const agentId = runtime.agentId;
+
+		if (!agentId) {
+			throw new Error(
+				"Agent ID not found. Cannot generate wallet without agent ID.",
+			);
+		}
+
+		try {
+			const wallet = await roflService.getAgentWallet(agentId);
+			privateKey = wallet.privateKey;
+		} catch (error) {
+			throw new Error(
+				`Failed to generate wallet using ROFL service: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
+		}
+	}
+
+	// Create signer
+	const signer = new ethers.Wallet(privateKey as string, provider);
+
+	return { provider, signer };
+};

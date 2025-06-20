@@ -1,18 +1,17 @@
 import type { Plugin } from "@elizaos/core";
-import { getAgentRoflKeyAction } from "./actions/getAgentRoflKey";
-import { getRoflKeyAction } from "./actions/getRoflKey";
-import { getRoflKeyProvider } from "./providers/getRoflKey";
+import { getAgentPublicAddressAction } from "./actions/getAgentPublicAddress";
+import { getAgentWalletAddressProvider } from "./providers/getAgentWalletAddressProvider";
 
 export const roflPlugin: Plugin = {
 	name: "rofl",
 	description: "Rofl Plugin for Eliza",
-	actions: [getRoflKeyAction, getAgentRoflKeyAction],
+	actions: [getAgentPublicAddressAction],
 	evaluators: [],
-	providers: [getRoflKeyProvider],
+	providers: [getAgentWalletAddressProvider],
 };
 
-export * from "./actions/getAgentRoflKey";
-export * from "./actions/getRoflKey";
-export * from "./providers/getRoflKey";
+export * from "./actions/getAgentPublicAddress";
+export * from "./providers/getAgentWalletAddressProvider";
+export * from "./services/rofl";
 
 export default roflPlugin;

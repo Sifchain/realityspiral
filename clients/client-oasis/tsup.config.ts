@@ -12,6 +12,7 @@ export default defineConfig({
 		"@oasisprotocol/client",
 		"@realityspiral/plugin-instrumentation",
 		"@realityspiral/plugin-coinbase",
+		"@realityspiral/plugin-bitprotocol",
 		"@coinbase/coinbase-sdk",
 		"zod",
 	],

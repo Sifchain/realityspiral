@@ -5,7 +5,8 @@
 			"@realityspiral/plugin-instrumentation": [
 				"../plugin-instrumentation/src"
 			],
-			"@realityspiral/plugin-coinbase": ["../plugin-coinbase/src"]
+			"@realityspiral/plugin-coinbase": ["../plugin-coinbase/src"],
+			"@realityspiral/plugin-rofl": ["../plugin-rofl/src"]
 		}
 	}
 }

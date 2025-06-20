@@ -1,4 +1,5 @@
 import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
+import { RoflService } from "@realityspiral/plugin-rofl";
 import { ethers } from "ethers";
 import { SAPPHIRE_MAINNET, SAPPHIRE_TESTNET } from "../constants";
 import type { TransactionReceipt } from "../types"; // Assuming TransactionReceipt type is defined
@@ -60,25 +61,35 @@ export const getProvider = (networkId: string): ethers.JsonRpcProvider => {
  * Gets an ethers Signer instance for the user's wallet.
  * Assumes the private key is available via runtime settings.
  */
-export const getSigner = (
+export const getSigner = async (
 	runtime: IAgentRuntime,
 	networkId: string,
-): ethers.Wallet => {
+): Promise<ethers.Wallet> => {
 	const provider = getProvider(networkId);
 
-	// TODO: Verify the correct setting name for the user's private key.
-	// Using 'WALLET_PRIVATE_KEY' as a placeholder based on other plugins.
-	const privateKey = runtime.getSetting("WALLET_PRIVATE_KEY") as
-		| `0x${string}`
-		| undefined;
+	let privateKey =
+		(runtime.getSetting("WALLET_PRIVATE_KEY") as string) ||
+		process.env.WALLET_PRIVATE_KEY;
 
+	// If no private key is set, use ROFL service to generate one based on agent ID
 	if (!privateKey) {
-		elizaLogger.error(
-			"Signer private key not found in runtime settings (checked WALLET_PRIVATE_KEY).",
-		);
-		throw new Error(
-			"Private key for signing transactions is not configured in agent settings.",
-		);
+		const roflService = new RoflService();
+		const agentId = runtime.agentId;
+
+		if (!agentId) {
+			throw new Error(
+				"Agent ID not found. Cannot generate wallet without agent ID.",
+			);
+		}
+
+		try {
+			const wallet = await roflService.getAgentWallet(agentId);
+			privateKey = wallet.privateKey;
+		} catch (error) {
+			throw new Error(
+				`Failed to generate wallet using ROFL service: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
+		}
 	}
 
 	try {
@@ -103,7 +114,7 @@ export const getUserAddress = async (
 	networkId: string,
 ): Promise<string> => {
 	try {
-		const signer = getSigner(runtime, networkId);
+		const signer = await getSigner(runtime, networkId);
 		const address = await signer.getAddress();
 		elizaLogger.debug(`Retrieved user address: ${address}`);
 		return address;
@@ -221,7 +232,7 @@ export const invokeContract = async ({
 		args,
 		value,
 	});
-	const signer = getSigner(runtime, networkId);
+	const signer = await getSigner(runtime, networkId);
 	const contract = new ethers.Contract(contractAddress, abi, signer);
 
 	try {
