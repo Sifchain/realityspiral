@@ -26,16 +26,16 @@ The plugin requires the ROFL service to be running and accessible via the Unix d
 
 ### As an Action
 
-The plugin provides a `GET_AGENT_ROFL_KEY` and `GET_ROFL_KEY` actions that can be used to generate and display keys with specific parameters:
+The plugin provides a `GET_AGENT_PUBLIC_ADDRESS` action that can be used to get the public address of the agent.
 
 ```
-User: Show me the agent ROLF key
-System: Here is the agent ROFL key: <key>
+User: Show me the agent public address
+System: Here is the agent public address: <address>
 ```
 
 ### As a Provider
 
-The plugin provides a key generation provider that automatically uses the agent's ID and generates a secp256k1 key. The generated key is stored in the agent's state and can be accessed through the agent state.
+The plugin provides an agent public address generation provider that uses the agent's unique ID to automatically create a secp256k1 private key. This private key forms the basis for establishing an agent wallet client that manages transaction and message signing operations.
 
 ## Error Handling
 
@@ -48,7 +48,6 @@ The plugin includes comprehensive error handling:
 
 - All communication with the ROFL service is done through a Unix domain socket
 - Keys are generated securely by the ROFL service
-- Generated keys are stored in the agent's state for persistence
 
 ## Testing with RealitySpiral Agent UI
 
@@ -56,13 +55,13 @@ This section guides you through testing the RealitySpiral Agent UI with a deploy
 
 ### Prerequisites
 
-- A deployed ROFL application on a TDX-enabled server (see [Deployment to TEE environment](#deployment-to-tee-environment) section above)
+- A deployed ROFL application on a TDX-enabled server (see [Deployment to TEE environment](/README.md#deployment-to-tee-environment) section above)
 - Access to the server's hostname and port 5173
 
 ### Steps to Test
 
 1. **Deploy ROFL App**
-   - Follow the steps in the [Deployment to TEE environment](#deployment-to-tee-environment) section to deploy your ROFL application
+   - Follow the steps in the [Deployment to TEE environment](/README.md#deployment-to-tee-environment) section to deploy your ROFL application
    - Ensure all environment variables and secrets are properly configured
 
 2. **Access the Agent UI**
@@ -77,24 +76,17 @@ This section guides you through testing the RealitySpiral Agent UI with a deploy
    - From the available agents, select the `StaffEngineer` agent
    - Click the "Chat" button to start a conversation
 
-4. **Test ROFL Key Generation**
+4. **Display the agent wallet address**
    - In the chat interface, type the following message:
    ```
-   Show me the agent ROFL key
+   Show me the agent wallet address
    ```
-   ![Chat Interface](./docs/assets/prompt.png)
+   ![Chat Interface](./docs/assets/agent-public-address.png)
 
-5. **View Results**
-   - Wait a few seconds for the agent to process your request
-   - The agent will respond with the generated ROFL key
-   ![ROFL Key Response](./docs/assets/waiting-for-response.png)
-
-   ![ROFL Key Response](./docs/assets/rofl-key-response.png)
-
-6. **Using the ROFL Key**
-   - Copy the generated ROFL key
-   - You can use this key for operations on the Oasis network
-   - Visit [Oasis Explorer](https://explorer.oasis.io/) to interact with the network
+6. **Using the public address**
+   - Copy the generated public address
+   - You can fund this address on the Oasis network and utilize other plugins like Accumulated Finance, Bitprotocol, Neby, or Thorn to interact with the agent wallet via the agent UI.
+   - Visit [Oasis Explorer](https://explorer.oasis.io/) to get more information about the agent wallet.
 
 ### Troubleshooting
 
